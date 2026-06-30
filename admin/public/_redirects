@@ -1,0 +1,2 @@
+# SPA fallback — route all non-asset requests to index.html
+/*    /index.html   200

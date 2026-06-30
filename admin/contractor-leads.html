@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lead Board — LinxServices Contractor Portal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #1f2328;
+      background: #f7f8fa;
+      min-height: 100vh;
+    }
+    /* ── Nav ── */
+    .nav {
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-brand { font-weight: 700; font-size: 16px; color: #3b82d4; text-decoration: none; }
+    .nav a  { color: #57606a; text-decoration: none; font-size: 13px; }
+    .nav a:hover, .nav a.active { color: #3b82d4; }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 16px; border-radius: 6px; border: 1px solid #e5e7eb;
+      font-size: 13px; font-family: inherit; cursor: pointer;
+      background: #fff; color: #1f2328; transition: background .12s;
+    }
+    .btn:hover  { background: #f7f8fa; }
+    .btn-primary { background: #3b82d4; color: #fff; border-color: #3b82d4; }
+    .btn-primary:hover { background: #2563be; border-color: #2563be; }
+    .btn-success { background: #15803d; color: #fff; border-color: #15803d; }
+    .btn-success:hover { background: #166534; border-color: #166534; }
+    .btn-sm { padding: 4px 11px; font-size: 12px; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    /* ── Layout ── */
+    .main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
+    .page-header { margin-bottom: 24px; }
+    .page-header h1 { font-size: 20px; font-weight: 700; }
+    .page-header p  { color: #57606a; font-size: 13px; margin-top: 2px; }
+    /* ── Filter bar ── */
+    .filter-bar {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 14px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+    .filter-bar label { display: block; font-size: 11px; font-weight: 600; color: #57606a; margin-bottom: 4px; }
+    .filter-bar select, .filter-bar input {
+      padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 6px;
+      font-size: 13px; font-family: inherit; outline: none;
+      background: #fff;
+    }
+    .filter-bar select:focus, .filter-bar input:focus { border-color: #3b82d4; }
+    /* ── Lead cards ── */
+    .leads-grid {
+      display: grid;
+      gap: 16px;
+    }
+    .lead-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 18px 20px;
+      transition: box-shadow .12s;
+    }
+    .lead-card:hover { border-color: #3b82d4; }
+    .lead-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .lead-title { font-size: 15px; font-weight: 600; }
+    .lead-meta {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      font-size: 12px; color: #57606a; margin-bottom: 8px;
+    }
+    .lead-meta span { display: flex; align-items: center; gap: 3px; }
+    .lead-desc {
+      font-size: 13px; color: #424a53; margin-bottom: 12px;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .lead-actions { display: flex; gap: 8px; align-items: center; }
+    /* ── Badge ── */
+    .badge {
+      display: inline-block; padding: 2px 10px;
+      border-radius: 999px; font-size: 11px; font-weight: 600;
+      text-transform: capitalize;
+    }
+    .badge-green  { background: #dcfce7; color: #15803d; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+    .badge-purple { background: #ede9fe; color: #6d28d9; }
+    .badge-yellow { background: #fef9c3; color: #a16207; }
+    .badge-red    { background: #fee2e2; color: #b91c1c; }
+    .badge-grey   { background: #f1f5f9; color: #64748b; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+    /* ── Source icon ── */
+    .src-icon {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; color: #57606a; background: #f7f8fa;
+      border: 1px solid #e5e7eb; border-radius: 4px; padding: 1px 7px;
+    }
+    /* ── Empty state ── */
+    .empty {
+      text-align: center; padding: 60px 20px; color: #57606a;
+    }
+    .empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; color: #1f2328; }
+    /* ── Pagination ── */
+    .pagination {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 20px; font-size: 12px; color: #57606a;
+    }
+    /* ── Detail drawer ── */
+    .drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.35);
+      z-index: 200; display: none; align-items: flex-end;
+    }
+    .drawer-overlay.open { display: flex; }
+    @media (min-width: 640px) {
+      .drawer-overlay { align-items: stretch; justify-content: flex-end; }
+    }
+    .drawer {
+      background: #fff; padding: 28px 28px;
+      width: 100%; max-width: 520px;
+      overflow-y: auto; max-height: 90vh;
+      border-radius: 12px 12px 0 0;
+      border: 1px solid #e5e7eb;
+    }
+    @media (min-width: 640px) {
+      .drawer { border-radius: 0; max-height: 100vh; }
+    }
+    .drawer h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .drawer-close { position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 20px; color: #57606a; }
+    .drawer-section { margin-top: 16px; }
+    .drawer-section label { display: block; font-size: 11px; font-weight: 600; color: #57606a; margin-bottom: 4px; }
+    .drawer-section p { font-size: 13px; }
+    /* ── Login ── */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: #f7f8fa;
+    }
+    .login-box {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+      padding: 36px 32px; width: 340px;
+    }
+    .login-box h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .login-box p  { color: #57606a; font-size: 13px; margin-bottom: 24px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #57606a; }
+    .form-group input {
+      width: 100%; padding: 8px 12px; border: 1px solid #e5e7eb;
+      border-radius: 6px; font-size: 13px; font-family: inherit; outline: none;
+    }
+    .form-group input:focus { border-color: #3b82d4; }
+    .error-msg { color: #dc2626; font-size: 12px; margin-top: 8px; }
+    .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid #e5e7eb; border-top-color: #3b82d4;
+      border-radius: 50%; animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #app { display: none; }
+    /* ── Toast ── */
+    .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    .toast {
+      background: #1f2328; color: #fff; padding: 10px 18px;
+      border-radius: 8px; font-size: 13px; min-width: 220px;
+      animation: slideIn .2s ease;
+    }
+    .toast.success { background: #15803d; }
+    .toast.error   { background: #b91c1c; }
+    @keyframes slideIn { from { transform: translateY(12px); opacity:0; } to { transform: none; opacity:1; } }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <h2>LinxServices</h2>
+    <p>Contractor portal — sign in to view available leads in your area.</p>
+    <div class="form-group">
+      <label>Username</label>
+      <input id="login-user" type="text" autocomplete="username" placeholder="admin" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input id="login-pass" type="password" autocomplete="current-password" placeholder="••••••••" />
+    </div>
+    <button class="btn btn-primary" style="width:100%;" id="login-btn">Sign in</button>
+    <div class="error-msg" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app">
+  <nav class="nav">
+    <a class="nav-brand" href="#">LinxServices</a>
+    <a href="#">My Profile</a>
+    <a href="#" class="active">Lead Board</a>
+    <a href="crawler-dashboard.html">Admin: Crawler</a>
+    <div class="nav-right">
+      <span id="nav-user" style="font-size:13px;color:#57606a;"></span>
+      <button class="btn btn-sm" id="logout-btn">Sign out</button>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h1>Available Leads</h1>
+      <p>Homeowner service requests matching your trade and service area — updated every 4 hours from multiple sources.</p>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div>
+        <label>Trade Category</label>
+        <select id="f-category">
+          <option value="">All Categories</option>
+        </select>
+      </div>
+      <div>
+        <label>City / Region</label>
+        <input id="f-city" type="text" placeholder="e.g. Toronto" style="width:160px;" />
+      </div>
+      <div>
+        <label>Source Platform</label>
+        <select id="f-source">
+          <option value="">All Sources</option>
+          <option value="kijiji">Kijiji</option>
+          <option value="craigslist">Craigslist</option>
+          <option value="reddit">Reddit</option>
+          <option value="organic">Organic (LinxServices)</option>
+        </select>
+      </div>
+      <div>
+        <label>Freshness</label>
+        <select id="f-freshness">
+          <option value="86400000">Last 24 h</option>
+          <option value="259200000" selected>Last 72 h</option>
+          <option value="604800000">Last 7 days</option>
+        </select>
+      </div>
+      <div>
+        <label>Sort By</label>
+        <select id="f-sort">
+          <option value="newest">Newest First</option>
+          <option value="category">Category</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="search-btn">Search</button>
+      <button class="btn btn-sm" id="reset-btn" style="align-self:flex-end;">Reset</button>
+    </div>
+
+    <!-- Lead count summary -->
+    <div style="font-size:13px;color:#57606a;margin-bottom:16px;" id="result-summary">Loading leads…</div>
+
+    <!-- Lead cards -->
+    <div class="leads-grid" id="leads-grid">
+      <div style="text-align:center;padding:40px;color:#57606a;">Loading…</div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <span id="page-info"></span>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-sm" id="prev-btn">← Previous</button>
+        <button class="btn btn-sm" id="next-btn">Next →</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Detail Drawer -->
+<div class="drawer-overlay" id="drawer-overlay">
+  <div class="drawer" style="position:relative;">
+    <span class="drawer-close" id="drawer-close" role="button" aria-label="Close">✕</span>
+    <div id="drawer-body">Loading…</div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+  const API = 'http://localhost:3000';
+  let _token  = localStorage.getItem('linx_token') || '';
+  let _offset = 0;
+  const PAGE_SIZE = 15;
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  function escHtml(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function relTime(iso) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff/60000);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m/60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h/24)}d ago`;
+  }
+  function toast(msg, type='') {
+    const el = document.createElement('div');
+    el.className = 'toast ' + type;
+    el.textContent = msg;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+  function catBadgeClass(cat) {
+    const map = {
+      plumbing:'badge-blue', electrical:'badge-yellow', roofing:'badge-orange',
+      hvac:'badge-purple', landscaping:'badge-green', renovation:'badge-blue',
+      cleaning:'badge-grey', painting:'badge-yellow', moving:'badge-grey',
+      pest_control:'badge-red', appliance_repair:'badge-grey', locksmith:'badge-grey',
+    };
+    return map[cat] || 'badge-blue';
+  }
+
+  // ── API ───────────────────────────────────────────────────────────────────
+  async function api(method, path, body) {
+    const opts = {
+      method,
+      headers: { 'Authorization': 'Bearer ' + _token, 'Content-Type': 'application/json' }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(API + path, opts);
+    if (r.status === 401) { showLogin(); return null; }
+    return r.json();
+  }
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  function showLogin()   { document.getElementById('login-screen').style.display='flex'; document.getElementById('app').style.display='none'; }
+  function showApp(sub)  { document.getElementById('login-screen').style.display='none'; document.getElementById('app').style.display='block'; document.getElementById('nav-user').textContent=sub; }
+
+  document.getElementById('login-btn').addEventListener('click', async () => {
+    const u = document.getElementById('login-user').value.trim();
+    const p = document.getElementById('login-pass').value;
+    document.getElementById('login-err').textContent='';
+    if (!u||!p) { document.getElementById('login-err').textContent='Username and password required.'; return; }
+    const btn = document.getElementById('login-btn');
+    btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Signing in…';
+    try {
+      const r = await fetch(API+'/api/auth/login', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({username:u, password:p})
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error||'Login failed');
+      _token = d.token;
+      localStorage.setItem('linx_token', _token);
+      showApp(u);
+      loadCategories();
+      loadLeads();
+    } catch(e) {
+      document.getElementById('login-err').textContent = e.message;
+    } finally {
+      btn.disabled=false; btn.textContent='Sign in';
+    }
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', async () => {
+    await api('POST', '/api/auth/logout');
+    localStorage.removeItem('linx_token');
+    _token='';
+    showLogin();
+  });
+
+  // ── Categories ────────────────────────────────────────────────────────────
+  async function loadCategories() {
+    const cats = await api('GET', '/api/leads/categories');
+    if (!Array.isArray(cats)) return;
+    const sel = document.getElementById('f-category');
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value=c; opt.textContent=c.replace(/_/g,' ');
+      sel.appendChild(opt);
+    });
+  }
+
+  // ── Leads ─────────────────────────────────────────────────────────────────
+  async function loadLeads() {
+    const cat   = document.getElementById('f-category').value;
+    const city  = document.getElementById('f-city').value.trim();
+    const src   = document.getElementById('f-source').value;
+    const fresh = document.getElementById('f-freshness').value;
+
+    const params = new URLSearchParams({ limit: PAGE_SIZE, offset: _offset, freshness: fresh });
+    if (cat)  params.set('category', cat);
+    if (city) params.set('city', city);
+    if (src)  params.set('source', src);
+
+    const d = await api('GET', '/api/leads?' + params);
+    if (!d) return;
+
+    let leads = d.leads || [];
+
+    // Client-side sort
+    const sort = document.getElementById('f-sort').value;
+    if (sort === 'category') {
+      leads = [...leads].sort((a,b) => (a.category||'').localeCompare(b.category||''));
+    }
+
+    document.getElementById('result-summary').textContent =
+      leads.length === 0
+        ? 'No leads found matching your filters.'
+        : `Showing ${_offset+1}–${_offset+leads.length} leads`;
+
+    const grid = document.getElementById('leads-grid');
+    if (leads.length === 0) {
+      grid.innerHTML = `
+        <div class="empty">
+          <div class="empty-title">No leads right now</div>
+          <p>Try widening your filters, or check back after the next crawl cycle.</p>
+        </div>`;
+      document.getElementById('page-info').textContent = '';
+      document.getElementById('next-btn').disabled = true;
+      return;
+    }
+
+    grid.innerHTML = leads.map(l => `
+      <div class="lead-card" data-id="${escHtml(l.id)}">
+        <div class="lead-card-header">
+          <div>
+            <div class="lead-title">${escHtml(l.title)}</div>
+            <div class="lead-meta" style="margin-top:4px;">
+              <span><span class="badge ${catBadgeClass(l.category)}">${(l.category||'general').replace(/_/g,' ')}</span></span>
+              <span>${escHtml(l.city||'')}${l.province ? ', '+escHtml(l.province) : ''}</span>
+              ${l.postalCode ? `<span>${escHtml(l.postalCode)}</span>` : ''}
+              <span class="src-icon">${escHtml(l.sourcePlatform||'unknown')}</span>
+              <span>${l.postedAt ? relTime(l.postedAt) : ''}</span>
+            </div>
+          </div>
+          <div style="flex-shrink:0;">
+            ${l.status === 'claimed' ? '<span class="badge badge-yellow">Claimed</span>' : ''}
+            ${l.status === 'active'  ? '<span class="badge badge-green">Available</span>' : ''}
+          </div>
+        </div>
+        <div class="lead-desc">${escHtml(l.description || 'No description available.')}</div>
+        <div class="lead-actions">
+          <button class="btn btn-success btn-sm claim-btn" data-id="${escHtml(l.id)}" ${l.status==='claimed'?'disabled':''}>
+            ${l.status==='claimed' ? 'Claimed' : 'Claim Lead'}
+          </button>
+          <button class="btn btn-sm detail-btn" data-id="${escHtml(l.id)}">View Details</button>
+          ${l.sourceUrl ? `<a href="${escHtml(l.sourceUrl)}" target="_blank" rel="noopener" class="btn btn-sm" style="text-decoration:none;">Original Post ↗</a>` : ''}
+        </div>
+      </div>`).join('');
+
+    document.getElementById('page-info').textContent = `Page ${Math.floor(_offset/PAGE_SIZE)+1}`;
+    document.getElementById('prev-btn').disabled = _offset === 0;
+    document.getElementById('next-btn').disabled = leads.length < PAGE_SIZE;
+
+    // Claim buttons
+    document.querySelectorAll('.claim-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.dataset.id;
+        const b = e.currentTarget;
+        b.disabled=true; b.innerHTML='<span class="spinner"></span>';
+        const r = await api('PATCH', '/api/leads/'+id, { status:'claimed', claimedBy:'contractor' });
+        if (r) { toast('Lead claimed!', 'success'); loadLeads(); }
+        else   { toast('Could not claim lead.', 'error'); b.disabled=false; b.textContent='Claim Lead'; }
+      });
+    });
+
+    // Detail buttons
+    document.querySelectorAll('.detail-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.currentTarget.dataset.id;
+        openDrawer(id);
+      });
+    });
+  }
+
+  // ── Detail drawer ─────────────────────────────────────────────────────────
+  async function openDrawer(id) {
+    const overlay = document.getElementById('drawer-overlay');
+    document.getElementById('drawer-body').innerHTML = '<span class="spinner"></span> Loading…';
+    overlay.classList.add('open');
+
+    const l = await api('GET', '/api/leads/'+id);
+    if (!l) return;
+
+    const posted   = l.postedAt   ? new Date(l.postedAt).toLocaleString('en-CA')   : '—';
+    const scraped  = l.scrapedAt  ? new Date(l.scrapedAt).toLocaleString('en-CA')  : '—';
+
+    document.getElementById('drawer-body').innerHTML = `
+      <h2>${escHtml(l.title)}</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;">
+        <span class="badge ${catBadgeClass(l.category)}">${(l.category||'').replace(/_/g,' ')}</span>
+        <span class="badge badge-grey">${escHtml(l.sourcePlatform||'unknown')}</span>
+        ${l.status === 'active'  ? '<span class="badge badge-green">Available</span>' : ''}
+        ${l.status === 'claimed' ? '<span class="badge badge-yellow">Claimed</span>'  : ''}
+      </div>
+
+      <div class="drawer-section">
+        <label>Description</label>
+        <p style="white-space:pre-wrap;">${escHtml(l.description||'No description.')}</p>
+      </div>
+
+      <div class="drawer-section" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+        <div><label>City</label><p>${escHtml(l.city||'—')}</p></div>
+        <div><label>Province</label><p>${escHtml(l.province||'—')}</p></div>
+        <div><label>Postal Code</label><p>${escHtml(l.postalCode||'—')}</p></div>
+        <div><label>Contact Method</label><p>${escHtml(l.contactMethod||'—')}</p></div>
+        <div><label>Posted</label><p>${posted}</p></div>
+        <div><label>Scraped</label><p>${scraped}</p></div>
+      </div>
+
+      ${l.sourceUrl ? `
+        <div class="drawer-section">
+          <label>Original Listing</label>
+          <a href="${escHtml(l.sourceUrl)}" target="_blank" rel="noopener" style="color:#3b82d4;font-size:13px;word-break:break-all;">${escHtml(l.sourceUrl)}</a>
+        </div>` : ''}
+
+      <div style="margin-top:24px;display:flex;gap:8px;">
+        ${l.status !== 'claimed' ? `<button class="btn btn-success claim-drawer-btn" data-id="${escHtml(l.id)}">Claim This Lead</button>` : '<span class="badge badge-yellow" style="padding:8px 16px;">Already Claimed</span>'}
+        <button class="btn" id="drawer-close-btn">Close</button>
+      </div>`;
+
+    document.getElementById('drawer-close-btn')?.addEventListener('click', closeDrawer);
+
+    document.querySelector('.claim-drawer-btn')?.addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      btn.disabled=true; btn.innerHTML='<span class="spinner"></span>';
+      const r = await api('PATCH', '/api/leads/'+l.id, { status:'claimed', claimedBy:'contractor' });
+      if (r) { toast('Lead claimed!', 'success'); closeDrawer(); loadLeads(); }
+      else   { toast('Could not claim.', 'error'); btn.disabled=false; btn.textContent='Claim This Lead'; }
+    });
+  }
+
+  function closeDrawer() {
+    document.getElementById('drawer-overlay').classList.remove('open');
+  }
+  document.getElementById('drawer-overlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('drawer-overlay')) closeDrawer();
+  });
+  document.getElementById('drawer-close').addEventListener('click', closeDrawer);
+
+  // ── Controls ──────────────────────────────────────────────────────────────
+  document.getElementById('search-btn').addEventListener('click', () => { _offset=0; loadLeads(); });
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    document.getElementById('f-category').value='';
+    document.getElementById('f-city').value='';
+    document.getElementById('f-source').value='';
+    document.getElementById('f-freshness').value='259200000';
+    document.getElementById('f-sort').value='newest';
+    _offset=0; loadLeads();
+  });
+  document.getElementById('f-city').addEventListener('keydown', (e) => {
+    if (e.key==='Enter') { _offset=0; loadLeads(); }
+  });
+  document.getElementById('prev-btn').addEventListener('click', () => {
+    if (_offset >= PAGE_SIZE) { _offset-=PAGE_SIZE; loadLeads(); }
+  });
+  document.getElementById('next-btn').addEventListener('click', () => {
+    _offset+=PAGE_SIZE; loadLeads();
+  });
+
+  // ── Boot ──────────────────────────────────────────────────────────────────
+  if (_token) {
+    showApp('contractor');
+    loadCategories();
+    loadLeads();
+    setInterval(loadLeads, 60000); // refresh every minute
+  } else {
+    showLogin();
+  }
+</script>
+</body>
+</html>

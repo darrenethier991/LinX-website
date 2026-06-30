@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* LinX global tokens */
+:root {
+  --linx-bg: #020617;          /* slate-950 */
+  --linx-surface: #0f172a;     /* slate-900 */
+  --linx-surface-soft: #1e293b; /* slate-800 */
+  --linx-accent: #38bdf8;       /* sky-400 */
+  --linx-accent-soft: #0ea5e9;  /* sky-500 */
+  --linx-danger: #f97373;
+  --linx-success: #22c55e;
+  --linx-text-primary: #e5e7eb;
+  --linx-text-secondary: #9ca3af;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+}
+
+.linx-card {
+  @apply rounded-xl bg-slate-900/80 border border-slate-800 shadow-lg shadow-black/40;
+}
+
+.linx-divider {
+  @apply border-t border-slate-800/80;
+}
+
+.linx-hover {
+  @apply transition-colors duration-150 hover:bg-slate-800/80;
+}
+
+.linx-skeleton {
+  @apply animate-pulse bg-slate-800/60 rounded-md;
+}
+
+.linx-badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+.linx-badge-success {
+  @apply linx-badge bg-emerald-500/20 text-emerald-300;
+}
+.linx-badge-muted {
+  @apply linx-badge bg-slate-700/60 text-slate-300;
+}
+
+.linx-btn-primary {
+  @apply inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium
+    bg-sky-500 text-slate-950 hover:bg-sky-400 transition-colors;
+}
+.linx-btn-outline {
+  @apply inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium
+    border border-slate-700 text-slate-200 hover:bg-slate-800 transition-colors;
+}
+.linx-btn-danger {
+  @apply inline-flex items-center justify-center px-3 py-2 rounded-lg text-sm font-medium
+    bg-rose-500 text-slate-950 hover:bg-rose-400 transition-colors;
+}
