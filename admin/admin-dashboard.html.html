@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinX Admin — Platform Management</title>
+  <style>
+    :root {
+      --gold: #C8A951; --gold-light: #E5D28C; --gold-dark: #A68B3A;
+      --bg: #0A0A0A; --bg-surface: #141414; --bg-card: #1C1C1C;
+      --text: #F5F5F5; --text-muted: #9CA3AF; --border: #2A2A2A;
+      --success: #22C55E; --warning: #F59E0B; --error: #EF4444; --info: #3B82F6;
+      --radius: 12px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+    a { color:var(--gold); text-decoration:none; }
+    button { cursor:pointer; border:none; font-family:inherit; font-size:14px; }
+    input,textarea,select { font-family:inherit; font-size:14px; background:var(--bg-surface); border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:8px; outline:none; width:100%; }
+    input:focus,textarea:focus,select:focus { border-color:var(--gold); }
+    ::-webkit-scrollbar { width:5px; height:5px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+    /* ── LOGIN SCREEN ───────────────────────────────────────── */
+    #login-screen { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:9999; }
+    .login-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:40px 36px; width:100%; max-width:380px; }
+    .login-logo { font-size:32px; font-weight:800; color:var(--gold); text-align:center; margin-bottom:4px; }
+    .login-sub { text-align:center; color:var(--text-muted); font-size:12px; text-transform:uppercase; letter-spacing:2px; margin-bottom:28px; }
+    .login-lock { display:block; margin:0 auto 20px; color:var(--gold); }
+    .login-field { margin-bottom:14px; position:relative; }
+    .login-field label { display:block; font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
+    .login-field input { padding-right:42px; }
+    .pw-toggle { position:absolute; right:12px; bottom:10px; background:none; color:var(--text-muted); padding:0; font-size:12px; }
+    .pw-toggle:hover { color:var(--gold); }
+    .login-error { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); color:var(--error); border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:14px; display:none; }
+    .login-btn { width:100%; background:var(--gold); color:var(--bg); font-weight:700; font-size:15px; padding:13px; border-radius:8px; margin-top:6px; transition:background 0.2s; }
+    .login-btn:hover { background:var(--gold-light); }
+    .login-btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+    /* ── SESSION WARNING BANNER ─────────────────────────────── */
+    #session-banner { position:fixed; top:0; left:0; right:0; background:rgba(245,158,11,0.15); border-bottom:1px solid var(--warning); color:var(--warning); text-align:center; padding:8px; font-size:13px; z-index:5000; display:none; cursor:pointer; }
+
+    /* ── LAYOUT ─────────────────────────────────────────────── */
+    #dashboard { display:none; }
+    .app { display:flex; min-height:100vh; }
+    .sidebar { width:240px; background:var(--bg-surface); border-right:1px solid var(--border); padding:20px 12px 12px; display:flex; flex-direction:column; position:fixed; height:100vh; overflow-y:auto; }
+    .main { flex:1; margin-left:240px; padding:28px; }
+
+    .logo { font-size:24px; font-weight:800; color:var(--gold); }
+    .logo-badge { display:inline-block; background:var(--error); color:#fff; font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px; text-transform:uppercase; margin-left:8px; }
+    .logo-sub { font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:24px; }
+
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:8px; color:var(--text-muted); font-size:13px; font-weight:500; transition:all 0.2s; margin-bottom:2px; cursor:pointer; background:none; width:100%; text-align:left; }
+    .nav-item:hover, .nav-item.active { background:var(--bg-card); color:var(--gold); }
+    .nav-item svg { width:18px; height:18px; flex-shrink:0; }
+    .nav-section { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin:18px 0 5px 14px; }
+    .nav-badge { margin-left:auto; background:var(--gold); color:var(--bg); font-size:10px; font-weight:700; padding:2px 6px; border-radius:10px; }
+    .nav-spacer { flex:1; }
+    .logout-btn { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:8px; color:var(--error); font-size:13px; font-weight:600; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.15); width:100%; cursor:pointer; transition:all 0.2s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.18); }
+    .session-clock { font-size:11px; color:var(--text-muted); text-align:center; margin-top:8px; }
+
+    /* ── COMPONENTS ─────────────────────────────────────────── */
+    .card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:16px; }
+    .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .card-title { font-size:16px; font-weight:700; }
+    .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:24px; }
+    .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+    .stat-value { font-size:24px; font-weight:800; color:var(--gold); }
+    .stat-label { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-top:2px; }
+    .stat-change { font-size:11px; margin-top:4px; }
+    .stat-change.up { color:var(--success); }
+    .stat-change.down { color:var(--error); }
+
+    .btn { padding:8px 16px; border-radius:8px; font-weight:600; transition:all 0.2s; display:inline-flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; }
+    .btn-primary { background:var(--gold); color:var(--bg); border:none; }
+    .btn-primary:hover { background:var(--gold-light); }
+    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+    .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+    .btn-danger { background:var(--error); color:#fff; border:none; }
+    .btn-success { background:var(--success); color:#fff; border:none; }
+    .btn-sm { padding:5px 10px; font-size:11px; }
+    .btn-warning { background:var(--warning); color:var(--bg); border:none; }
+
+    .table-wrap { overflow-x:auto; }
+    .table { width:100%; border-collapse:collapse; font-size:13px; }
+    .table th { text-align:left; padding:10px 12px; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); border-bottom:1px solid var(--border); background:var(--bg-surface); cursor:pointer; user-select:none; white-space:nowrap; }
+    .table th:hover { color:var(--gold); }
+    .table th .sort-arrow { margin-left:4px; }
+    .table td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    .table tr:hover td { background:var(--bg-surface); }
+
+    .badge { display:inline-block; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:600; text-transform:uppercase; white-space:nowrap; }
+    .badge-gold { background:rgba(200,169,81,0.15); color:var(--gold); }
+    .badge-green { background:rgba(34,197,94,0.15); color:var(--success); }
+    .badge-red { background:rgba(239,68,68,0.15); color:var(--error); }
+    .badge-blue { background:rgba(59,130,246,0.15); color:var(--info); }
+    .badge-yellow { background:rgba(245,158,11,0.15); color:var(--warning); }
+    .badge-purple { background:rgba(139,92,246,0.15); color:#8B5CF6; }
+
+    .page-header { margin-bottom:24px; }
+    .page-title { font-size:24px; font-weight:800; margin-bottom:4px; }
+    .page-subtitle { color:var(--text-muted); font-size:13px; }
+
+    /* Toolbar row */
+    .toolbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+    .toolbar input { max-width:280px; }
+    .toolbar select { max-width:160px; }
+
+    /* Pagination */
+    .pagination { display:flex; align-items:center; gap:8px; margin-top:14px; font-size:13px; color:var(--text-muted); }
+    .pagination button { background:var(--bg-surface); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:5px 12px; font-size:12px; }
+    .pagination button:hover:not(:disabled) { border-color:var(--gold); color:var(--gold); }
+    .pagination button:disabled { opacity:0.3; cursor:not-allowed; }
+
+    /* Inline editable */
+    .inline-select { background:var(--bg-surface); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:5px 8px; font-size:12px; width:100%; min-width:140px; }
+    .inline-input { background:var(--bg-surface); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:5px 8px; font-size:12px; width:100%; min-width:120px; }
+    .inline-select:focus,.inline-input:focus { border-color:var(--gold); outline:none; }
+    .save-indicator { font-size:11px; margin-left:4px; }
+    .save-indicator.saving { color:var(--text-muted); }
+    .save-indicator.ok { color:var(--success); }
+    .save-indicator.err { color:var(--error); }
+
+    /* Revenue bars */
+    .revenue-bars { display:flex; align-items:flex-end; gap:8px; height:140px; padding:0 0 24px; }
+    .revenue-bar { flex:1; background:linear-gradient(to top,var(--gold-dark),var(--gold)); border-radius:4px 4px 0 0; position:relative; transition:all 0.3s; }
+    .revenue-bar:hover { background:var(--gold-light); }
+    .revenue-bar-label { position:absolute; bottom:-22px; left:50%; transform:translateX(-50%); font-size:10px; color:var(--text-muted); white-space:nowrap; }
+
+    /* Analytics bars */
+    .analytics-bar { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .analytics-bar-label { width:80px; font-size:12px; color:var(--text-muted); }
+    .analytics-bar-track { flex:1; height:20px; background:var(--bg-surface); border-radius:4px; overflow:hidden; }
+    .analytics-bar-fill { height:100%; background:linear-gradient(90deg,var(--gold-dark),var(--gold)); border-radius:4px; display:flex; align-items:center; justify-content:flex-end; padding-right:6px; font-size:10px; font-weight:600; }
+
+    /* Grid */
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+    /* Activity feed */
+    .activity-feed { max-height:320px; overflow-y:auto; }
+    .activity-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+    .activity-item:last-child { border-bottom:none; }
+    .activity-dot { width:8px; height:8px; border-radius:50%; background:var(--gold); flex-shrink:0; margin-top:5px; }
+    .activity-dot.blue { background:var(--info); }
+    .activity-dot.green { background:var(--success); }
+    .activity-dot.yellow { background:var(--warning); }
+    .activity-meta { font-size:11px; color:var(--text-muted); margin-top:2px; }
+
+    /* Notifications */
+    .notif-card { border-left:4px solid; padding:12px 14px; border-radius:0 8px 8px 0; background:var(--bg-surface); margin-bottom:8px; display:flex; justify-content:space-between; align-items:flex-start; }
+    .notif-card.high { border-color:var(--error); }
+    .notif-card.medium { border-color:var(--warning); }
+    .notif-card.low { border-color:var(--info); }
+    .notif-title { font-size:13px; font-weight:600; margin-bottom:2px; }
+    .notif-msg { font-size:12px; color:var(--text-muted); }
+    .notif-dismiss { background:none; color:var(--text-muted); font-size:16px; padding:0 4px; line-height:1; }
+    .notif-dismiss:hover { color:var(--error); }
+
+    /* ── KANBAN PIPELINE ────────────────────────────────────── */
+    .pipeline-board { display:flex; gap:12px; overflow-x:auto; padding-bottom:16px; align-items:flex-start; }
+    .pipeline-col { min-width:220px; max-width:220px; background:var(--bg-surface); border:1px solid var(--border); border-radius:var(--radius); flex-shrink:0; }
+    .pipeline-col-header { padding:12px 14px; border-bottom:1px solid var(--border); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; display:flex; justify-content:space-between; align-items:center; color:var(--gold); }
+    .pipeline-col-count { background:rgba(200,169,81,0.15); color:var(--gold); font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; }
+    .pipeline-cards { min-height:120px; padding:10px 8px; }
+    .pipeline-card { background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:8px; cursor:grab; transition:border-color 0.2s; position:relative; }
+    .pipeline-card:active { cursor:grabbing; }
+    .pipeline-card:hover { border-color:var(--gold); }
+    .pipeline-card.drag-over { border-color:var(--gold); background:rgba(200,169,81,0.05); }
+    .pipeline-card h5 { font-size:13px; font-weight:700; margin-bottom:3px; }
+    .pipeline-card .pc-meta { font-size:11px; color:var(--text-muted); margin-bottom:4px; }
+    .pipeline-card .pc-notes { font-size:11px; color:var(--text-muted); font-style:italic; margin-top:4px; border-top:1px solid var(--border); padding-top:4px; }
+    .pipeline-card-loading { position:absolute; inset:0; background:rgba(10,10,10,0.7); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--gold); }
+    .pipeline-col.drag-target { border-color:var(--gold); background:rgba(200,169,81,0.04); }
+
+    /* ── SKELETON ───────────────────────────────────────────── */
+    .skeleton { background:linear-gradient(90deg,var(--bg-surface) 25%,var(--bg-card) 50%,var(--bg-surface) 75%); background-size:200% 100%; animation:shimmer 1.2s infinite; border-radius:4px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .skel-row td { padding:10px 12px; }
+
+    /* ── MODAL ──────────────────────────────────────────────── */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:4000; }
+    .modal { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:28px; width:90%; max-width:520px; max-height:90vh; overflow-y:auto; }
+    .modal h2 { font-size:18px; margin-bottom:16px; }
+    .form-group { margin-bottom:14px; }
+    .form-label { display:block; font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .masked-input-wrap { position:relative; }
+    .masked-input-wrap .pw-toggle { bottom:50%; transform:translateY(50%); }
+
+    /* ── TOAST ──────────────────────────────────────────────── */
+    #toast-container { position:fixed; bottom:20px; right:20px; display:flex; flex-direction:column; gap:8px; z-index:9000; pointer-events:none; }
+    .toast { background:var(--bg-card); border-radius:8px; padding:12px 18px; font-size:13px; animation:toastIn 0.3s ease; pointer-events:all; max-width:320px; }
+    .toast.success { border:1px solid var(--success); }
+    .toast.error { border:1px solid var(--error); }
+    .toast.warning { border:1px solid var(--warning); }
+    .toast.info { border:1px solid var(--info); }
+    @keyframes toastIn { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+    /* ── SPINNER ────────────────────────────────────────────── */
+    .spinner { display:inline-block; width:14px; height:14px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.6s linear infinite; vertical-align:middle; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* ── EMPTY / ERROR STATES ───────────────────────────────── */
+    .empty-state { text-align:center; padding:40px; color:var(--text-muted); }
+    .empty-state p { margin-bottom:10px; }
+    .error-state { background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:8px; padding:16px; text-align:center; color:var(--error); }
+
+    /* ── SETTINGS ───────────────────────────────────────────── */
+    .settings-row { display:flex; justify-content:space-between; align-items:center; padding:14px; background:var(--bg-surface); border-radius:8px; margin-bottom:8px; }
+    .settings-row h4 { font-size:13px; font-weight:600; margin-bottom:2px; }
+    .settings-row p { font-size:11px; color:var(--text-muted); }
+
+    @media (max-width:768px) {
+      .sidebar { display:none; }
+      .main { margin-left:0; padding:16px; }
+      .grid-2 { grid-template-columns:1fr; }
+      .pipeline-board { flex-direction:column; }
+      .pipeline-col { min-width:100%; max-width:100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOGIN SCREEN — shown before any dashboard content loads
+═══════════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <svg class="login-lock" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+    <div class="login-logo">LinX</div>
+    <div class="login-sub">Admin Portal — Authorized Access Only</div>
+    <div id="login-error" class="login-error"></div>
+    <div class="login-field">
+      <label>Username</label>
+      <input id="login-user" type="text" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+      <button class="pw-toggle" type="button" onclick="togglePw('login-pass', this)">Show</button>
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SESSION EXPIRY WARNING BANNER
+═══════════════════════════════════════════════════════════════ -->
+<div id="session-banner" onclick="refreshSession()">
+  ⚠ Session expires in <strong id="session-countdown"></strong> — Click to extend
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     DASHBOARD — injected into DOM only after auth passes
+═══════════════════════════════════════════════════════════════ -->
+<div id="dashboard">
+  <div class="app">
+    <aside class="sidebar">
+      <div><span class="logo">LinX</span><span class="logo-badge">Admin</span></div>
+      <div class="logo-sub">Platform Control</div>
+      <nav>
+        <button class="nav-item active" data-page="overview" onclick="nav('overview')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Overview
+        </button>
+        <div class="nav-section">CRM</div>
+        <button class="nav-item" data-page="homeowners" onclick="nav('homeowners')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Homeowners<span class="nav-badge" id="badge-hw">—</span>
+        </button>
+        <button class="nav-item" data-page="contractors" onclick="nav('contractors')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          Contractors<span class="nav-badge" id="badge-ct">—</span>
+        </button>
+        <div class="nav-section">Pipeline</div>
+        <button class="nav-item" data-page="hw-pipeline" onclick="nav('hw-pipeline')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Homeowner Pipeline
+        </button>
+        <button class="nav-item" data-page="ct-pipeline" onclick="nav('ct-pipeline')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Contractor Pipeline
+        </button>
+        <div class="nav-section">Management</div>
+        <button class="nav-item" data-page="services" onclick="nav('services')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Service Requests<span class="nav-badge" id="badge-svc">—</span>
+        </button>
+        <button class="nav-item" data-page="settings" onclick="nav('settings')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68 1.65 1.65 0 0 0 10 3V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Platform Settings
+        </button>
+      </nav>
+      <div class="nav-spacer"></div>
+      <button class="logout-btn" onclick="doLogout()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </button>
+      <div class="session-clock" id="sidebar-clock">Session: —</div>
+    </aside>
+    <main class="main" id="content"></main>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<div id="modal-root"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   CONSTANTS & HELPERS
+═══════════════════════════════════════════════════════════════ */
+const API = 'http://localhost:3000'; // backend base URL — change if hosting elsewhere
+
+// Returns the stored JWT token
+const token = () => localStorage.getItem('linx_admin_token');
+
+// Fetch wrapper that auto-attaches Authorization header and handles 401
+async function authFetch(url, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token()) headers['Authorization'] = `Bearer ${token()}`;
+  const res = await fetch(API + url, { ...opts, headers });
+  if (res.status === 401) { forceLogout('Session expired. Please sign in again.'); throw new Error('Unauthorized'); }
+  return res;
+}
+
+// Toast notifications — type: 'success' | 'error' | 'warning' | 'info'
+function showToast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// Toggle password field visibility
+function togglePw(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+}
+
+// Skeleton rows for table loading states
+function skeletonRows(cols, count = 5) {
+  return Array(count).fill('').map(() =>
+    `<tr class="skel-row">${Array(cols).fill('').map(() =>
+      `<td><div class="skeleton" style="height:14px;width:${60+Math.random()*30}%"></div></td>`
+    ).join('')}</tr>`
+  ).join('');
+}
+
+// Format a date string nicely
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return isNaN(dt) ? d : dt.toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' });
+}
+
+// Truncate text
+function trunc(str, n = 60) { return str && str.length > n ? str.slice(0, n) + '…' : (str || ''); }
+
+// CSV export — takes array of header strings and array of row arrays
+function downloadCSV(filename, headers, rows) {
+  const esc = v => `"${String(v || '').replace(/"/g,'""')}"`;
+  const lines = [headers.map(esc).join(','), ...rows.map(r => r.map(esc).join(','))];
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: filename });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SESSION MANAGEMENT
+═══════════════════════════════════════════════════════════════ */
+let sessionTimer = null;       // inactivity countdown (ms remaining)
+let sessionInterval = null;    // interval that ticks every second
+const SESSION_DURATION = 1800; // 30 minutes in seconds
+const WARN_AT = 300;           // show warning at 5 minutes remaining
+
+function startSessionTimer() {
+  clearInterval(sessionInterval);
+  let remaining = SESSION_DURATION;
+
+  function tick() {
+    remaining--;
+    updateSessionDisplay(remaining);
+    if (remaining <= WARN_AT) showSessionBanner(remaining);
+    else hideSessionBanner();
+    if (remaining <= 0) forceLogout('Session expired. Please sign in again.');
+  }
+
+  // Reset timer on any user activity
+  ['mousemove','keydown','click','touchstart'].forEach(evt =>
+    document.addEventListener(evt, () => { remaining = SESSION_DURATION; hideSessionBanner(); }, { passive: true })
+  );
+
+  sessionInterval = setInterval(tick, 1000);
+  updateSessionDisplay(remaining);
+}
+
+function updateSessionDisplay(remaining) {
+  const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+  const ss = String(remaining % 60).padStart(2, '0');
+  const el = document.getElementById('sidebar-clock');
+  if (el) el.textContent = `Session: ${mm}:${ss}`;
+}
+
+function showSessionBanner(remaining) {
+  const banner = document.getElementById('session-banner');
+  const cd = document.getElementById('session-countdown');
+  const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+  const ss = String(remaining % 60).padStart(2, '0');
+  if (cd) cd.textContent = `${mm}:${ss}`;
+  banner.style.display = 'block';
+}
+
+function hideSessionBanner() {
+  document.getElementById('session-banner').style.display = 'none';
+}
+
+async function refreshSession() {
+  try {
+    const res = await authFetch('/api/auth/refresh', { method: 'POST' });
+    const data = await res.json();
+    if (data.token) {
+      localStorage.setItem('linx_admin_token', data.token);
+      hideSessionBanner();
+      showToast('Session extended ✓', 'success');
+    }
+  } catch { showToast('Could not extend session', 'error'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   AUTHENTICATION
+═══════════════════════════════════════════════════════════════ */
+async function doLogin() {
+  const username = document.getElementById('login-user').value.trim();
+  const password = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+  errEl.style.display = 'none';
+
+  if (!username || !password) {
+    errEl.textContent = 'Please enter username and password.';
+    errEl.style.display = 'block'; return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Signing in…';
+
+  try {
+    const res = await fetch(`${API}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.token) {
+      localStorage.setItem('linx_admin_token', data.token);
+      mountDashboard();
+    } else if (res.status === 429) {
+      const mins = Math.ceil((data.retryAfter || 900) / 60);
+      errEl.textContent = `Too many attempts — try again in ${mins} minutes.`;
+      errEl.style.display = 'block';
+    } else {
+      errEl.textContent = data.error || 'Invalid credentials.';
+      errEl.style.display = 'block';
+    }
+  } catch {
+    errEl.textContent = 'Cannot reach server. Is the backend running on port 3000?';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+function mountDashboard() {
+  // Hide login, show dashboard — no dashboard HTML was in DOM before this point
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  startSessionTimer();
+  nav('overview');
+  loadBadges();
+}
+
+function forceLogout(msg = '') {
+  clearInterval(sessionInterval);
+  localStorage.removeItem('linx_admin_token');
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  hideSessionBanner();
+  if (msg) {
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  }
+}
+
+async function doLogout() {
+  try { await authFetch('/api/auth/logout', { method: 'POST' }); } catch {}
+  forceLogout();
+  showToast('Signed out successfully.', 'info');
+}
+
+// Allow Enter key on login form
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('login-screen').style.display !== 'none') doLogin();
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════════════════ */
+let currentPage = '';
+
+function nav(page) {
+  currentPage = page;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const el = document.querySelector(`[data-page="${page}"]`);
+  if (el) el.classList.add('active');
+  render(page);
+}
+
+function render(page) {
+  const c = document.getElementById('content');
+  switch (page) {
+    case 'overview':    renderOverview(c); break;
+    case 'homeowners':  renderCRM(c, 'homeowners'); break;
+    case 'contractors': renderCRM(c, 'contractors'); break;
+    case 'hw-pipeline': renderPipeline(c, 'homeowners'); break;
+    case 'ct-pipeline': renderPipeline(c, 'contractors'); break;
+    case 'services':    renderServices(c); break;
+    case 'settings':    renderSettings(c); break;
+    default:            renderOverview(c);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR BADGES — load counts from API
+═══════════════════════════════════════════════════════════════ */
+async function loadBadges() {
+  try {
+    const res = await authFetch('/api/stats');
+    const d = await res.json();
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set('badge-hw', d.totalHomeowners ?? '—');
+    set('badge-ct', d.totalContractors ?? '—');
+    set('badge-svc', d.pendingApprovals ?? '—');
+  } catch {}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE: OVERVIEW
+═══════════════════════════════════════════════════════════════ */
+async function renderOverview(c) {
+  c.innerHTML = `
+    <div class="page-header"><h1 class="page-title">Platform Overview</h1><p class="page-subtitle">LinX Ecosystem — Live data from backend &amp; Google Sheets</p></div>
+    <div class="stat-grid" id="stat-grid">
+      ${Array(6).fill('<div class="stat-card"><div class="skeleton" style="height:28px;width:60%;margin-bottom:6px"></div><div class="skeleton" style="height:12px;width:80%"></div></div>').join('')}
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Revenue (Last 6 Months)</h3></div>
+        <div class="revenue-bars" id="rev-chart">
+          ${['Jan','Feb','Mar','Apr','May','Jun'].map((m,i) => `<div class="revenue-bar" style="height:${[30,38,45,58,75,92][i]}%"><span class="revenue-bar-label">${m}</span></div>`).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">Notifications</h3></div>
+        <div id="notif-list"><div class="spinner" style="margin:16px auto;display:block"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Activity Feed</h3><span style="font-size:12px;color:var(--text-muted)">Last 20 events</span></div>
+      <div class="activity-feed" id="activity-feed"><div class="spinner" style="margin:16px auto;display:block"></div></div>
+    </div>`;
+
+  // Load stats
+  try {
+    const res = await authFetch('/api/stats');
+    const d = await res.json();
+    document.getElementById('stat-grid').innerHTML = [
+      { label:'Total Homeowners', value: d.totalHomeowners ?? '—', change: '' },
+      { label:'Total Contractors', value: d.totalContractors ?? '—', change: '' },
+      { label:'Pending Approvals', value: d.pendingApprovals ?? '—', change: '', cls:'down' },
+      { label:'Active Jobs', value: d.activeJobs ?? '—', change: '' },
+      { label:'New Leads This Week', value: d.newLeadsThisWeek ?? '—', change: '↑ this week', cls:'up' },
+      { label:'MRR', value: d.mrr ? `$${d.mrr.toLocaleString()}` : '—', change: '↑ 12%', cls:'up' },
+    ].map(s => `<div class="stat-card"><div class="stat-value">${s.value}</div><div class="stat-label">${s.label}</div>${s.change ? `<div class="stat-change ${s.cls||''}">${s.change}</div>` : ''}</div>`).join('');
+  } catch { document.getElementById('stat-grid').innerHTML = `<div class="error-state" style="grid-column:1/-1">Could not load stats. Is the backend running?</div>`; }
+
+  // Load notifications
+  try {
+    const res = await authFetch('/api/notifications');
+    const { notifications } = await res.json();
+    const el = document.getElementById('notif-list');
+    if (!notifications.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:8px 0">No notifications.</p>'; return; }
+    el.innerHTML = notifications.map(n => `
+      <div class="notif-card ${n.severity}" id="notif-${n.id}">
+        <div><div class="notif-title">${n.title}</div><div class="notif-msg">${n.message}</div><div style="font-size:10px;color:var(--text-muted);margin-top:3px">${fmtDate(n.timestamp)}</div></div>
+        <button class="notif-dismiss" onclick="document.getElementById('notif-${n.id}').remove()">✕</button>
+      </div>`).join('');
+  } catch { document.getElementById('notif-list').innerHTML = '<div class="error-state">Could not load notifications.</div>'; }
+
+  // Load activity feed
+  try {
+    const res = await authFetch('/api/activity');
+    const { activity } = await res.json();
+    const dotColor = { new_homeowner:'blue', new_contractor:'', status_change:'yellow', approval:'green' };
+    const typeBadge = { new_homeowner:'badge-blue', new_contractor:'badge-gold', status_change:'badge-yellow', approval:'badge-green' };
+    const typeLabel = { new_homeowner:'New Homeowner', new_contractor:'New Contractor', status_change:'Status Change', approval:'Approved' };
+    document.getElementById('activity-feed').innerHTML = activity.length
+      ? activity.map(a => `
+        <div class="activity-item">
+          <div class="activity-dot ${dotColor[a.type]||''}"></div>
+          <div>
+            <strong>${a.name}</strong> <span class="badge ${typeBadge[a.type]||'badge-gold'}">${typeLabel[a.type]||a.type}</span>
+            <div class="activity-meta">${a.description} · ${fmtDate(a.timestamp)}</div>
+          </div>
+        </div>`).join('')
+      : '<div class="empty-state"><p>No recent activity.</p></div>';
+  } catch { document.getElementById('activity-feed').innerHTML = '<div class="error-state">Could not load activity.</div>'; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE: CRM TABLES (Homeowners & Contractors)
+═══════════════════════════════════════════════════════════════ */
+// State per CRM type
+const crmState = {
+  homeowners: { data: [], filtered: [], page: 1, sortCol: null, sortDir: 1, search: '', statusFilter: '', typeFilter: '' },
+  contractors: { data: [], filtered: [], page: 1, sortCol: null, sortDir: 1, search: '', statusFilter: '', typeFilter: '' },
+};
+const PAGE_SIZE = 25;
+
+async function renderCRM(c, type) {
+  const isHW = type === 'homeowners';
+  const title = isHW ? 'Homeowners CRM' : 'Contractors CRM';
+  const sub   = isHW ? 'Homeowner sign-up form submissions — Google Sheets live sync' : 'Contractor applications — Google Sheets live sync';
+
+  const statusOpts = isHW
+    ? ['New Lead','Contacted','Matched','In Progress','Completed','Archived']
+    : ['Application Received','Under Review','Background Check','Approved','Active','Suspended'];
+
+  c.innerHTML = `
+    <div class="page-header"><h1 class="page-title">${title}</h1><p class="page-subtitle">${sub}</p></div>
+    <div class="toolbar">
+      <input id="crm-search" placeholder="Search all columns…" oninput="crmSearch('${type}', this.value)">
+      <select id="crm-status" onchange="crmFilter('${type}','status',this.value)"><option value="">All Statuses</option>${statusOpts.map(s=>`<option>${s}</option>`).join('')}</select>
+      <button class="btn btn-outline btn-sm" onclick="exportCRM('${type}')">⬇ Export CSV</button>
+      <button class="btn btn-outline btn-sm" onclick="loadCRM('${type}')"><span id="crm-refresh-${type}">↻</span> Refresh</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table class="table" id="crm-table-${type}">
+          <thead><tr>${crmHeaders(type).map((h,i) => `<th onclick="crmSort('${type}',${i})">${h} <span class="sort-arrow" id="sort-${type}-${i}"></span></th>`).join('')}</tr></thead>
+          <tbody id="crm-body-${type}">${skeletonRows(crmHeaders(type).length)}</tbody>
+        </table>
+      </div>
+      <div class="pagination" id="crm-pag-${type}"></div>
+    </div>`;
+
+  await loadCRM(type);
+}
+
+function crmHeaders(type) {
+  return type === 'homeowners'
+    ? ['Name','Email','Phone','Address','Service Type','Submitted','Status','Notes','Actions']
+    : ['Name','Email','Phone','Trade / Specialty','License #','Service Area','Submitted','Status','Notes','Actions'];
+}
+
+async function loadCRM(type) {
+  const spin = document.getElementById(`crm-refresh-${type}`);
+  if (spin) spin.innerHTML = '<span class="spinner"></span>';
+  try {
+    const res = await authFetch(`/api/sheets/${type}`);
+    const { rows } = await res.json();
+    crmState[type].data = rows || [];
+    applyCRMFilters(type);
+  } catch {
+    const body = document.getElementById(`crm-body-${type}`);
+    if (body) body.innerHTML = `<tr><td colspan="${crmHeaders(type).length}"><div class="error-state">Failed to load data. <button class="btn btn-outline btn-sm" onclick="loadCRM('${type}')">Retry</button></div></td></tr>`;
+  } finally {
+    if (spin) spin.textContent = '↻';
+  }
+}
+
+function crmSearch(type, val) { crmState[type].search = val.toLowerCase(); crmState[type].page = 1; applyCRMFilters(type); }
+function crmFilter(type, col, val) { crmState[type][col+'Filter'] = val; crmState[type].page = 1; applyCRMFilters(type); }
+
+function crmSort(type, colIdx) {
+  const st = crmState[type];
+  if (st.sortCol === colIdx) st.sortDir *= -1; else { st.sortCol = colIdx; st.sortDir = 1; }
+  // update arrows
+  document.querySelectorAll(`[id^="sort-${type}-"]`).forEach(el => el.textContent = '');
+  const arrow = document.getElementById(`sort-${type}-${colIdx}`);
+  if (arrow) arrow.textContent = st.sortDir === 1 ? ' ↑' : ' ↓';
+  applyCRMFilters(type);
+}
+
+function applyCRMFilters(type) {
+  const st = crmState[type];
+  let rows = [...st.data];
+
+  // Search
+  if (st.search) rows = rows.filter(r => Object.values(r).some(v => String(v||'').toLowerCase().includes(st.search)));
+
+  // Status filter
+  if (st.statusFilter) rows = rows.filter(r => (r.Status || r['Approval Status'] || '').toLowerCase() === st.statusFilter.toLowerCase());
+
+  // Sort
+  if (st.sortCol !== null) {
+    const key = Object.keys(rows[0] || {})[st.sortCol] || '';
+    rows.sort((a,b) => String(a[key]||'').localeCompare(String(b[key]||'')) * st.sortDir);
+  }
+
+  st.filtered = rows;
+  renderCRMPage(type);
+}
+
+function renderCRMPage(type) {
+  const st = crmState[type];
+  const isHW = type === 'homeowners';
+  const total = st.filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const start = (st.page - 1) * PAGE_SIZE;
+  const pageRows = st.filtered.slice(start, start + PAGE_SIZE);
+
+  const statusOpts = isHW
+    ? ['New Lead','Contacted','Matched','In Progress','Completed','Archived']
+    : ['Application Received','Under Review','Background Check','Approved','Active','Suspended'];
+
+  const body = document.getElementById(`crm-body-${type}`);
+  if (!body) return;
+
+  if (!pageRows.length) {
+    body.innerHTML = `<tr><td colspan="${crmHeaders(type).length}"><div class="empty-state"><p>No records found.</p></div></td></tr>`;
+  } else {
+    body.innerHTML = pageRows.map((row, i) => {
+      const rowIdx = start + i + 1; // 1-based index for API (skipping header row)
+      const status = row.Status || row['Approval Status'] || '';
+      const notes  = row.Notes || '';
+
+      if (isHW) {
+        return `<tr id="row-${type}-${rowIdx}">
+          <td><strong>${row.Name||'—'}</strong></td>
+          <td>${row.Email||'—'}</td>
+          <td>${row.Phone||'—'}</td>
+          <td style="max-width:140px">${trunc(row.Address||'—',40)}</td>
+          <td><span class="badge badge-gold">${row['Service Type']||'—'}</span></td>
+          <td>${fmtDate(row['Submission Date'])}</td>
+          <td>
+            <select class="inline-select" onchange="saveRowField('${type}',${rowIdx},'status',this.value,this)">
+              ${statusOpts.map(s=>`<option ${s===status?'selected':''}>${s}</option>`).join('')}
+            </select>
+            <span class="save-indicator" id="ind-${type}-${rowIdx}-status"></span>
+          </td>
+          <td>
+            <input class="inline-input" value="${notes}" placeholder="Add note…" onchange="saveRowField('${type}',${rowIdx},'notes',this.value,this)" style="min-width:120px">
+            <span class="save-indicator" id="ind-${type}-${rowIdx}-notes"></span>
+          </td>
+          <td><button class="btn btn-outline btn-sm" onclick="viewRow('${type}',${rowIdx})">View</button></td>
+        </tr>`;
+      } else {
+        return `<tr id="row-${type}-${rowIdx}">
+          <td><strong>${row.Name||'—'}</strong></td>
+          <td>${row.Email||'—'}</td>
+          <td>${row.Phone||'—'}</td>
+          <td>${row['Trade/Specialty']||row.Trade||'—'}</td>
+          <td>${row['License #']||row.License||'—'}</td>
+          <td>${row['Service Area']||'—'}</td>
+          <td>${fmtDate(row['Submission Date'])}</td>
+          <td>
+            <select class="inline-select" onchange="saveRowField('${type}',${rowIdx},'status',this.value,this)">
+              ${statusOpts.map(s=>`<option ${s===status?'selected':''}>${s}</option>`).join('')}
+            </select>
+            <span class="save-indicator" id="ind-${type}-${rowIdx}-status"></span>
+          </td>
+          <td>
+            <input class="inline-input" value="${notes}" placeholder="Add note…" onchange="saveRowField('${type}',${rowIdx},'notes',this.value,this)" style="min-width:120px">
+            <span class="save-indicator" id="ind-${type}-${rowIdx}-notes"></span>
+          </td>
+          <td><button class="btn btn-outline btn-sm" onclick="viewRow('${type}',${rowIdx})">View</button></td>
+        </tr>`;
+      }
+    }).join('');
+  }
+
+  // Pagination
+  const pag = document.getElementById(`crm-pag-${type}`);
+  if (pag) pag.innerHTML = `
+    <button onclick="crmPage('${type}',${st.page-1})" ${st.page<=1?'disabled':''}>← Prev</button>
+    <span>Showing ${total ? start+1 : 0}–${Math.min(start+PAGE_SIZE,total)} of ${total}</span>
+    <button onclick="crmPage('${type}',${st.page+1})" ${st.page>=totalPages?'disabled':''}>Next →</button>`;
+}
+
+function crmPage(type, p) { crmState[type].page = p; renderCRMPage(type); }
+
+// Save a single field back to Google Sheets via backend
+async function saveRowField(type, rowIdx, field, value, el) {
+  const indId = `ind-${type}-${rowIdx}-${field}`;
+  const ind = document.getElementById(indId);
+  if (ind) { ind.className = 'save-indicator saving'; ind.textContent = ' saving…'; }
+  if (el) el.disabled = true;
+  try {
+    const body = field === 'status' ? { status: value } : { notes: value };
+    const res = await authFetch(`/api/sheets/${type}/${rowIdx}`, { method: 'PUT', body: JSON.stringify(body) });
+    if (!res.ok) throw new Error();
+    if (ind) { ind.className = 'save-indicator ok'; ind.textContent = ' ✓'; setTimeout(()=>ind.textContent='',2000); }
+    showToast('Saved to Google Sheets', 'success');
+    // Update local data
+    const st = crmState[type];
+    const row = st.data[rowIdx - 1];
+    if (row) { if (field === 'status') { row.Status = value; row['Approval Status'] = value; } else row.Notes = value; }
+  } catch {
+    if (ind) { ind.className = 'save-indicator err'; ind.textContent = ' ✕'; }
+    showToast('Save failed — check backend connection', 'error');
+  } finally {
+    if (el) el.disabled = false;
+  }
+}
+
+// Export current filtered CRM data as CSV
+function exportCRM(type) {
+  const isHW = type === 'homeowners';
+  const headers = crmHeaders(type).slice(0,-1); // exclude Actions column
+  const rows = crmState[type].filtered.map(r => isHW
+    ? [r.Name, r.Email, r.Phone, r.Address, r['Service Type'], r['Submission Date'], r.Status||r['Approval Status'], r.Notes]
+    : [r.Name, r.Email, r.Phone, r['Trade/Specialty']||r.Trade, r['License #']||r.License, r['Service Area'], r['Submission Date'], r.Status||r['Approval Status'], r.Notes]
+  );
+  downloadCSV(`linx-${type}-${new Date().toISOString().slice(0,10)}.csv`, headers, rows);
+  showToast('CSV exported', 'success');
+}
+
+// Quick view modal for a row
+function viewRow(type, rowIdx) {
+  const row = crmState[type].data[rowIdx - 1];
+  if (!row) return;
+  document.getElementById('modal-root').innerHTML = `
+    <div class="modal-overlay" onclick="this.remove()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <h2>${row.Name || 'Record Details'}</h2>
+        <table class="table">
+          <tbody>
+            ${Object.entries(row).filter(([k])=>k!='__rowIndex').map(([k,v])=>`<tr><td style="color:var(--text-muted);width:40%">${k}</td><td>${v||'—'}</td></tr>`).join('')}
+          </tbody>
+        </table>
+        <button class="btn btn-outline" style="margin-top:16px" onclick="document.getElementById('modal-root').innerHTML=''">Close</button>
+      </div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE: KANBAN PIPELINE
+═══════════════════════════════════════════════════════════════ */
+const HW_STAGES = ['New Lead','Contacted','Matched with Contractor','Job In Progress','Completed','Archived'];
+const CT_STAGES = ['Application Received','Under Review','Background Check','Approved','Active on Platform','Suspended/Inactive'];
+
+let dragItem = null; // { type, rowIdx, oldStage }
+
+async function renderPipeline(c, type) {
+  const isHW = type === 'homeowners';
+  const stages = isHW ? HW_STAGES : CT_STAGES;
+  const title = isHW ? 'Homeowner Pipeline' : 'Contractor Pipeline';
+
+  c.innerHTML = `
+    <div class="page-header"><h1 class="page-title">${title}</h1><p class="page-subtitle">Drag cards between stages — changes sync to Google Sheets</p></div>
+    <div id="pipeline-board-${type}" class="pipeline-board">
+      ${stages.map(s => `
+        <div class="pipeline-col" id="col-${type}-${slugify(s)}"
+             ondragover="pipeDragOver(event,'${type}','${s}')"
+             ondragleave="this.classList.remove('drag-target')"
+             ondrop="pipeDrop(event,'${type}','${s}')">
+          <div class="pipeline-col-header">${s} <span class="pipeline-col-count" id="col-count-${type}-${slugify(s)}">0</span></div>
+          <div class="pipeline-cards" id="col-cards-${type}-${slugify(s)}">
+            <div class="skeleton" style="height:80px;border-radius:8px;margin-bottom:8px"></div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+
+  await loadPipelineData(type, stages);
+}
+
+function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g,'-'); }
+
+async function loadPipelineData(type, stages) {
+  try {
+    const res = await authFetch(`/api/sheets/${type}`);
+    const { rows } = await res.json();
+    // Clear all columns
+    stages.forEach(s => {
+      const el = document.getElementById(`col-cards-${type}-${slugify(s)}`);
+      if (el) el.innerHTML = '';
+    });
+    // Distribute rows into columns
+    rows.forEach((row, i) => {
+      const rowIdx = i + 1;
+      const status = row.Status || row['Approval Status'] || stages[0];
+      // Match to a stage (case-insensitive fuzzy match)
+      const stage = stages.find(s => s.toLowerCase() === status.toLowerCase()) || stages[0];
+      appendPipelineCard(type, stage, row, rowIdx);
+    });
+    // Update counts
+    stages.forEach(s => {
+      const col = document.getElementById(`col-cards-${type}-${slugify(s)}`);
+      const cnt = document.getElementById(`col-count-${type}-${slugify(s)}`);
+      if (col && cnt) cnt.textContent = col.querySelectorAll('.pipeline-card').length;
+    });
+  } catch {
+    showToast('Could not load pipeline data', 'error');
+  }
+}
+
+function appendPipelineCard(type, stage, row, rowIdx) {
+  const col = document.getElementById(`col-cards-${type}-${slugify(stage)}`);
+  if (!col) return;
+  const div = document.createElement('div');
+  div.className = 'pipeline-card';
+  div.draggable = true;
+  div.dataset.rowIdx = rowIdx;
+  div.dataset.stage = stage;
+  div.dataset.type = type;
+  div.id = `pcard-${type}-${rowIdx}`;
+  div.ondragstart = e => {
+    dragItem = { type, rowIdx, stage };
+    e.dataTransfer.effectAllowed = 'move';
+  };
+  div.innerHTML = `
+    <h5>${row.Name || '—'}</h5>
+    <div class="pc-meta">${row.Email || ''}</div>
+    <div class="pc-meta">${row.Phone || ''}</div>
+    ${type === 'homeowners' ? `<span class="badge badge-gold" style="font-size:10px">${row['Service Type']||''}</span>` : `<span class="badge badge-blue" style="font-size:10px">${row['Trade/Specialty']||row.Trade||''}</span>`}
+    <div class="pc-meta" style="margin-top:4px">📅 ${fmtDate(row['Submission Date'])}</div>
+    ${row.Notes ? `<div class="pc-notes">${trunc(row.Notes)}</div>` : ''}`;
+  col.appendChild(div);
+}
+
+function pipeDragOver(e, type, stage) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const col = document.getElementById(`col-${type}-${slugify(stage)}`);
+  if (col) col.classList.add('drag-target');
+}
+
+async function pipeDrop(e, type, newStage) {
+  e.preventDefault();
+  const col = document.getElementById(`col-${type}-${slugify(newStage)}`);
+  if (col) col.classList.remove('drag-target');
+  if (!dragItem || dragItem.type !== type || dragItem.stage === newStage) return;
+
+  const { rowIdx, stage: oldStage } = dragItem;
+  const card = document.getElementById(`pcard-${type}-${rowIdx}`);
+  if (!card) return;
+
+  // Show loading overlay on card
+  const overlay = document.createElement('div');
+  overlay.className = 'pipeline-card-loading';
+  overlay.innerHTML = '<span class="spinner"></span>';
+  card.appendChild(overlay);
+
+  try {
+    const res = await authFetch(`/api/sheets/${type}/${rowIdx}`, {
+      method: 'PUT', body: JSON.stringify({ status: newStage })
+    });
+    if (!res.ok) throw new Error();
+
+    // Move card in DOM
+    const newCol = document.getElementById(`col-cards-${type}-${slugify(newStage)}`);
+    card.removeChild(overlay);
+    card.dataset.stage = newStage;
+    const oldCol = document.getElementById(`col-cards-${type}-${slugify(oldStage)}`);
+    if (oldCol) oldCol.removeChild(card);
+    if (newCol) newCol.appendChild(card);
+
+    // Update counts
+    [oldStage, newStage].forEach(s => {
+      const c2 = document.getElementById(`col-cards-${type}-${slugify(s)}`);
+      const cnt = document.getElementById(`col-count-${type}-${slugify(s)}`);
+      if (c2 && cnt) cnt.textContent = c2.querySelectorAll('.pipeline-card').length;
+    });
+
+    // Update local data
+    const st = crmState[type].data;
+    if (st[rowIdx-1]) { st[rowIdx-1].Status = newStage; st[rowIdx-1]['Approval Status'] = newStage; }
+    showToast(`Moved to "${newStage}"`, 'success');
+  } catch {
+    card.removeChild(overlay);
+    showToast('Could not update stage — reverting', 'error');
+  }
+  dragItem = null;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE: SERVICE REQUESTS
+═══════════════════════════════════════════════════════════════ */
+async function renderServices(c) {
+  c.innerHTML = `
+    <div class="page-header"><h1 class="page-title">Service Requests</h1><p class="page-subtitle">All job requests across the LinX platform</p></div>
+    <div class="stat-grid" id="svc-stats">${skeletonRows(5,1).replace(/<tr[^>]*>/,'<div class="stat-grid">').replace(/<\/tr>/,'</div>')}</div>
+    <div class="toolbar">
+      <select id="svc-status-filter" onchange="filterServices(this.value)">
+        <option value="">All Statuses</option><option>pending</option><option>active</option><option>completed</option><option>disputed</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="loadServices()">↻ Refresh</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table class="table" id="svc-table">
+          <thead><tr><th>ID</th><th>Homeowner</th><th>Contractor</th><th>Service</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+          <tbody id="svc-body">${skeletonRows(7)}</tbody>
+        </table>
+      </div>
+    </div>`;
+  await loadServices();
+}
+
+let allServices = [];
+async function loadServices() {
+  try {
+    const res = await authFetch('/api/services');
+    const { services } = await res.json();
+    allServices = services || [];
+    renderServicesTable(allServices);
+
+    // Stat cards
+    const counts = { pending:0, active:0, completed:0, disputed:0 };
+    allServices.forEach(s => { if (counts[s.status] !== undefined) counts[s.status]++; });
+    document.getElementById('svc-stats').innerHTML = [
+      { label:'Total', value: allServices.length },
+      { label:'Pending', value: counts.pending, cls:'down' },
+      { label:'Active', value: counts.active, cls:'up' },
+      { label:'Completed', value: counts.completed },
+      { label:'Disputed', value: counts.disputed, cls:'down' },
+    ].map(s=>`<div class="stat-card"><div class="stat-value ${s.cls||''}">${s.value}</div><div class="stat-label">${s.label}</div></div>`).join('');
+  } catch {
+    document.getElementById('svc-body').innerHTML = `<tr><td colspan="7"><div class="error-state">Could not load service requests. <button class="btn btn-outline btn-sm" onclick="loadServices()">Retry</button></div></td></tr>`;
+  }
+}
+
+function filterServices(status) {
+  const rows = status ? allServices.filter(s => s.status === status) : allServices;
+  renderServicesTable(rows);
+}
+
+function renderServicesTable(rows) {
+  const badgeMap = { pending:'badge-yellow', active:'badge-green', completed:'badge-blue', disputed:'badge-red' };
+  document.getElementById('svc-body').innerHTML = rows.length
+    ? rows.map(s => `<tr>
+        <td><code style="color:var(--gold)">#${s.id}</code></td>
+        <td>${s.homeowner}</td>
+        <td>${s.contractor || '—'}</td>
+        <td>${s.serviceType}</td>
+        <td><span class="badge ${badgeMap[s.status]||'badge-gold'}">${s.status}</span></td>
+        <td>${fmtDate(s.createdDate)}</td>
+        <td style="display:flex;gap:4px;flex-wrap:wrap">
+          ${s.status==='pending'?`<button class="btn btn-success btn-sm" onclick="svcAction('approve','${s.id}')">✓ Approve</button><button class="btn btn-danger btn-sm" onclick="svcAction('reject','${s.id}')">✕ Reject</button>`:''}
+          <button class="btn btn-outline btn-sm" onclick="svcAssignModal('${s.id}')">Assign</button>
+        </td>
+      </tr>`).join('')
+    : `<tr><td colspan="7"><div class="empty-state"><p>No service requests found.</p></div></td></tr>`;
+}
+
+async function svcAction(action, id) {
+  try {
+    const res = await authFetch(`/api/services/${id}/${action}`, { method: 'POST' });
+    if (!res.ok) throw new Error();
+    showToast(`Request ${action}d`, 'success');
+    await loadServices();
+  } catch { showToast(`Could not ${action} request`, 'error'); }
+}
+
+function svcAssignModal(id) {
+  document.getElementById('modal-root').innerHTML = `
+    <div class="modal-overlay" onclick="this.remove()">
+      <div class="modal" onclick="event.stopPropagation()">
+        <h2>Assign Contractor</h2>
+        <div class="form-group"><label class="form-label">Contractor ID or Name</label><input id="assign-ct-id" placeholder="e.g. contractor-123"></div>
+        <div style="display:flex;gap:12px;margin-top:16px">
+          <button class="btn btn-primary" onclick="doAssign('${id}')">Assign</button>
+          <button class="btn btn-outline" onclick="document.getElementById('modal-root').innerHTML=''">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function doAssign(id) {
+  const contractorId = document.getElementById('assign-ct-id')?.value;
+  if (!contractorId) return showToast('Enter a contractor ID', 'warning');
+  try {
+    const res = await authFetch(`/api/services/${id}/assign`, { method: 'POST', body: JSON.stringify({ contractorId }) });
+    if (!res.ok) throw new Error();
+    document.getElementById('modal-root').innerHTML = '';
+    showToast('Contractor assigned', 'success');
+    await loadServices();
+  } catch { showToast('Assignment failed', 'error'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PAGE: PLATFORM SETTINGS
+═══════════════════════════════════════════════════════════════ */
+async function renderSettings(c) {
+  // Load current settings first
+  let settings = {};
+  try {
+    const res = await authFetch('/api/settings');
+    settings = await res.json();
+  } catch {}
+
+  c.innerHTML = `
+    <div class="page-header"><h1 class="page-title">Platform Settings</h1><p class="page-subtitle">API keys, sheet IDs, and security configuration</p></div>
+
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">LinX API Configuration</h3></div>
+      <div class="form-group"><label class="form-label">API Base URL</label><input id="set-api-url" value="${settings.linxApiUrl||''}" placeholder="https://api.linxservices.ca"></div>
+      <div class="form-group"><label class="form-label">API Key</label>
+        <div class="masked-input-wrap">
+          <input id="set-api-key" type="password" value="${settings.linxApiKeyMasked||''}" placeholder="sk-****">
+          <button class="pw-toggle" onclick="togglePw('set-api-key',this)">Show</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Google Sheets Configuration</h3></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Homeowner Sheet ID</label><input id="set-hw-sheet" value="${settings.homeownerSheetId||''}" placeholder="1BxiMVs0..."></div>
+        <div class="form-group"><label class="form-label">Contractor Sheet ID</label><input id="set-ct-sheet" value="${settings.contractorSheetId||''}" placeholder="1BxiMVs0..."></div>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted)">ℹ Sheet IDs are found in the Google Sheets URL: docs.google.com/spreadsheets/d/<strong>SHEET_ID</strong>/edit</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Webhooks</h3></div>
+      <div class="form-group"><label class="form-label">Webhook URLs (one per line)</label><textarea id="set-webhooks" rows="4" placeholder="https://hooks.zapier.com/...">${(settings.webhookUrls||'').replace(/,/g,'\n')}</textarea></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h3 class="card-title">Security</h3></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Session Timeout (seconds)</label><input id="set-timeout" type="number" value="${settings.sessionTimeout||1800}" min="300" max="86400"></div>
+        <div class="form-group"><label class="form-label">IP Whitelist (comma-separated, empty = all)</label><input id="set-ip" value="${settings.ipWhitelist||''}" placeholder="192.168.1.1, 203.0.113.5"></div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="saveSettings()">Save All Settings</button>
+
+    <div class="card" style="margin-top:24px">
+      <div class="card-header"><h3 class="card-title">Platform Info</h3></div>
+      <table class="table"><tbody>
+        <tr><td style="color:var(--text-muted)">Platform</td><td>LinX Ecosystem</td></tr>
+        <tr><td style="color:var(--text-muted)">Owner</td><td>Darren Ethier</td></tr>
+        <tr><td style="color:var(--text-muted)">Version</td><td>1.0.0</td></tr>
+        <tr><td style="color:var(--text-muted)">Backend</td><td><code style="color:var(--gold)">http://localhost:3000</code></td></tr>
+        <tr><td style="color:var(--text-muted)">Database</td><td>Google Sheets (via API v4)</td></tr>
+      </tbody></table>
+    </div>`;
+}
+
+async function saveSettings() {
+  const body = {
+    sessionTimeout: parseInt(document.getElementById('set-timeout')?.value) || 1800,
+    ipWhitelist:    document.getElementById('set-ip')?.value || '',
+    webhookUrls:    (document.getElementById('set-webhooks')?.value || '').replace(/\n/g,','),
+  };
+  try {
+    const res = await authFetch('/api/settings', { method: 'PUT', body: JSON.stringify(body) });
+    if (!res.ok) throw new Error();
+    showToast('Settings saved', 'success');
+  } catch { showToast('Could not save settings', 'error'); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BOOT — check token on page load, show login or dashboard
+═══════════════════════════════════════════════════════════════ */
+(function boot() {
+  if (token()) {
+    // Token exists — mount dashboard immediately, token verified by first API call
+    mountDashboard();
+  }
+  // Otherwise login screen is already visible (default in HTML)
+})();
+</script>
+</body>
+</html>
