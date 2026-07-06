@@ -3,14 +3,55 @@
 ## Architecture
 
 ```
-linxservices.ca        → Cloudflare Pages  (React Admin SPA — admin/dist)
-api.linxservices.ca    → Cloudflare Worker (workers/api/index.js)
-localhost:3000         → Express server    (admin/server.js — crawler + legacy HTML)
+linxservices.ca         → Cloudflare Pages  ("linx-website" project — marketing site, this repo's root, dist/)
+admin.linxservices.ca   → Cloudflare Pages  ("linx-dashboard" project — React Admin SPA, admin/dist)
+api.linxservices.ca     → Cloudflare Worker (workers/api/index.js)
+localhost:3000          → Express server    (admin/server.js — crawler + legacy HTML)
 ```
 
-The **crawler** continues to run on the Express server (it uses Node.js `https`, `cheerio`,
-`fs`, and `setInterval` which are not available in Workers).  After each crawl cycle the
-Express server can POST leads to the Worker via `POST /api/leads/ingest`.
+> ⚠️ **If `linxservices.ca` shows the admin login instead of the marketing page:**
+> the Pages project bound to that domain has its **Root directory** set to `admin`
+> instead of `/` (repo root), or the custom domain is attached to the
+> `linx-dashboard` project instead of `linx-website`. Two separate Pages
+> projects are required — see "Two separate Pages projects" right below.
+> Also make sure the project's build actually succeeds: root `package.json` now has
+> a `build` script (`node scripts/build-static.js`) — previously there wasn't one,
+> so `npm run build` failed and Pages kept serving whatever the last successful
+> build happened to be.
+
+---
+
+## Two separate Cloudflare Pages projects
+
+### 1. `linx-website` — the marketing site (this fixes the landing page)
+
+Project settings (Cloudflare dashboard → Workers & Pages → your project → Settings → Builds & deployments):
+
+| Setting | Value |
+|---|---|
+| Root directory | `/` (repo root) |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Custom domains | `linxservices.ca`, `www.linxservices.ca` |
+
+`npm run build` runs `scripts/build-static.js`, which copies only the marketing
+HTML/CSS/JS (`index.html`, `contact.html`, `pricing.html`, `post-job.html`,
+`find-contractors.html`, `contractor-profile.html`, `css/`, `js/`, `robots.txt`,
+`_headers`) into `dist/`. It deliberately excludes `admin/`, `workers/`, and
+`node_modules/` so the admin app's source is never published on the marketing
+domain.
+
+### 2. `linx-dashboard` — the admin SPA (keep this off the apex domain)
+
+| Setting | Value |
+|---|---|
+| Root directory | `admin` |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Custom domains | `admin.linxservices.ca` (**not** `linxservices.ca`) |
+
+If `linxservices.ca` is currently attached to this project, remove it here and
+add it to `linx-website` instead (Settings → Custom domains, on each project).
 
 ---
 
@@ -95,7 +136,26 @@ Workers & Pages → linx-api → Settings → Domains → `api.linxservices.ca`
 
 ---
 
-## Step 5 — Deploy the React Dashboard to Cloudflare Pages
+## Step 5 — Deploy the marketing site to Cloudflare Pages
+
+### Via Cloudflare Dashboard (recommended — auto-deploys on every push)
+
+Connect the `linx-website` Pages project to this repo's `main` branch with the
+settings from the "Two separate Pages projects" table above (root `/`, build
+`npm run build`, output `dist`).
+
+### Via Wrangler CLI (manual/one-off deploy)
+
+```bash
+npm run build
+npx wrangler pages deploy dist --project-name=linx-website
+```
+
+Add the custom domains in Pages settings: `linxservices.ca` and `www.linxservices.ca`.
+
+---
+
+## Step 6 — Deploy the admin dashboard to Cloudflare Pages
 
 ### Via Cloudflare Dashboard (recommended first deploy)
 
@@ -111,21 +171,21 @@ Workers & Pages → linx-api → Settings → Domains → `api.linxservices.ca`
 # From the repo root:
 cd admin && npm run build
 cd ..
-npx wrangler pages deploy admin/dist --project-name linx-dashboard
+npx wrangler pages deploy admin/dist --project-name=linx-dashboard
 ```
 
 Set the `VITE_API_BASE` environment variable for the Pages project:
 
 ```bash
-npx wrangler pages secret put VITE_API_BASE --project-name linx-dashboard
+npx wrangler pages secret put VITE_API_BASE --project-name=linx-dashboard
 # Enter: https://api.linxservices.ca
 ```
 
-Add a **Custom Domain** in Pages settings: `linxservices.ca`
+Add a **Custom Domain** in Pages settings: `admin.linxservices.ca` (not the apex domain — see warning above).
 
 ---
 
-## Step 6 — Connect the Express crawler to D1
+## Step 7 — Connect the Express crawler to D1
 
 In `admin/.env`, set the Worker's ingest URL so the crawler forwards new leads:
 
@@ -155,6 +215,12 @@ npx wrangler dev --config wrangler.jsonc
 
 Visit `http://localhost:5173` for the React dashboard.
 Visit `http://localhost:3000/crawler-dashboard.html` for the legacy dashboard.
+
+To preview the marketing site locally:
+
+```bash
+npm run build && npx wrangler pages dev dist
+```
 
 ---
 

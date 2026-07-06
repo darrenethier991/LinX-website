@@ -1,0 +1,39 @@
+name: Deploy marketing site to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+      - claude/landing-page-layout-qm89kz
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build marketing site
+        run: npm run build
+
+      # node_modules/ is committed to this repo without executable bits,
+      # which breaks npx's local bin resolution — clear it so npx fetches
+      # wrangler fresh from the registry.
+      - name: Remove committed node_modules
+        run: rm -rf node_modules admin/node_modules
+
+      - name: Create Pages project if it does not exist
+        run: npx wrangler@4 pages project create linx-website --production-branch=main || true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy to Cloudflare Pages
+        run: npx wrangler@4 pages deploy dist --project-name=linx-website --branch=main
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
