@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "build": "node scripts/build-static.js"
+  },
   "devDependencies": {
     "wrangler": "^4.105.0"
   }
