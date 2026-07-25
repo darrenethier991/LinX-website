@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EchoForge Marketplace — LinX</title>
+  <meta name="description" content="Buy, remix, and sell contractor automation workflows on the EchoForge Marketplace. SMS sequences, lead scoring bots, booking automations." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/linx-design-system.css" />
+  <style>
+    body { cursor: none; }
+
+    /* MARKETPLACE HERO — neon rave-lux with hammer & anvil motif */
+    .mkt-hero {
+      padding: 110px 0 80px; text-align: center; position: relative; overflow: hidden;
+      background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(124,92,216,0.14) 0%, rgba(212,168,83,0.04) 40%, transparent 70%);
+    }
+    .mkt-hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 60%, var(--bg-deep) 100%);
+      pointer-events: none;
+    }
+    .mkt-hero__scene {
+      font-size: 80px; line-height: 1; margin-bottom: 24px;
+      filter: drop-shadow(0 0 24px rgba(124,92,216,0.5));
+    }
+    .mkt-hero h1 {
+      font-size: clamp(40px, 6vw, 72px); font-weight: 900;
+      letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 16px;
+    }
+    .mkt-hero h1 span { color: var(--neon-violet); text-shadow: 0 0 32px rgba(124,92,216,0.5); }
+    .mkt-hero__sub {
+      font-size: 15px; color: var(--text-muted); max-width: 520px;
+      margin: 0 auto 40px; line-height: 1.75;
+    }
+
+    /* STATS BAR */
+    .mkt-stats {
+      display: flex; gap: 0; border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+      background: rgba(5,5,7,0.9); max-width: 640px; margin: 0 auto 72px;
+    }
+    .mkt-stat {
+      flex: 1; padding: 16px 12px; text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .mkt-stat:last-child { border-right: none; }
+    .mkt-stat__num { font-size: 24px; font-weight: 900; color: var(--neon-violet); }
+    .mkt-stat__lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.14em; margin-top: 2px; }
+
+    /* FILTER BAR */
+    .filter-bar {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+      margin-bottom: 32px; padding: 16px 20px;
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .filter-bar input, .filter-bar select {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      color: var(--text); padding: 8px 12px; border-radius: var(--radius-sm);
+      font-size: 12px; font-family: var(--font); outline: none;
+    }
+    .filter-bar input:focus, .filter-bar select:focus { border-color: var(--gold); }
+    .filter-bar input { flex: 1; min-width: 200px; }
+
+    /* GRID */
+    .market-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+
+    /* CARD */
+    .mkt-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .mkt-card:hover {
+      border-color: var(--neon-violet);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(124,92,216,0.15);
+    }
+    .mkt-card.featured {
+      border-color: var(--gold);
+    }
+    .mkt-card.featured:hover {
+      box-shadow: 0 8px 32px rgba(212,168,83,0.15);
+    }
+    .mkt-card__badge {
+      position: absolute; top: 16px; right: 16px;
+    }
+    .mkt-card__icon { font-size: 32px; margin-bottom: 14px; }
+    .mkt-card__name { font-size: 15px; font-weight: 800; margin-bottom: 8px; }
+    .mkt-card__desc { font-size: 12px; color: var(--text-muted); line-height: 1.7; margin-bottom: 16px; }
+    .mkt-card__tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+    .mkt-card__tag {
+      font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: var(--radius-pill);
+      background: var(--bg-surface); border: 1px solid var(--border); color: var(--text-muted);
+    }
+    .mkt-card__footer { display: flex; align-items: center; justify-content: space-between; }
+    .mkt-card__price { font-size: 20px; font-weight: 900; color: var(--gold); }
+    .mkt-card__price span { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+    .mkt-card__sales { font-size: 11px; color: var(--text-dim); }
+
+    /* VALUE GRID */
+    .value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 44px; }
+    .value-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px; text-align: center;
+      transition: border-color 0.2s;
+    }
+    .value-card:hover { border-color: var(--neon-violet); }
+    .value-card__icon { font-size: 28px; margin-bottom: 12px; }
+    .value-card__title { font-size: 14px; font-weight: 800; margin-bottom: 8px; }
+    .value-card__desc { font-size: 12px; color: var(--text-muted); line-height: 1.7; }
+
+    /* EARN MODULE */
+    .earn-section {
+      background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(124,92,216,0.08) 0%, transparent 70%);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .earn-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 56px; align-items: center; margin-top: 40px; }
+    .earn-steps { display: flex; flex-direction: column; gap: 20px; margin-top: 28px; }
+    .earn-step { display: flex; align-items: flex-start; gap: 14px; }
+    .earn-step__num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(124,92,216,0.15); border: 1px solid var(--neon-violet);
+      color: var(--neon-violet); font-weight: 800; font-size: 13px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .earn-step__text h4 { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+    .earn-step__text p { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+    .earn-stats {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px;
+    }
+    .earn-stat-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .earn-stat-row:last-child { border-bottom: none; }
+    .earn-stat-row span:first-child { color: var(--text-muted); }
+    .earn-stat-row span:last-child { font-weight: 700; color: var(--text); }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      z-index: 500; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 32px; max-width: 480px; width: 100%;
+      position: relative;
+    }
+    .modal-close { position: absolute; top: 16px; right: 16px; cursor: pointer; font-size: 20px; color: var(--text-muted); }
+    .modal-icon { font-size: 40px; margin-bottom: 14px; }
+    .modal-name { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .modal-desc { font-size: 13px; color: var(--text-muted); line-height: 1.75; margin-bottom: 20px; }
+    .modal-price { font-size: 36px; font-weight: 900; color: var(--gold); margin-bottom: 20px; }
+
+    @media (max-width: 800px) {
+      .earn-grid { grid-template-columns: 1fr; }
+      .mkt-stats { flex-wrap: wrap; }
+      .mkt-stat { min-width: 50%; border-right: none; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav__logo" href="index.html">
+    <span class="l">Lin</span><span style="color:#fff">X</span>
+  </a>
+  <ul class="nav__links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="index.html#pricing">Pricing</a></li>
+    <li><a href="marketplace.html" class="active">Marketplace</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav__actions">
+    <a href="index.html#contact" class="btn btn--outline btn--sm">Sign In</a>
+    <a href="index.html#contact" class="btn btn--primary btn--sm">Get Started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="mkt-hero">
+  <div class="container">
+    <div class="mkt-hero__scene">🔨⚒️</div>
+    <div class="hero__eyebrow" style="display:inline-flex;border:1px solid rgba(124,92,216,0.4);color:var(--neon-violet);margin-bottom:24px">
+      EchoForge Marketplace — Powered by LinX
+    </div>
+    <h1>Build. <span>Sell.</span> Earn.</h1>
+    <p class="mkt-hero__sub">
+      The automation marketplace built by contractors, for contractors.
+      Buy ready-made workflows. Remix them. Sell your own. Earn while you sleep.
+    </p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:56px">
+      <a href="#listings" class="btn btn--primary btn--lg">Browse All Automations</a>
+      <a href="#earn" class="btn btn--outline btn--lg">Start Selling</a>
+    </div>
+    <div class="mkt-stats">
+      <div class="mkt-stat">
+        <div class="mkt-stat__num">847+</div>
+        <div class="mkt-stat__lbl">Automations</div>
+      </div>
+      <div class="mkt-stat">
+        <div class="mkt-stat__num">12,400+</div>
+        <div class="mkt-stat__lbl">Purchases</div>
+      </div>
+      <div class="mkt-stat">
+        <div class="mkt-stat__num">$340k+</div>
+        <div class="mkt-stat__lbl">Creator Earnings</div>
+      </div>
+      <div class="mkt-stat">
+        <div class="mkt-stat__num">4.8 ★</div>
+        <div class="mkt-stat__lbl">Avg Rating</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VALUE GRID -->
+<section class="section">
+  <div class="container">
+    <span class="eyebrow">Why EchoForge</span>
+    <h2 class="section-title">The Marketplace Contractors Actually Need</h2>
+    <p class="section-sub">Every automation is tested by real contractors in the field. No fluff.</p>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="value-card__icon">💬</div>
+        <div class="value-card__title">SMS Automations</div>
+        <div class="value-card__desc">Welcome sequences, follow-up cadences, and re-engagement flows that work on autopilot 24/7.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-card__icon">🎯</div>
+        <div class="value-card__title">Lead Scoring Bots</div>
+        <div class="value-card__desc">AI agents that score incoming leads 1–10, filter the hot ones, and notify you instantly.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-card__icon">📅</div>
+        <div class="value-card__title">Booking Workflows</div>
+        <div class="value-card__desc">Automated scheduling, confirmation, and reminder sequences that reduce no-shows to near zero.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-card__icon">⭐</div>
+        <div class="value-card__title">Review Machines</div>
+        <div class="value-card__desc">Post-job review requests sent automatically to Google, Facebook, and Houzz. More 5-stars, less effort.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-card__icon">🔄</div>
+        <div class="value-card__title">Remix & Resell</div>
+        <div class="value-card__desc">Buy any automation, customise it for your trade, and list your remix. Keep 85–95% of every sale.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-card__icon">📊</div>
+        <div class="value-card__title">Analytics Included</div>
+        <div class="value-card__desc">Every automation tracks opens, replies, conversions, and revenue. Know exactly what's working.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LISTINGS -->
+<section id="listings" class="section section--alt">
+  <div class="container">
+    <span class="eyebrow">Browse Automations</span>
+    <h2 class="section-title">Ready-Made Workflows</h2>
+    <div class="filter-bar">
+      <input id="mkt-search" placeholder="Search automations…" />
+      <select id="mkt-cat">
+        <option value="">All Categories</option>
+        <option value="sms">SMS Sequences</option>
+        <option value="lead">Lead Scoring</option>
+        <option value="booking">Booking</option>
+        <option value="review">Review Generation</option>
+        <option value="analytics">Analytics</option>
+      </select>
+      <select id="mkt-sort">
+        <option value="popular">Most Popular</option>
+        <option value="newest">Newest</option>
+        <option value="price-asc">Price: Low to High</option>
+        <option value="price-desc">Price: High to Low</option>
+      </select>
+    </div>
+
+    <div class="market-grid" id="mkt-grid">
+      <!-- Cards injected by JS below -->
+    </div>
+  </div>
+</section>
+
+<!-- EARN MODULE -->
+<section id="earn" class="section earn-section">
+  <div class="container">
+    <span class="eyebrow">Creator Program</span>
+    <h2 class="section-title">Turn Your Expertise Into Income</h2>
+    <p class="section-sub">Built a workflow that works? Sell it. Contractors from across Canada are buying what you've already figured out.</p>
+    <div class="earn-grid">
+      <div>
+        <div class="earn-steps">
+          <div class="earn-step">
+            <div class="earn-step__num">1</div>
+            <div class="earn-step__text">
+              <h4>Build Your Automation</h4>
+              <p>Use the LinX workflow builder or upload your existing n8n/Zapier workflow. Describe it clearly and tag it properly.</p>
+            </div>
+          </div>
+          <div class="earn-step">
+            <div class="earn-step__num">2</div>
+            <div class="earn-step__text">
+              <h4>Set Your Price</h4>
+              <p>You control the price. Our data shows $19–$49 automations sell best. Pro sellers earn $2k–$8k/month passively.</p>
+            </div>
+          </div>
+          <div class="earn-step">
+            <div class="earn-step__num">3</div>
+            <div class="earn-step__text">
+              <h4>Collect Revenue</h4>
+              <p>Payouts via Stripe every 2 weeks. Starter plan: 85% payout. Pro: 90%. Enterprise: 95% payout rate.</p>
+            </div>
+          </div>
+          <div class="earn-step">
+            <div class="earn-step__num">4</div>
+            <div class="earn-step__text">
+              <h4>Watch It Compound</h4>
+              <p>Reviews drive discovery. The more your automation is used, the higher it ranks. Build once, earn forever.</p>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:28px;display:flex;gap:10px">
+          <a href="index.html#contact" class="btn btn--primary">Start Selling Today</a>
+          <a href="index.html#pricing" class="btn btn--outline">Compare Plans</a>
+        </div>
+      </div>
+      <div>
+        <div class="earn-stats">
+          <h3 style="font-size:16px;font-weight:800;margin-bottom:18px">Creator Earnings Stats</h3>
+          <div class="earn-stat-row">
+            <span>Avg payout per automation</span>
+            <span>$31.40</span>
+          </div>
+          <div class="earn-stat-row">
+            <span>Top creator earnings (30 days)</span>
+            <span>$8,240</span>
+          </div>
+          <div class="earn-stat-row">
+            <span>Avg automations per creator</span>
+            <span>7.2</span>
+          </div>
+          <div class="earn-stat-row">
+            <span>Starter commission rate</span>
+            <span>85%</span>
+          </div>
+          <div class="earn-stat-row">
+            <span>Pro commission rate</span>
+            <span>90%</span>
+          </div>
+          <div class="earn-stat-row">
+            <span>Enterprise commission rate</span>
+            <span>95%</span>
+          </div>
+          <div class="earn-stat-row">
+            <span>Payout schedule</span>
+            <span>Bi-weekly (Stripe)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<section class="section">
+  <div class="container" style="text-align:center">
+    <div class="mkt-hero__scene" style="font-size:48px">⚒️</div>
+    <h2 class="section-title">Ready to Automate Your Business?</h2>
+    <p class="section-sub" style="margin:0 auto 32px">Join 1,400+ contractors using LinX automations to save 10+ hours per week and close more leads.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="index.html#contact" class="btn btn--primary btn--lg">Get Started Free</a>
+      <a href="index.html#pricing" class="btn btn--outline btn--lg">View Pricing</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__brand-logo">LinX</div>
+        <div class="footer__tagline">"Linking People Together" — Est. 2024</div>
+        <p style="font-size:12px;color:var(--text-muted);line-height:1.75;max-width:280px">Canada's Contractor Network. EchoForge — the automation marketplace built for trades.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Marketplace</h4>
+        <ul class="footer__links">
+          <li><a href="#listings">Browse All</a></li>
+          <li><a href="#earn">Sell Automations</a></li>
+          <li><a href="index.html#pricing">Creator Plans</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Platform</h4>
+        <ul class="footer__links">
+          <li><a href="index.html">LinX Home</a></li>
+          <li><a href="index.html#who">For Contractors</a></li>
+          <li><a href="index.html#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <ul class="footer__links">
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="mailto:Darrenethier991@gmail.com">Support</a></li>
+          <li><a href="admin/index.html">Admin</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2024–2025 LinX / EchoForge · Darren Ethier, Sole Proprietor · Barrie, Ontario</span>
+      <span>linxservices.ca/marketplace</span>
+    </div>
+    <div class="footer__made">Made with IBM Bob</div>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <span class="modal-close" id="modal-close">✕</span>
+    <div class="modal-icon" id="modal-icon"></div>
+    <div class="modal-name" id="modal-name"></div>
+    <div class="modal-desc" id="modal-desc"></div>
+    <div class="modal-price" id="modal-price"></div>
+    <a href="index.html#contact" class="btn btn--primary btn--full" style="margin-bottom:10px">Purchase This Automation</a>
+    <a href="index.html#contact" class="btn btn--ghost btn--full">Request a Demo</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="cursor"></div>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top  = e.clientY + 'px';
+  });
+
+  // Stars
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement('div'); s.className = 'star';
+    s.style.left = Math.random() * window.innerWidth + 'px';
+    s.style.top  = Math.random() * 500 + 'px';
+    s.style.animationDelay = Math.random() * 4 + 's';
+    document.body.appendChild(s);
+  }
+
+  // Automations data
+  const automations = [
+    { icon:'💬', name:'Welcome SMS Sequence', desc:'3-touch AI-personalised welcome flow that converts new leads within 24 hours. Includes opt-out handling and CRM update.', tags:['sms','lead'], price:19, sales:847, featured:false },
+    { icon:'📅', name:'Follow-Up Scheduler', desc:'Automated 7-day follow-up cadence. Scores leads and routes hot ones (8+) directly to your phone via SMS.', tags:['sms','lead'], price:29, sales:512, featured:true },
+    { icon:'🎯', name:'Lead Qualifier Bot', desc:'AI agent that scores every incoming lead 1-10 and sends you only the hot ones. Saves 2+ hours/day of manual triage.', tags:['lead','ai'], price:39, sales:391, featured:false },
+    { icon:'⭐', name:'Review Request Machine', desc:'Sends post-job Google/Facebook review requests automatically 24h after job completion. Integrates with Houzz.', tags:['review'], price:24, sales:628, featured:false },
+    { icon:'📆', name:'Booking Confirmation Bot', desc:'Sends appointment confirmations, 24h reminders, and day-of check-ins. Cuts no-shows by 68%.', tags:['booking','sms'], price:34, sales:284, featured:false },
+    { icon:'💰', name:'Quote Follow-Up Drip', desc:'3-touch follow-up sequence for sent quotes. Personalised nudges at 2h, 24h, and 72h after quote delivery.', tags:['sms','lead'], price:22, sales:445, featured:false },
+    { icon:'🔔', name:'New Lead Alert System', desc:'Instant SMS + email alert when a new lead is qualified (score ≥ 7). Never miss a hot lead again.', tags:['lead','sms'], price:15, sales:723, featured:false },
+    { icon:'📊', name:'Monthly Report Automation', desc:'Generates and sends you a monthly PDF report of leads, closes, revenue, and top referral sources.', tags:['analytics'], price:44, sales:167, featured:true },
+    { icon:'🤖', name:'Re-Engagement Sequence', desc:'Reactivates cold leads from 30-90 days ago. 3-message sequence with a special offer hook.', tags:['sms','lead'], price:27, sales:334, featured:false },
+    { icon:'🏠', name:'Homeowner Onboarding Flow', desc:'Complete new homeowner onboarding: welcome, project brief collection, contractor matching notification.', tags:['sms','booking'], price:49, sales:218, featured:false },
+    { icon:'⚡', name:'Emergency Response Trigger', desc:'Detects urgent keywords in inbound messages and routes to on-call contractor within 90 seconds.', tags:['sms','ai'], price:59, sales:156, featured:false },
+    { icon:'🔗', name:'Referral Reward Notifier', desc:'Sends personalised thank-you + reward when a referral converts. Tracks the full referral chain.', tags:['sms','review'], price:32, sales:289, featured:false },
+  ];
+
+  let filtered = [...automations];
+
+  function renderGrid(items) {
+    const grid = document.getElementById('mkt-grid');
+    if (!items.length) {
+      grid.innerHTML = '<div style="text-align:center;padding:60px;color:var(--text-dim);grid-column:1/-1">No automations found. Try a different search.</div>';
+      return;
+    }
+    grid.innerHTML = items.map((a, i) => `
+      <div class="mkt-card${a.featured ? ' featured' : ''}" data-idx="${i}" onclick="openModal(${automations.indexOf(a)})">
+        ${a.featured ? '<span class="badge badge--gold mkt-card__badge">⭐ Popular</span>' : ''}
+        <div class="mkt-card__icon">${a.icon}</div>
+        <div class="mkt-card__name">${a.name}</div>
+        <div class="mkt-card__desc">${a.desc}</div>
+        <div class="mkt-card__tags">${a.tags.map(t => `<span class="mkt-card__tag">${t}</span>`).join('')}</div>
+        <div class="mkt-card__footer">
+          <div class="mkt-card__price">$${a.price} <span>one-time</span></div>
+          <div class="mkt-card__sales">${a.sales.toLocaleString()} sold</div>
+        </div>
+      </div>`).join('');
+  }
+
+  renderGrid(automations);
+
+  // Filter
+  function applyFilter() {
+    const q    = document.getElementById('mkt-search').value.toLowerCase();
+    const cat  = document.getElementById('mkt-cat').value;
+    const sort = document.getElementById('mkt-sort').value;
+
+    let items = automations.filter(a => {
+      const matchQ = !q || a.name.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q);
+      const matchC = !cat || a.tags.includes(cat);
+      return matchQ && matchC;
+    });
+
+    if (sort === 'price-asc')  items = items.sort((a,b) => a.price - b.price);
+    if (sort === 'price-desc') items = items.sort((a,b) => b.price - a.price);
+    if (sort === 'newest')     items = items.reverse();
+
+    renderGrid(items);
+  }
+
+  document.getElementById('mkt-search').addEventListener('input', applyFilter);
+  document.getElementById('mkt-cat').addEventListener('change', applyFilter);
+  document.getElementById('mkt-sort').addEventListener('change', applyFilter);
+
+  // Modal
+  function openModal(idx) {
+    const a = automations[idx];
+    document.getElementById('modal-icon').textContent = a.icon;
+    document.getElementById('modal-name').textContent = a.name;
+    document.getElementById('modal-desc').textContent = a.desc;
+    document.getElementById('modal-price').textContent = `$${a.price}`;
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  document.getElementById('modal-close').addEventListener('click', () => {
+    document.getElementById('modal-overlay').classList.remove('open');
+  });
+  document.getElementById('modal-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal-overlay'))
+      document.getElementById('modal-overlay').classList.remove('open');
+  });
+</script>
+</body>
+</html>

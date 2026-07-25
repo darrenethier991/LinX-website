@@ -1,13 +1,1008 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-CA">
 <head>
   <meta charset="UTF-8" />
-  <title>LinX Admin Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="/styles.css" />
+  <title>Admin Console — LinX</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/linx-design-system.css" />
+  <style>
+    body { font-size: 13px; cursor: default; }
+
+    /* ADMIN LAYOUT */
+    .admin-layout { display: flex; min-height: calc(100vh - var(--nav-h)); }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      background: var(--bg-surface); border-right: 1px solid var(--border);
+      padding: var(--sp-6) 0; position: sticky; top: var(--nav-h);
+      height: calc(100vh - var(--nav-h)); overflow-y: auto;
+    }
+    .sidebar-section { padding: 0 var(--sp-4) var(--sp-4); margin-bottom: var(--sp-2); }
+    .sidebar-section-title {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: var(--sp-2); padding: 0 var(--sp-2);
+    }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px var(--sp-2); border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 500; color: var(--text-muted);
+      cursor: pointer; transition: all 0.15s; text-decoration: none;
+    }
+    .sidebar-link:hover { color: var(--text); background: var(--bg-card); }
+    .sidebar-link.active { color: var(--gold); background: var(--gold-glow); }
+    .sidebar-icon { font-size: 14px; width: 18px; text-align: center; }
+
+    /* MAIN AREA */
+    .admin-main { flex: 1; padding: var(--sp-6); overflow-x: hidden; min-width: 0; }
+
+    /* PANELS */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* STAT GRID */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; }
+    .stat-card .label { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.1em; }
+    .stat-card .value { font-size: 26px; font-weight: 800; color: var(--gold); letter-spacing: -0.02em; }
+    .stat-card .sub   { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; border-radius: var(--radius-sm); }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th {
+      text-align: left; padding: 10px 12px;
+      background: var(--bg-surface); border-bottom: 1px solid var(--border);
+      font-weight: 600; color: var(--text-dim); font-size: 10px;
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text-muted); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg-card); }
+    .td-mono { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+
+    /* BAR CHART */
+    .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .bar-label { width: 130px; flex-shrink: 0; font-size: 12px; color: var(--text-muted); text-transform: capitalize; }
+    .bar-track { flex: 1; background: var(--border); border-radius: 4px; height: 8px; overflow: hidden; }
+    .bar-fill  { height: 8px; background: var(--gold); border-radius: 4px; transition: width 0.5s ease; }
+    .bar-count { width: 36px; text-align: right; font-size: 11px; color: var(--text-dim); }
+
+    /* LOG AREA */
+    .log-area {
+      background: #000; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: var(--sp-4); font-family: var(--font-mono); font-size: 11px;
+      line-height: 1.6; max-height: 200px; overflow-y: auto; margin-top: 8px;
+    }
+    .log-ok   { color: #4ade80; }
+    .log-warn { color: #facc15; }
+    .log-err  { color: #f87171; }
+    .log-info { color: var(--neon-cyan); }
+
+    /* TABS */
+    .tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+    .tab {
+      padding: 6px 16px; border-radius: var(--radius-pill);
+      border: 1px solid var(--border); background: var(--bg-card);
+      font-size: 11px; font-weight: 600; cursor: pointer; color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .tab:hover { border-color: var(--border-gold); color: var(--gold); }
+    .tab.active { background: var(--gold-glow); border-color: var(--gold); color: var(--gold); }
+
+    /* TWO COL */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* LOGIN */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; background: var(--bg-deep);
+    }
+    .login-box {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 36px; width: 100%; max-width: 360px;
+    }
+    .login-logo { font-size: 28px; font-weight: 900; margin-bottom: 4px; }
+    .login-logo .l { color: var(--gold); }
+    .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+    .error-msg { color: var(--error); font-size: 12px; margin-top: 8px; }
+
+    /* STATUS DOT */
+    .status-dot {
+      display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px;
+    }
+    .status-dot--green  { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .status-dot--yellow { background: var(--warning); }
+    .status-dot--red    { background: var(--error); }
+
+    /* WORKFLOW MONITOR */
+    .workflow-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 0; border-bottom: 1px solid var(--border);
+    }
+    .workflow-row:last-child { border-bottom: none; }
+    .workflow-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .workflow-desc { font-size: 11px; color: var(--text-dim); }
+
+    /* TOGGLE SWITCH */
+    .switch { position: relative; display: inline-block; width: 38px; height: 22px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch-track {
+      position: absolute; inset: 0; background: var(--border);
+      border-radius: 11px; cursor: pointer; transition: background 0.2s;
+    }
+    .switch input:checked + .switch-track { background: var(--gold); }
+    .switch-thumb {
+      position: absolute; width: 16px; height: 16px; background: white; border-radius: 50%;
+      top: 3px; left: 3px; transition: left 0.2s; pointer-events: none;
+    }
+    .switch input:checked ~ .switch-thumb { left: 19px; }
+
+    /* DRAWER */
+    .drawer-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      z-index: 500; align-items: flex-end; justify-content: flex-end;
+    }
+    .drawer-overlay.open { display: flex; }
+    .drawer {
+      background: var(--bg-card); border-left: 1px solid var(--border);
+      width: 420px; max-width: 100%; height: 100vh; overflow-y: auto;
+      padding: var(--sp-6); position: relative;
+    }
+    .drawer-close { position: absolute; top: 16px; right: 16px; cursor: pointer; font-size: 20px; color: var(--text-muted); }
+    .drawer-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .drawer-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-dim); margin-bottom: 6px; }
+
+    /* PAGINATION */
+    .pagination { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; font-size: 12px; color: var(--text-muted); }
+
+    /* CARD HEADER */
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .card-title { font-size: 14px; font-weight: 700; }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100">
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo"><span class="l">Lin</span>X</div>
+    <p>Admin Console — sign in to continue.</p>
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input class="form-input" id="login-user" type="text" autocomplete="username" placeholder="admin" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="login-pass" type="password" autocomplete="current-password" placeholder="••••••••" />
+    </div>
+    <button class="btn btn--primary btn--full" id="login-btn">Sign In</button>
+    <div class="error-msg" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app" style="display:none">
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a class="nav__logo" href="../index.html">
+      <span class="l">Lin</span><span style="color:#fff">X</span>
+    </a>
+    <ul class="nav__links">
+      <li><a href="../index.html">Public Site</a></li>
+      <li><a href="crawler-dashboard.html">Crawler</a></li>
+      <li><a href="contractor-leads.html">Leads</a></li>
+    </ul>
+    <div class="nav__actions">
+      <span id="nav-user" style="font-size:12px;color:var(--text-muted)"></span>
+      <button class="btn btn--ghost btn--sm" id="logout-btn">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="admin-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Overview</div>
+        <a class="sidebar-link active" data-panel="dashboard">
+          <span class="sidebar-icon">📊</span> Dashboard
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Lead Engine</div>
+        <a class="sidebar-link" data-panel="crawler">
+          <span class="sidebar-icon">🕸️</span> OSINT Crawler
+        </a>
+        <a class="sidebar-link" data-panel="leads">
+          <span class="sidebar-icon">🎯</span> Contractor Leads
+        </a>
+        <a class="sidebar-link" data-panel="crm">
+          <span class="sidebar-icon">👥</span> CRM Contacts
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Platform</div>
+        <a class="sidebar-link" data-panel="echoforge">
+          <span class="sidebar-icon">⚡</span> EchoForge Agents
+        </a>
+        <a class="sidebar-link" data-panel="shortener">
+          <span class="sidebar-icon">🔗</span> URL Shortener
+        </a>
+        <a class="sidebar-link" data-panel="workflows">
+          <span class="sidebar-icon">🔄</span> Workflows
+        </a>
+        <a class="sidebar-link" data-panel="workers">
+          <span class="sidebar-icon">⚙️</span> Worker Status
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Data</div>
+        <a class="sidebar-link" data-panel="billing">
+          <span class="sidebar-icon">💳</span> Billing
+        </a>
+        <a class="sidebar-link" data-panel="database">
+          <span class="sidebar-icon">🗄️</span> DB Viewer
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="admin-main">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="panel active" id="panel-dashboard">
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">Admin Dashboard</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">LinX platform overview · <span id="dash-time"></span></p>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="label">Total Leads</div>
+            <div class="value" id="dash-total-leads">—</div>
+            <div class="sub">All time</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Active (72h)</div>
+            <div class="value" id="dash-active">—</div>
+            <div class="sub">In pipeline</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">SMS Sent</div>
+            <div class="value" id="dash-sms">—</div>
+            <div class="sub">Last 7 days</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Automations</div>
+            <div class="value">3</div>
+            <div class="sub">Running</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Workers</div>
+            <div class="value" id="dash-workers">3</div>
+            <div class="sub">Online</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Wallet Balance</div>
+            <div class="value" id="dash-balance">—</div>
+            <div class="sub">Platform credits</div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Worker Health</div>
+              <span class="badge badge--green">All Systems Go</span>
+            </div>
+            <div id="worker-health-list">
+              <div class="workflow-row">
+                <div>
+                  <div class="workflow-name"><span class="status-dot status-dot--green"></span>api.js</div>
+                  <div class="workflow-desc">api.linxservices.ca · CRM + Events + Usage</div>
+                </div>
+                <span class="badge badge--green">Online</span>
+              </div>
+              <div class="workflow-row">
+                <div>
+                  <div class="workflow-name"><span class="status-dot status-dot--green"></span>sms.js</div>
+                  <div class="workflow-desc">sms.linxservices.ca · Twilio inbound/outbound</div>
+                </div>
+                <span class="badge badge--green">Online</span>
+              </div>
+              <div class="workflow-row">
+                <div>
+                  <div class="workflow-name"><span class="status-dot status-dot--green"></span>ai-gateway.js</div>
+                  <div class="workflow-desc">ai.linxservices.ca · Intent + Entity + Route</div>
+                </div>
+                <span class="badge badge--green">Online</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent Events</div>
+              <button class="btn btn--ghost btn--sm" id="refresh-events">Refresh</button>
+            </div>
+            <div class="log-area" id="event-log">
+              <div class="log-ok">[OK] sms.received — +17055551234 · 12s ago</div>
+              <div class="log-info">[INFO] qualify_lead started — contactId: abc123 · 13s ago</div>
+              <div class="log-ok">[OK] send_welcome_sms completed · 45s ago</div>
+              <div class="log-info">[INFO] crm.contact.created — source: sms · 2m ago</div>
+              <div class="log-ok">[OK] schedule_followup queued · 2m ago</div>
+              <div class="log-warn">[WARN] ai-gateway timeout (retry OK) · 5m ago</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CRAWLER ── -->
+      <div class="panel" id="panel-crawler">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+          <div>
+            <h1 style="font-size:20px;font-weight:800;margin-bottom:4px">OSINT Crawler</h1>
+            <p style="color:var(--text-muted);font-size:12px">Monitors Kijiji, Craigslist, Reddit for homeowner service requests</p>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn--outline btn--sm" id="run-crawler">▶ Run Now</button>
+            <button class="btn btn--ghost btn--sm" id="refresh-crawler">Refresh</button>
+          </div>
+        </div>
+
+        <div class="stat-grid" id="crawler-stats">
+          <div class="stat-card"><div class="label">Total Leads</div><div class="value" id="stat-total">—</div></div>
+          <div class="stat-card"><div class="label">Active (72h)</div><div class="value" id="stat-active">—</div></div>
+          <div class="stat-card"><div class="label">New Last 72h</div><div class="value" id="stat-new">—</div></div>
+          <div class="stat-card"><div class="label">Expired</div><div class="value" id="stat-expired">—</div></div>
+          <div class="stat-card"><div class="label">Last Cycle Added</div><div class="value" id="stat-cycle-added">—</div></div>
+          <div class="stat-card"><div class="label">Last Cycle Dupes</div><div class="value" id="stat-cycle-dupes">—</div></div>
+        </div>
+
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-header">
+            <div class="card-title">Crawler Status</div>
+            <div style="display:flex;gap:16px;font-size:12px;flex-wrap:wrap">
+              <span>Status: <span id="craw-running" class="badge badge--green">Running</span></span>
+              <span>Last run: <span id="craw-lastrun" class="td-mono">—</span></span>
+              <span>Interval: <span id="craw-interval" class="td-mono">4h</span></span>
+            </div>
+          </div>
+          <div class="log-area" id="crawler-log">
+            <span class="log-ok">No errors in last cycle.</span>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">Leads by Category</div>
+            <div id="cat-bars"></div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px">Leads by Source</div>
+            <div id="src-bars"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Recent Leads</div>
+            <div style="display:flex;gap:8px">
+              <select class="form-select" id="filter-cat" style="width:140px;padding:5px 8px">
+                <option value="">All Categories</option>
+              </select>
+              <select class="form-select" id="filter-src" style="width:130px;padding:5px 8px">
+                <option value="">All Sources</option>
+                <option value="kijiji">Kijiji</option>
+                <option value="craigslist">Craigslist</option>
+                <option value="reddit">Reddit</option>
+                <option value="organic">Organic</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Title</th><th>Category</th><th>City</th><th>Source</th><th>Posted</th><th>Status</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="crawler-leads-tbody">
+                <tr><td colspan="7" style="text-align:center;padding:24px">Connect API to load leads</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span id="crawler-count"></span>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn--ghost btn--sm" id="cprev-btn">← Prev</button>
+              <button class="btn btn--ghost btn--sm" id="cnext-btn">Next →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LEADS ── -->
+      <div class="panel" id="panel-leads">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+          <div>
+            <h1 style="font-size:20px;font-weight:800;margin-bottom:4px">Contractor Leads</h1>
+            <p style="color:var(--text-muted);font-size:12px">Homeowner service requests updated every 4 hours</p>
+          </div>
+          <button class="btn btn--primary btn--sm" id="export-leads">Export CSV</button>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;padding:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <div>
+            <label class="form-label" style="margin-bottom:4px">Trade Category</label>
+            <select class="form-select" id="f-category" style="width:150px;padding:6px 8px"><option value="">All Categories</option></select>
+          </div>
+          <div>
+            <label class="form-label" style="margin-bottom:4px">City / Region</label>
+            <input class="form-input" id="f-city" placeholder="e.g. Toronto" style="width:140px;padding:6px 8px" />
+          </div>
+          <div>
+            <label class="form-label" style="margin-bottom:4px">Source</label>
+            <select class="form-select" id="f-source" style="width:130px;padding:6px 8px">
+              <option value="">All Sources</option>
+              <option value="kijiji">Kijiji</option>
+              <option value="craigslist">Craigslist</option>
+              <option value="reddit">Reddit</option>
+              <option value="organic">Organic</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" style="margin-bottom:4px">Freshness</label>
+            <select class="form-select" id="f-freshness" style="width:120px;padding:6px 8px">
+              <option value="86400000">Last 24h</option>
+              <option value="259200000" selected>Last 72h</option>
+              <option value="604800000">Last 7 days</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:6px;align-items:flex-end">
+            <button class="btn btn--primary btn--sm" id="search-leads">Search</button>
+            <button class="btn btn--ghost btn--sm" id="reset-leads">Reset</button>
+          </div>
+        </div>
+
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px" id="leads-summary">Loading leads…</div>
+
+        <div id="leads-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
+          <div style="text-align:center;padding:48px;color:var(--text-dim)">Connect API to load leads</div>
+        </div>
+        <div class="pagination" style="margin-top:18px">
+          <span id="page-info"></span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn--ghost btn--sm" id="prev-btn">← Prev</button>
+            <button class="btn btn--ghost btn--sm" id="next-btn">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CRM ── -->
+      <div class="panel" id="panel-crm">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+          <div>
+            <h1 style="font-size:20px;font-weight:800;margin-bottom:4px">CRM Contacts</h1>
+            <p style="color:var(--text-muted);font-size:12px">All contacts sourced from web, SMS, and organic intake</p>
+          </div>
+          <button class="btn btn--primary btn--sm" id="add-contact-btn">+ Add Contact</button>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <input class="form-input" id="crm-search" placeholder="Search by name, email, phone…" style="max-width:320px" />
+          <select class="form-select" id="crm-source-filter" style="width:130px">
+            <option value="">All Sources</option>
+            <option value="sms">SMS</option>
+            <option value="web">Web</option>
+            <option value="api">API</option>
+            <option value="manual">Manual</option>
+          </select>
+          <button class="btn btn--outline btn--sm" id="crm-search-btn">Search</button>
+        </div>
+
+        <div class="table-wrap card" style="padding:0">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th><th>Phone</th><th>Email</th><th>Source</th><th>Score</th><th>Tags</th><th>Created</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="crm-tbody">
+              <tr><td colspan="8" style="text-align:center;padding:36px;color:var(--text-dim)">Connect Supabase to load contacts</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination">
+          <span id="crm-count"></span>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn--ghost btn--sm" id="crm-prev">← Prev</button>
+            <button class="btn btn--ghost btn--sm" id="crm-next">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ECHOFORGE AGENTS ── -->
+      <div class="panel" id="panel-echoforge">
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">EchoForge Agent Controls</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Enable or disable individual AI agents and automation triggers</p>
+
+        <div class="stat-grid" style="margin-bottom:24px">
+          <div class="stat-card">
+            <div class="label">Active Agents</div>
+            <div class="value">4</div>
+            <div class="sub">Of 6 total</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Runs Today</div>
+            <div class="value" id="agent-runs-today">—</div>
+            <div class="sub">All agents</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Success Rate</div>
+            <div class="value">98.2%</div>
+            <div class="sub">Last 24h</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Echo Credits</div>
+            <div class="value" id="echo-credits">—</div>
+            <div class="sub">Remaining</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Agent Registry</div>
+            <span style="font-size:11px;color:var(--text-dim)">Changes take effect immediately</span>
+          </div>
+          <div id="agent-list">
+            <div class="workflow-row">
+              <div style="flex:1">
+                <div class="workflow-name">Intent Classifier</div>
+                <div class="workflow-desc">Classifies inbound SMS intent: inquiry · schedule · complaint · cancel · opt_out</div>
+              </div>
+              <label class="switch" style="margin-left:16px">
+                <input type="checkbox" checked onchange="toggleAgent(this,'classifier')">
+                <div class="switch-track"></div>
+                <div class="switch-thumb"></div>
+              </label>
+            </div>
+            <div class="workflow-row">
+              <div style="flex:1">
+                <div class="workflow-name">Entity Extractor</div>
+                <div class="workflow-desc">Extracts name, phone, email, trade type from inbound messages</div>
+              </div>
+              <label class="switch" style="margin-left:16px">
+                <input type="checkbox" checked onchange="toggleAgent(this,'entities')">
+                <div class="switch-track"></div>
+                <div class="switch-thumb"></div>
+              </label>
+            </div>
+            <div class="workflow-row">
+              <div style="flex:1">
+                <div class="workflow-name">Lead Qualifier</div>
+                <div class="workflow-desc">Scores leads 1-10, assigns tier (hot/warm/cold) and routes department</div>
+              </div>
+              <label class="switch" style="margin-left:16px">
+                <input type="checkbox" checked onchange="toggleAgent(this,'qualifier')">
+                <div class="switch-track"></div>
+                <div class="switch-thumb"></div>
+              </label>
+            </div>
+            <div class="workflow-row">
+              <div style="flex:1">
+                <div class="workflow-name">Reply Drafter</div>
+                <div class="workflow-desc">Generates personalised welcome and follow-up SMS messages</div>
+              </div>
+              <label class="switch" style="margin-left:16px">
+                <input type="checkbox" checked onchange="toggleAgent(this,'drafter')">
+                <div class="switch-track"></div>
+                <div class="switch-thumb"></div>
+              </label>
+            </div>
+            <div class="workflow-row">
+              <div style="flex:1">
+                <div class="workflow-name">Scheduler Agent</div>
+                <div class="workflow-desc">Queues follow-up touchpoints at 1h, 24h, 72h intervals for warm leads</div>
+              </div>
+              <label class="switch" style="margin-left:16px">
+                <input type="checkbox" onchange="toggleAgent(this,'scheduler')">
+                <div class="switch-track"></div>
+                <div class="switch-thumb"></div>
+              </label>
+            </div>
+            <div class="workflow-row">
+              <div style="flex:1">
+                <div class="workflow-name">Department Router</div>
+                <div class="workflow-desc">Routes contacts to correct department: sales · support · billing · escalation</div>
+              </div>
+              <label class="switch" style="margin-left:16px">
+                <input type="checkbox" onchange="toggleAgent(this,'router')">
+                <div class="switch-track"></div>
+                <div class="switch-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── URL SHORTENER ── -->
+      <div class="panel" id="panel-shortener">
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">URL Shortener Analytics</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Track clicks, geography, devices, and referrers for all shortened links</p>
+
+        <div class="stat-grid" style="margin-bottom:24px">
+          <div class="stat-card"><div class="label">Total Links</div><div class="value" id="shn-total">—</div></div>
+          <div class="stat-card"><div class="label">Total Clicks</div><div class="value" id="shn-clicks">—</div></div>
+          <div class="stat-card"><div class="label">Clicks Today</div><div class="value" id="shn-today">—</div></div>
+          <div class="stat-card"><div class="label">Top Country</div><div class="value" id="shn-country">CA</div></div>
+        </div>
+
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-header">
+            <div class="card-title">Create Short Link</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <input class="form-input" id="shn-dest" placeholder="https://your-destination-url.com" style="flex:1;min-width:260px" />
+            <input class="form-input" id="shn-slug" placeholder="Custom slug (optional)" style="width:180px" />
+            <button class="btn btn--primary" id="shn-create-btn">Create</button>
+          </div>
+          <div id="shn-result" style="margin-top:10px;font-size:12px;color:var(--gold)"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">All Links</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Short URL</th><th>Destination</th><th>Clicks</th><th>Created</th><th>Top Country</th><th></th></tr>
+              </thead>
+              <tbody id="shn-tbody">
+                <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-dim)">No links yet. Create your first one above.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── WORKFLOWS ── -->
+      <div class="panel" id="panel-workflows">
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">Automation Workflows</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Monitor and control all LinX automation workflows</p>
+
+        <div class="stat-grid" style="margin-bottom:24px">
+          <div class="stat-card"><div class="label">Runs Today</div><div class="value" id="wf-runs">—</div></div>
+          <div class="stat-card"><div class="label">Succeeded</div><div class="value" id="wf-success">—</div></div>
+          <div class="stat-card"><div class="label">Failed</div><div class="value" id="wf-failed">—</div></div>
+          <div class="stat-card"><div class="label">In Queue</div><div class="value" id="wf-queue">—</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Registered Workflows</div>
+            <button class="btn btn--outline btn--sm" id="trigger-test-btn">Test Trigger</button>
+          </div>
+          <div class="workflow-row">
+            <div style="flex:1">
+              <div class="workflow-name"><span class="status-dot status-dot--green"></span>send_welcome_sms</div>
+              <div class="workflow-desc">Triggered by: crm.contact.created — Sends personalised welcome SMS via Twilio</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge badge--green">Active</span>
+              <button class="btn btn--ghost btn--sm" onclick="testWorkflow('send_welcome_sms')">Run</button>
+            </div>
+          </div>
+          <div class="workflow-row">
+            <div style="flex:1">
+              <div class="workflow-name"><span class="status-dot status-dot--green"></span>qualify_lead</div>
+              <div class="workflow-desc">Triggered by: sms.received / sms.intent.detected — AI lead scoring 1-10 + department routing</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge badge--green">Active</span>
+              <button class="btn btn--ghost btn--sm" onclick="testWorkflow('qualify_lead')">Run</button>
+            </div>
+          </div>
+          <div class="workflow-row">
+            <div style="flex:1">
+              <div class="workflow-name"><span class="status-dot status-dot--green"></span>schedule_followup</div>
+              <div class="workflow-desc">Triggered by: score >= 8 — Queues follow-up SMS at 1h, 24h, 72h intervals</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge badge--green">Active</span>
+              <button class="btn btn--ghost btn--sm" onclick="testWorkflow('schedule_followup')">Run</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <div class="card-header">
+            <div class="card-title">Recent Runs</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Workflow</th><th>Contact</th><th>Status</th><th>Steps</th><th>Duration</th><th>Ran At</th></tr>
+              </thead>
+              <tbody id="workflow-runs-tbody">
+                <tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text-dim)">Connect API to load workflow history</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── WORKERS ── -->
+      <div class="panel" id="panel-workers">
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">Worker Status</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Cloudflare Workers deployed on linxservices.ca infrastructure</p>
+
+        <div class="stat-grid" style="margin-bottom:24px">
+          <div class="stat-card"><div class="label">Workers Online</div><div class="value">3 / 3</div></div>
+          <div class="stat-card"><div class="label">Requests Today</div><div class="value" id="w-req">—</div></div>
+          <div class="stat-card"><div class="label">P95 Latency</div><div class="value" id="w-latency">—</div></div>
+          <div class="stat-card"><div class="label">Error Rate</div><div class="value" id="w-errors">0.1%</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Deployed Workers</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Worker</th><th>Route</th><th>Status</th><th>CPU (ms avg)</th><th>Memory</th><th>Last Deploy</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:600">api.js</td>
+                  <td class="td-mono">api.linxservices.ca/*</td>
+                  <td><span class="badge badge--green">Active</span></td>
+                  <td class="td-mono">1.2ms</td>
+                  <td class="td-mono">12 MB</td>
+                  <td class="td-mono">—</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600">sms.js</td>
+                  <td class="td-mono">sms.linxservices.ca/*</td>
+                  <td><span class="badge badge--green">Active</span></td>
+                  <td class="td-mono">8.4ms</td>
+                  <td class="td-mono">8 MB</td>
+                  <td class="td-mono">—</td>
+                </tr>
+                <tr>
+                  <td style="font-weight:600">ai-gateway.js</td>
+                  <td class="td-mono">ai.linxservices.ca/*</td>
+                  <td><span class="badge badge--green">Active</span></td>
+                  <td class="td-mono">22.1ms</td>
+                  <td class="td-mono">18 MB</td>
+                  <td class="td-mono">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <div class="card-header"><div class="card-title">KV Bindings — LINX_KV</div></div>
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.8">
+            <div>• <code>sms:inbound:*</code> — Raw inbound SMS records (7-day TTL)</div>
+            <div>• <code>sms:outbound:*</code> — Outbound SMS log (7-day TTL)</div>
+            <div>• <code>sms:classified:*</code> — AI-classified SMS with intent + entities (7-day TTL)</div>
+            <div>• <code>opt_out:*</code> — Permanent opt-out flags (no TTL)</div>
+            <div>• <code>shortlink:*</code> — URL shortener mappings</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BILLING ── -->
+      <div class="panel" id="panel-billing">
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">Billing Overview</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Per-message billing, wallet balances, and Stripe subscriptions</p>
+
+        <div class="stat-grid" style="margin-bottom:24px">
+          <div class="stat-card"><div class="label">Active Subscriptions</div><div class="value" id="b-subs">—</div></div>
+          <div class="stat-card"><div class="label">MRR</div><div class="value" id="b-mrr">—</div></div>
+          <div class="stat-card"><div class="label">Credits Sold</div><div class="value" id="b-credits">—</div></div>
+          <div class="stat-card"><div class="label">Messages Today</div><div class="value" id="b-msgs">—</div></div>
+          <div class="stat-card"><div class="label">Cost/Message</div><div class="value">$0.01</div></div>
+          <div class="stat-card"><div class="label">Daily Cap</div><div class="value">50,000</div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Wallet Transactions (Recent)</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Type</th><th>Amount</th><th>Wallet</th><th>Message ID</th><th>Timestamp</th></tr>
+              </thead>
+              <tbody id="billing-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-dim)">Connect Supabase to load transactions</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DB VIEWER ── -->
+      <div class="panel" id="panel-database">
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">Database Viewer</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Read-only view of Supabase tables</p>
+
+        <div class="tabs" id="db-tabs">
+          <div class="tab active" data-table="contacts">contacts</div>
+          <div class="tab" data-table="wallets">wallets</div>
+          <div class="tab" data-table="transactions">transactions</div>
+          <div class="tab" data-table="usage_stats">usage_stats</div>
+          <div class="tab" data-table="teams">teams</div>
+          <div class="tab" data-table="users">users</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title" id="db-table-name">contacts</div>
+            <div style="display:flex;gap:8px">
+              <input class="form-input" id="db-filter" placeholder="Filter rows…" style="width:200px;padding:5px 8px" />
+              <button class="btn btn--outline btn--sm" id="db-refresh">Refresh</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table id="db-table">
+              <thead><tr id="db-thead"><th colspan="8" style="text-align:center;padding:32px;color:var(--text-dim)">Connect Supabase credentials to view table data</th></tr></thead>
+              <tbody id="db-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawer-overlay">
+  <div class="drawer">
+    <span class="drawer-close" id="drawer-close">✕</span>
+    <div id="drawer-body">Loading…</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── SIMPLE AUTH ──────────────────────────────────────────────────────────────
+  const ADMIN_USER = 'admin';
+  const ADMIN_PASS = 'linx2024'; // Change in production
+  let _token = sessionStorage.getItem('linx_admin_token') || '';
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast' + (type ? ` toast--${type}` : '');
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 4000);
+  }
+
+  if (_token) {
+    showApp(sessionStorage.getItem('linx_admin_user'));
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+
+  document.getElementById('login-btn').addEventListener('click', () => {
+    const u = document.getElementById('login-user').value.trim();
+    const p = document.getElementById('login-pass').value.trim();
+    if (u === ADMIN_USER && p === ADMIN_PASS) {
+      _token = btoa(u + ':' + Date.now());
+      sessionStorage.setItem('linx_admin_token', _token);
+      sessionStorage.setItem('linx_admin_user', u);
+      showApp(u);
+    } else {
+      document.getElementById('login-err').textContent = 'Invalid credentials.';
+    }
+  });
+  document.getElementById('login-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('login-btn').click();
+  });
+  document.getElementById('logout-btn').addEventListener('click', () => {
+    sessionStorage.removeItem('linx_admin_token');
+    sessionStorage.removeItem('linx_admin_user');
+    location.reload();
+  });
+
+  function showApp(username) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('nav-user').textContent = username || 'admin';
+    initDashboard();
+  }
+
+  // ── SIDEBAR NAVIGATION ───────────────────────────────────────────────────────
+  document.querySelectorAll('.sidebar-link').forEach(link => {
+    link.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      link.classList.add('active');
+      const panelId = 'panel-' + link.dataset.panel;
+      const panel = document.getElementById(panelId);
+      if (panel) panel.classList.add('active');
+    });
+  });
+
+  // ── DASHBOARD ────────────────────────────────────────────────────────────────
+  function initDashboard() {
+    document.getElementById('dash-time').textContent = new Date().toLocaleString();
+    // Simulate some numbers
+    document.getElementById('dash-total-leads').textContent = '1,847';
+    document.getElementById('dash-active').textContent = '312';
+    document.getElementById('dash-sms').textContent = '892';
+    document.getElementById('dash-balance').textContent = '$45.20';
+
+    // Crawler bars
+    renderBars('cat-bars', { roofing: 142, electrical: 98, plumbing: 87, landscaping: 74, renovation: 61, hvac: 45 });
+    renderBars('src-bars', { kijiji: 203, craigslist: 118, reddit: 72, organic: 114 });
+  }
+
+  // ── REFRESH EVENTS ───────────────────────────────────────────────────────────
+  document.getElementById('refresh-events').addEventListener('click', () => {
+    const log = document.getElementById('event-log');
+    const now = new Date().toLocaleTimeString();
+    const entry = document.createElement('div');
+    entry.className = 'log-info';
+    entry.textContent = `[INFO] Manual refresh at ${now}`;
+    log.prepend(entry);
+  });
+
+  // ── BAR CHART RENDERER ───────────────────────────────────────────────────────
+  function renderBars(containerId, data) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const max = Math.max(...Object.values(data));
+    el.innerHTML = Object.entries(data).map(([k, v]) => `
+      <div class="bar-row">
+        <div class="bar-label">${escHtml(k)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${(v/max*100).toFixed(0)}%"></div></div>
+        <div class="bar-count">${v}</div>
+      </div>`).join('');
+  }
+
+  // ── DB TABS ──────────────────────────────────────────────────────────────────
+  document.querySelectorAll('#db-tabs .tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#db-tabs .tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('db-table-name').textContent = tab.dataset.table;
+    });
+  });
+
+  // ── SHORTENER ────────────────────────────────────────────────────────────────
+  document.getElementById('shn-create-btn').addEventListener('click', () => {
+    const dest = document.getElementById('shn-dest').value.trim();
+    if (!dest) return;
+    const slug = document.getElementById('shn-slug').value.trim() || Math.random().toString(36).slice(2, 8);
+    const shortUrl = `https://linx.ca/${slug}`;
+    document.getElementById('shn-result').innerHTML = `✓ Created: <a href="${shortUrl}" style="color:var(--gold)">${shortUrl}</a>`;
+    document.getElementById('shn-dest').value = '';
+    document.getElementById('shn-slug').value = '';
+  });
+
+  // ── WORKFLOW TEST ────────────────────────────────────────────────────────────
+  function testWorkflow(name) {
+    showToast(`Triggered workflow: ${name}`, '');
+  }
+
+  function toggleAgent(checkbox, name) {
+    showToast(`Agent "${name}" ${checkbox.checked ? 'enabled' : 'disabled'}`, '');
+  }
+
+  // ── DRAWER ───────────────────────────────────────────────────────────────────
+  document.getElementById('drawer-close').addEventListener('click', () => {
+    document.getElementById('drawer-overlay').classList.remove('open');
+  });
+  document.getElementById('drawer-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('drawer-overlay'))
+      document.getElementById('drawer-overlay').classList.remove('open');
+  });
+
+  function escHtml(s) { return String(s).replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m])); }
+</script>
 </body>
 </html>
