@@ -176,7 +176,23 @@
     .market-card__price { font-size: 13px; font-weight: 700; color: var(--gold); }
     .market-card__sales { font-size: 11px; color: var(--text-dim); }
 
+    /* ECOSYSTEM HUB */
+    .ecosystem-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:40px; }
+    .ecosystem-card { position:relative; min-height:210px; padding:22px; border:1px solid var(--border); border-radius:var(--radius); background:linear-gradient(145deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01)); overflow:hidden; transition:transform .2s,border-color .2s,box-shadow .2s; }
+    .ecosystem-card::after { content:''; position:absolute; width:140px; height:140px; right:-54px; bottom:-58px; border-radius:50%; background:var(--accent,rgba(212,168,83,.15)); filter:blur(8px); opacity:.7; }
+    .ecosystem-card:hover { transform:translateY(-4px); border-color:var(--border-gold); box-shadow:var(--shadow-gold); }
+    .ecosystem-card__icon { font-size:27px; margin-bottom:18px; }
+    .ecosystem-card__kicker { color:var(--text-dim); font-size:10px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; margin-bottom:8px; }
+    .ecosystem-card__title { font-size:18px; font-weight:800; margin-bottom:8px; }
+    .ecosystem-card__desc { color:var(--text-muted); font-size:12px; line-height:1.65; max-width:220px; }
+    .ecosystem-card__link { position:absolute; left:22px; bottom:18px; z-index:1; color:var(--gold); font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .ecosystem-card--blue { --accent:rgba(62,199,255,.18); }
+    .ecosystem-card--violet { --accent:rgba(124,92,216,.2); }
+    .ecosystem-card--green { --accent:rgba(34,197,94,.16); }
+    .ecosystem-card--red { --accent:rgba(239,68,68,.15); }
+
     /* RESPONSIVE */
+    @media (max-width: 1100px) { .ecosystem-grid { grid-template-columns:repeat(2,1fr); } }
     @media (max-width: 900px) {
       .for-grid { grid-template-columns: 1fr; }
       .pricing-grid { grid-template-columns: 1fr; }
@@ -205,6 +221,7 @@
     <li><a href="#how">How It Works</a></li>
     <li><a href="#who">Who It's For</a></li>
     <li><a href="#marketplace">Marketplace</a></li>
+    <li><a href="#ecosystem">Ecosystem</a></li>
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
@@ -226,6 +243,7 @@
     <div class="hero__actions">
       <a href="#contact" class="btn btn--primary btn--lg">Post a Project Free</a>
       <a href="#contact" class="btn btn--outline btn--lg">Join as Contractor</a>
+      <a href="ecosystem.html" class="btn btn--ghost btn--lg">Open Ecosystem Hub</a>
     </div>
     <div class="hero__stats-bar">
       <div class="hero__stat">
@@ -424,6 +442,45 @@
           <span class="market-card__sales">628 sold</span>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ECOSYSTEM HUB ── -->
+<section id="ecosystem" class="section section--alt">
+  <div class="container">
+    <span class="eyebrow">One LinX Ecosystem</span>
+    <h2 class="section-title">Every workflow, connected.</h2>
+    <p class="section-sub">Start with the public network, then move through the tools that keep a trade business moving. Each surface has a clear job, shared brand language, and a direct path to the next step.</p>
+    <div class="ecosystem-grid">
+      <a class="ecosystem-card ecosystem-card--gold" href="index.html">
+        <div class="ecosystem-card__icon">🔗</div>
+        <div class="ecosystem-card__kicker">Public network</div>
+        <div class="ecosystem-card__title">LinX Network</div>
+        <p class="ecosystem-card__desc">Match homeowners with verified local contractors and turn project intent into a qualified conversation.</p>
+        <span class="ecosystem-card__link">Explore network →</span>
+      </a>
+      <a class="ecosystem-card ecosystem-card--blue" href="admin/index.html">
+        <div class="ecosystem-card__icon">📈</div>
+        <div class="ecosystem-card__kicker">Operations</div>
+        <div class="ecosystem-card__title">Lead &amp; CRM Hub</div>
+        <p class="ecosystem-card__desc">Keep lead intake, routing, follow-ups, and contractor operations in one working view.</p>
+        <span class="ecosystem-card__link">Open operations →</span>
+      </a>
+      <a class="ecosystem-card ecosystem-card--violet" href="marketplace.html">
+        <div class="ecosystem-card__icon">⚙️</div>
+        <div class="ecosystem-card__kicker">Automation layer</div>
+        <div class="ecosystem-card__title">EchoForge</div>
+        <p class="ecosystem-card__desc">Discover, remix, and sell repeatable workflows for lead nurture, booking, and customer follow-up.</p>
+        <span class="ecosystem-card__link">Visit marketplace →</span>
+      </a>
+      <a class="ecosystem-card ecosystem-card--green" href="contact.html">
+        <div class="ecosystem-card__icon">✦</div>
+        <div class="ecosystem-card__kicker">Activation</div>
+        <div class="ecosystem-card__title">LinX Echo</div>
+        <p class="ecosystem-card__desc">Connect the AI and messaging layer to the human handoff that closes the loop with confidence.</p>
+        <span class="ecosystem-card__link">Connect your workflow →</span>
+      </a>
     </div>
   </div>
 </section>
@@ -653,6 +710,7 @@
           <li><a href="#who">CRM Pipeline</a></li>
           <li><a href="#who">URL Shortener</a></li>
           <li><a href="#marketplace">EchoForge</a></li>
+          <li><a href="#ecosystem">Ecosystem Hub</a></li>
         </ul>
       </div>
       <div class="footer__col">
