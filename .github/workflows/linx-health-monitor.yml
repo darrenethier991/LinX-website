@@ -1,0 +1,89 @@
+name: LinX health monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  health-check:
+    name: End-to-end public service health check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check live LinX endpoints
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p health-report
+          : > health-report/results.tsv
+
+          check() {
+            local name="$1"
+            local url="$2"
+            local expected="$3"
+            local max_seconds="$4"
+            local body="health-report/${name}.body"
+            local metrics
+            metrics="$(curl --fail-with-body --silent --show-error --location --max-time 20 \
+              --output "$body" --write-out '%{http_code}\t%{time_total}\t%{content_type}\t%{url_effective}' \
+              "$url")" || {
+                printf '%s\tFAIL\t%s\n' "$name" "$url" | tee -a health-report/results.tsv
+                return 1
+              }
+
+            IFS=$'\t' read -r status latency content_type effective <<< "$metrics"
+            awk -v value="$latency" -v max="$max_seconds" 'BEGIN { exit !(value <= max) }' || {
+              printf '%s\tFAIL_LATENCY\t%s\t%s\t%s\t%s\n' "$name" "$status" "$latency" "$content_type" "$effective" | tee -a health-report/results.tsv
+              return 1
+            }
+
+            if [[ "$status" != "$expected" ]]; then
+              printf '%s\tFAIL_STATUS\t%s\t%s\t%s\t%s\n' "$name" "$status" "$latency" "$content_type" "$effective" | tee -a health-report/results.tsv
+              return 1
+            fi
+
+            printf '%s\tPASS\t%s\t%s\t%s\t%s\n' "$name" "$status" "$latency" "$content_type" "$effective" | tee -a health-report/results.tsv
+          }
+
+          failures=0
+          check main-site https://linxservices.ca/ 200 10 || failures=$((failures + 1))
+          check ecosystem-hub https://linxservices.ca/ecosystem.html 200 10 || failures=$((failures + 1))
+          check pages-site https://linx-website.pages.dev/ 200 10 || failures=$((failures + 1))
+          check api-health https://api.linxservices.ca/health 200 10 || failures=$((failures + 1))
+          check gateway https://gateway.linxservices.ca/ 200 10 || failures=$((failures + 1))
+          check ai-health https://ai.linxservices.ca/health 200 10 || failures=$((failures + 1))
+          check ai-models https://ai.linxservices.ca/ai/models 200 10 || failures=$((failures + 1))
+          check sms-log https://sms.linxservices.ca/sms/log 200 10 || failures=$((failures + 1))
+          check sms-opt-outs https://sms.linxservices.ca/sms/opt-outs 200 10 || failures=$((failures + 1))
+          check linx-echo https://linx-echo.darrenethier991.workers.dev/ 200 10 || failures=$((failures + 1))
+          check landing-hub https://linx-landing-hub.pages.dev/ 200 10 || failures=$((failures + 1))
+
+          {
+            echo "# LinX health monitor"
+            echo
+            echo "UTC: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+            echo
+            echo '| Service | Result | HTTP | Latency (s) | Content type | Effective URL |'
+            echo '|---|---|---:|---:|---|---|'
+            awk -F '\t' '{printf "| %s | %s | %s | %s | %s | %s |\\n", $1,$2,$3,$4,$5,$6}' health-report/results.tsv
+            echo
+            echo "Failures: $failures"
+          } > health-report/summary.md
+
+          cat health-report/summary.md
+          if (( failures > 0 )); then
+            echo "LinX health monitor detected $failures failure(s)."
+            exit 1
+          fi
+
+      - name: Upload health report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linx-health-report-${{ github.run_number }}
+          path: health-report/
+          retention-days: 14
