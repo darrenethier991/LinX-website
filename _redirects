@@ -4,9 +4,6 @@
 # Admin redirect
 /admin          /admin/index.html  302
 
-# Marketplace shorthand
-/marketplace    /marketplace.html  302
-
 # API and SMS workers pass-through (served by Cloudflare Workers, not Pages)
 # These routes are handled by DNS routing to worker subdomains
 # api.linxservices.ca → api.js Worker
