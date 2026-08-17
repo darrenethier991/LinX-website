@@ -3,17 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EchoForge Marketplace — LinX</title>
-  <meta name="description" content="Buy, remix, and sell contractor automation workflows on the EchoForge Marketplace. SMS sequences, lead scoring bots, booking automations." />
+  <title>EchoForge Marketplace | Contractor Automation Templates — LinX</title>
+  <meta name="description" content="Explore EchoForge contractor automation templates for lead follow-up, booking, CRM workflows, URL analytics, and customer communication." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://linxservices.ca/marketplace.html" />
+  <meta property="og:title" content="EchoForge Marketplace | LinX" />
+  <meta property="og:description" content="A focused library of contractor automation templates, ready to explore and tailor to your workflow." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://linxservices.ca/marketplace.html" />
+  <meta property="og:image" content="/manus-storage/echoforge-marketplace-hero_0b21c564.jpg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/linx-design-system.css" />
   <style>
     body { cursor: none; }
 
     /* MARKETPLACE HERO — neon rave-lux with hammer & anvil motif */
+    /* Design: Industrial editorial — graphite material, warm-gold focus, restrained cobalt utility. */
     .mkt-hero {
       padding: 110px 0 80px; text-align: center; position: relative; overflow: hidden;
-      background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(124,92,216,0.14) 0%, rgba(212,168,83,0.04) 40%, transparent 70%);
+      background-image: linear-gradient(90deg, rgba(3,5,8,.94) 0%, rgba(3,5,8,.73) 52%, rgba(3,5,8,.86) 100%), url('/manus-storage/echoforge-marketplace-hero_0b21c564.jpg');
+      background-position: center; background-size: cover;
     }
     .mkt-hero::before {
       content: ''; position: absolute; inset: 0;
@@ -98,7 +107,9 @@
     .mkt-card__footer { display: flex; align-items: center; justify-content: space-between; }
     .mkt-card__price { font-size: 20px; font-weight: 900; color: var(--gold); }
     .mkt-card__price span { font-size: 12px; color: var(--text-dim); font-weight: 400; }
-    .mkt-card__sales { font-size: 11px; color: var(--text-dim); }
+    .mkt-card__meta { font-size: 11px; color: var(--text-dim); }
+
+    .market-note { font-size: 12px; color: var(--text-dim); margin: 10px 0 0; }
 
     /* VALUE GRID */
     .value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 44px; }
@@ -170,15 +181,16 @@
   <a class="nav__logo" href="index.html">
     <span class="l">Lin</span><span style="color:#fff">X</span>
   </a>
-  <ul class="nav__links">
+  <ul class="nav__links" aria-label="Primary navigation">
     <li><a href="index.html">Home</a></li>
     <li><a href="index.html#pricing">Pricing</a></li>
     <li><a href="marketplace.html" class="active">Marketplace</a></li>
+    <li><a href="ecosystem.html">Ecosystem</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
   <div class="nav__actions">
-    <a href="index.html#contact" class="btn btn--outline btn--sm">Sign In</a>
-    <a href="index.html#contact" class="btn btn--primary btn--sm">Get Started</a>
+    <a href="ecosystem.html" class="btn btn--outline btn--sm">Sign In</a>
+    <a href="contact.html" class="btn btn--primary btn--sm">Request Access</a>
   </div>
 </nav>
 
@@ -191,29 +203,28 @@
     </div>
     <h1>Build. <span>Sell.</span> Earn.</h1>
     <p class="mkt-hero__sub">
-      The automation marketplace built by contractors, for contractors.
-      Buy ready-made workflows. Remix them. Sell your own. Earn while you sleep.
+      A focused library of contractor automation templates for lead response, booking, follow-up, URL analytics, and customer communication.
     </p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:56px">
-      <a href="#listings" class="btn btn--primary btn--lg">Browse All Automations</a>
-      <a href="#earn" class="btn btn--outline btn--lg">Start Selling</a>
+      <a href="#listings" class="btn btn--primary btn--lg">Browse Templates</a>
+      <a href="#earn" class="btn btn--outline btn--lg">Share a Workflow</a>
     </div>
     <div class="mkt-stats">
       <div class="mkt-stat">
-        <div class="mkt-stat__num">847+</div>
-        <div class="mkt-stat__lbl">Automations</div>
+        <div class="mkt-stat__num">12</div>
+        <div class="mkt-stat__lbl">Starter Templates</div>
       </div>
       <div class="mkt-stat">
-        <div class="mkt-stat__num">12,400+</div>
-        <div class="mkt-stat__lbl">Purchases</div>
+        <div class="mkt-stat__num">6</div>
+        <div class="mkt-stat__lbl">Workflow Categories</div>
       </div>
       <div class="mkt-stat">
-        <div class="mkt-stat__num">$340k+</div>
-        <div class="mkt-stat__lbl">Creator Earnings</div>
+        <div class="mkt-stat__num">1</div>
+        <div class="mkt-stat__lbl">Unified Ecosystem</div>
       </div>
       <div class="mkt-stat">
-        <div class="mkt-stat__num">4.8 ★</div>
-        <div class="mkt-stat__lbl">Avg Rating</div>
+        <div class="mkt-stat__num">24/7</div>
+        <div class="mkt-stat__lbl">Operational Focus</div>
       </div>
     </div>
   </div>
@@ -224,7 +235,7 @@
   <div class="container">
     <span class="eyebrow">Why EchoForge</span>
     <h2 class="section-title">The Marketplace Contractors Actually Need</h2>
-    <p class="section-sub">Every automation is tested by real contractors in the field. No fluff.</p>
+    <p class="section-sub">A practical starting point for the repeatable work that keeps a trade business moving.</p>
     <div class="value-grid">
       <div class="value-card">
         <div class="value-card__icon">💬</div>
@@ -266,8 +277,8 @@
     <span class="eyebrow">Browse Automations</span>
     <h2 class="section-title">Ready-Made Workflows</h2>
     <div class="filter-bar">
-      <input id="mkt-search" placeholder="Search automations…" />
-      <select id="mkt-cat">
+      <input id="mkt-search" type="search" aria-label="Search workflow templates" placeholder="Search workflow templates…" />
+      <select id="mkt-cat" aria-label="Filter templates by category">
         <option value="">All Categories</option>
         <option value="sms">SMS Sequences</option>
         <option value="lead">Lead Scoring</option>
@@ -275,17 +286,18 @@
         <option value="review">Review Generation</option>
         <option value="analytics">Analytics</option>
       </select>
-      <select id="mkt-sort">
-        <option value="popular">Most Popular</option>
-        <option value="newest">Newest</option>
-        <option value="price-asc">Price: Low to High</option>
-        <option value="price-desc">Price: High to Low</option>
+      <select id="mkt-sort" aria-label="Sort workflow templates">
+        <option value="featured">Featured</option>
+        <option value="newest">Recently added</option>
+        <option value="name-asc">Name: A to Z</option>
+        <option value="name-desc">Name: Z to A</option>
       </select>
     </div>
 
     <div class="market-grid" id="mkt-grid">
       <!-- Cards injected by JS below -->
     </div>
+    <p class="market-note" id="mkt-count" aria-live="polite"></p>
   </div>
 </section>
 
@@ -294,7 +306,7 @@
   <div class="container">
     <span class="eyebrow">Creator Program</span>
     <h2 class="section-title">Turn Your Expertise Into Income</h2>
-    <p class="section-sub">Built a workflow that works? Sell it. Contractors from across Canada are buying what you've already figured out.</p>
+    <p class="section-sub">Have a repeatable operational process? Share the use case and we will help assess it for the EchoForge library.</p>
     <div class="earn-grid">
       <div>
         <div class="earn-steps">
@@ -302,66 +314,66 @@
             <div class="earn-step__num">1</div>
             <div class="earn-step__text">
               <h4>Build Your Automation</h4>
-              <p>Use the LinX workflow builder or upload your existing n8n/Zapier workflow. Describe it clearly and tag it properly.</p>
+              <p>Document the trigger, steps, and intended outcome. Start with the real operational problem it solves.</p>
             </div>
           </div>
           <div class="earn-step">
             <div class="earn-step__num">2</div>
             <div class="earn-step__text">
-              <h4>Set Your Price</h4>
-              <p>You control the price. Our data shows $19–$49 automations sell best. Pro sellers earn $2k–$8k/month passively.</p>
+              <h4>Set the Access Model</h4>
+              <p>Choose whether the workflow is a private implementation, a shared template, or a future marketplace listing.</p>
             </div>
           </div>
           <div class="earn-step">
             <div class="earn-step__num">3</div>
             <div class="earn-step__text">
-              <h4>Collect Revenue</h4>
-              <p>Payouts via Stripe every 2 weeks. Starter plan: 85% payout. Pro: 90%. Enterprise: 95% payout rate.</p>
+              <h4>Review the Implementation</h4>
+              <p>Confirm that the workflow has clear setup steps, a predictable owner, and responsible messaging behavior.</p>
             </div>
           </div>
           <div class="earn-step">
             <div class="earn-step__num">4</div>
             <div class="earn-step__text">
-              <h4>Watch It Compound</h4>
-              <p>Reviews drive discovery. The more your automation is used, the higher it ranks. Build once, earn forever.</p>
+              <h4>Improve It Over Time</h4>
+              <p>Use operational feedback to refine the workflow, add safeguards, and prepare it for broader use.</p>
             </div>
           </div>
         </div>
         <div style="margin-top:28px;display:flex;gap:10px">
-          <a href="index.html#contact" class="btn btn--primary">Start Selling Today</a>
+          <a href="contact.html" class="btn btn--primary">Share a Workflow</a>
           <a href="index.html#pricing" class="btn btn--outline">Compare Plans</a>
         </div>
       </div>
       <div>
         <div class="earn-stats">
-          <h3 style="font-size:16px;font-weight:800;margin-bottom:18px">Creator Earnings Stats</h3>
+          <h3 style="font-size:16px;font-weight:800;margin-bottom:18px">Marketplace Readiness</h3>
           <div class="earn-stat-row">
-            <span>Avg payout per automation</span>
-            <span>$31.40</span>
+            <span>Documented trigger</span>
+            <span>Required</span>
           </div>
           <div class="earn-stat-row">
-            <span>Top creator earnings (30 days)</span>
-            <span>$8,240</span>
+            <span>Clear setup steps</span>
+            <span>Required</span>
           </div>
           <div class="earn-stat-row">
-            <span>Avg automations per creator</span>
-            <span>7.2</span>
+            <span>Safe customer messaging</span>
+            <span>Required</span>
           </div>
           <div class="earn-stat-row">
-            <span>Starter commission rate</span>
-            <span>85%</span>
+            <span>Access path</span>
+            <span>Defined</span>
           </div>
           <div class="earn-stat-row">
-            <span>Pro commission rate</span>
-            <span>90%</span>
+            <span>Operational owner</span>
+            <span>Defined</span>
           </div>
           <div class="earn-stat-row">
-            <span>Enterprise commission rate</span>
-            <span>95%</span>
+            <span>Review cadence</span>
+            <span>Defined</span>
           </div>
           <div class="earn-stat-row">
-            <span>Payout schedule</span>
-            <span>Bi-weekly (Stripe)</span>
+            <span>Next step</span>
+            <span>Request review</span>
           </div>
         </div>
       </div>
@@ -374,9 +386,9 @@
   <div class="container" style="text-align:center">
     <div class="mkt-hero__scene" style="font-size:48px">⚒️</div>
     <h2 class="section-title">Ready to Automate Your Business?</h2>
-    <p class="section-sub" style="margin:0 auto 32px">Join 1,400+ contractors using LinX automations to save 10+ hours per week and close more leads.</p>
+    <p class="section-sub" style="margin:0 auto 32px">Explore a workflow, request a tailored implementation, and connect it to the wider LinX ecosystem.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
-      <a href="index.html#contact" class="btn btn--primary btn--lg">Get Started Free</a>
+      <a href="contact.html" class="btn btn--primary btn--lg">Request Marketplace Access</a>
       <a href="index.html#pricing" class="btn btn--outline btn--lg">View Pricing</a>
     </div>
   </div>
@@ -432,8 +444,8 @@
     <div class="modal-name" id="modal-name"></div>
     <div class="modal-desc" id="modal-desc"></div>
     <div class="modal-price" id="modal-price"></div>
-    <a href="index.html#contact" class="btn btn--primary btn--full" style="margin-bottom:10px">Purchase This Automation</a>
-    <a href="index.html#contact" class="btn btn--ghost btn--full">Request a Demo</a>
+    <a id="modal-request-link" href="contact.html" class="btn btn--primary btn--full" style="margin-bottom:10px">Request This Workflow</a>
+    <a href="contact.html" class="btn btn--ghost btn--full">Talk to LinX</a>
   </div>
 </div>
 
@@ -457,20 +469,20 @@
     document.body.appendChild(s);
   }
 
-  // Automations data
+  // Curated workflow template library. Purchase and usage metrics are intentionally not shown until live marketplace data is connected.
   const automations = [
-    { icon:'💬', name:'Welcome SMS Sequence', desc:'3-touch AI-personalised welcome flow that converts new leads within 24 hours. Includes opt-out handling and CRM update.', tags:['sms','lead'], price:19, sales:847, featured:false },
-    { icon:'📅', name:'Follow-Up Scheduler', desc:'Automated 7-day follow-up cadence. Scores leads and routes hot ones (8+) directly to your phone via SMS.', tags:['sms','lead'], price:29, sales:512, featured:true },
-    { icon:'🎯', name:'Lead Qualifier Bot', desc:'AI agent that scores every incoming lead 1-10 and sends you only the hot ones. Saves 2+ hours/day of manual triage.', tags:['lead','ai'], price:39, sales:391, featured:false },
-    { icon:'⭐', name:'Review Request Machine', desc:'Sends post-job Google/Facebook review requests automatically 24h after job completion. Integrates with Houzz.', tags:['review'], price:24, sales:628, featured:false },
-    { icon:'📆', name:'Booking Confirmation Bot', desc:'Sends appointment confirmations, 24h reminders, and day-of check-ins. Cuts no-shows by 68%.', tags:['booking','sms'], price:34, sales:284, featured:false },
-    { icon:'💰', name:'Quote Follow-Up Drip', desc:'3-touch follow-up sequence for sent quotes. Personalised nudges at 2h, 24h, and 72h after quote delivery.', tags:['sms','lead'], price:22, sales:445, featured:false },
-    { icon:'🔔', name:'New Lead Alert System', desc:'Instant SMS + email alert when a new lead is qualified (score ≥ 7). Never miss a hot lead again.', tags:['lead','sms'], price:15, sales:723, featured:false },
-    { icon:'📊', name:'Monthly Report Automation', desc:'Generates and sends you a monthly PDF report of leads, closes, revenue, and top referral sources.', tags:['analytics'], price:44, sales:167, featured:true },
-    { icon:'🤖', name:'Re-Engagement Sequence', desc:'Reactivates cold leads from 30-90 days ago. 3-message sequence with a special offer hook.', tags:['sms','lead'], price:27, sales:334, featured:false },
-    { icon:'🏠', name:'Homeowner Onboarding Flow', desc:'Complete new homeowner onboarding: welcome, project brief collection, contractor matching notification.', tags:['sms','booking'], price:49, sales:218, featured:false },
-    { icon:'⚡', name:'Emergency Response Trigger', desc:'Detects urgent keywords in inbound messages and routes to on-call contractor within 90 seconds.', tags:['sms','ai'], price:59, sales:156, featured:false },
-    { icon:'🔗', name:'Referral Reward Notifier', desc:'Sends personalised thank-you + reward when a referral converts. Tracks the full referral chain.', tags:['sms','review'], price:32, sales:289, featured:false },
+    { icon:'💬', name:'Welcome SMS Sequence', desc:'A three-step customer intake pattern with explicit opt-out handling and a CRM handoff.', tags:['sms','lead'], featured:false },
+    { icon:'📅', name:'Follow-Up Scheduler', desc:'A structured follow-up cadence that keeps an owner informed when a lead needs a human response.', tags:['sms','lead'], featured:true },
+    { icon:'🎯', name:'Lead Qualifier Bot', desc:'A configurable AI-assisted triage pattern for routing the right lead to the right operational queue.', tags:['lead','ai'], featured:false },
+    { icon:'⭐', name:'Post-Job Feedback Request', desc:'A respectful post-completion feedback request pattern with clear timing and consent considerations.', tags:['review'], featured:false },
+    { icon:'📆', name:'Booking Confirmation Flow', desc:'An appointment confirmation and reminder pattern for reliable scheduling communication.', tags:['booking','sms'], featured:false },
+    { icon:'💰', name:'Quote Follow-Up Drip', desc:'A timed sequence for checking in after a quote, with straightforward pause and handoff points.', tags:['sms','lead'], featured:false },
+    { icon:'🔔', name:'New Lead Alert System', desc:'A routing pattern for surfacing qualified new leads to the responsible operator by SMS or email.', tags:['lead','sms'], featured:false },
+    { icon:'📊', name:'Monthly Operations Report', desc:'A reporting pattern for reviewing leads, close activity, referral sources, and operational notes.', tags:['analytics'], featured:true },
+    { icon:'🤖', name:'Re-Engagement Sequence', desc:'A customer re-engagement pattern that keeps timing, consent, and the human handoff visible.', tags:['sms','lead'], featured:false },
+    { icon:'🏠', name:'Homeowner Onboarding Flow', desc:'A project-brief collection and contractor-match notification pattern for homeowner intake.', tags:['sms','booking'], featured:false },
+    { icon:'⚡', name:'Urgent Request Routing', desc:'A priority-routing pattern that recognizes urgent service needs and directs them to an on-call owner.', tags:['sms','ai'], featured:false },
+    { icon:'🔗', name:'Referral Thank-You Flow', desc:'A referral acknowledgement pattern designed to keep source tracking and follow-up transparent.', tags:['sms','review'], featured:false },
   ];
 
   let filtered = [...automations];
@@ -489,13 +501,14 @@
         <div class="mkt-card__desc">${a.desc}</div>
         <div class="mkt-card__tags">${a.tags.map(t => `<span class="mkt-card__tag">${t}</span>`).join('')}</div>
         <div class="mkt-card__footer">
-          <div class="mkt-card__price">$${a.price} <span>one-time</span></div>
-          <div class="mkt-card__sales">${a.sales.toLocaleString()} sold</div>
+          <div class="mkt-card__price">Template <span>preview</span></div>
+          <div class="mkt-card__meta">Preview &amp; request →</div>
         </div>
       </div>`).join('');
   }
 
   renderGrid(automations);
+  document.getElementById('mkt-count').textContent = `${automations.length} workflow templates shown`;
 
   // Filter
   function applyFilter() {
@@ -509,11 +522,12 @@
       return matchQ && matchC;
     });
 
-    if (sort === 'price-asc')  items = items.sort((a,b) => a.price - b.price);
-    if (sort === 'price-desc') items = items.sort((a,b) => b.price - a.price);
+    if (sort === 'name-asc')   items = items.sort((a,b) => a.name.localeCompare(b.name));
+    if (sort === 'name-desc')  items = items.sort((a,b) => b.name.localeCompare(a.name));
     if (sort === 'newest')     items = items.reverse();
 
     renderGrid(items);
+    document.getElementById('mkt-count').textContent = `${items.length} workflow template${items.length === 1 ? '' : 's'} shown`;
   }
 
   document.getElementById('mkt-search').addEventListener('input', applyFilter);
@@ -526,7 +540,8 @@
     document.getElementById('modal-icon').textContent = a.icon;
     document.getElementById('modal-name').textContent = a.name;
     document.getElementById('modal-desc').textContent = a.desc;
-    document.getElementById('modal-price').textContent = `$${a.price}`;
+    document.getElementById('modal-price').textContent = 'Request implementation details';
+    document.getElementById('modal-request-link').href = `contact.html?workflow=${encodeURIComponent(a.name)}`;
     document.getElementById('modal-overlay').classList.add('open');
   }
 
