@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics — LINX Services Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/linx-design-system.css" />
+  <style>.analytics { padding:48px 0; }.metric-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:28px 0; }.metric-value { font-size:30px; font-weight:800; color:var(--gold); margin-top:6px; }.metric-label { color:var(--text-dim); font-size:10px; letter-spacing:.14em; text-transform:uppercase; } .table-wrap { overflow:auto; } table { width:100%; border-collapse:collapse; font-size:12px; } th,td { text-align:left; padding:12px; border-bottom:1px solid var(--border); } th { color:var(--text-dim); text-transform:uppercase; letter-spacing:.1em; font-size:10px; } @media (max-width:800px){.metric-grid{grid-template-columns:repeat(2,1fr);}}</style>
+</head>
+<body>
+  <nav class="nav"><a class="nav__logo" href="../index.html"><span class="l">Lin</span><span class="x">X</span></a><ul class="nav__links"><li><a href="index.html">Dashboard</a></li><li><a href="../clam-code.html">Clam Code</a></li></ul><div class="nav__actions"><button class="btn btn--ghost btn--sm" id="logout">Sign out</button></div></nav>
+  <main class="analytics"><div class="container"><span class="eyebrow">Administrator</span><h1 class="section-title">Platform analytics</h1><p class="section-sub">Privacy-safe daily counts for signups, active entitlements, page visits, and Clam Code usage.</p><div class="metric-grid" id="metric-grid"><div class="card">Loading analytics…</div></div><section class="card"><h2 style="font-size:15px;margin-bottom:14px">AI usage by day</h2><div class="table-wrap"><table><thead><tr><th>Date</th><th>Public requests</th><th>Admin requests</th></tr></thead><tbody id="ai-rows"><tr><td colspan="3">Loading…</td></tr></tbody></table></div></section></div></main>
+  <script>
+    const API_BASE = window.LINX_API_BASE || "https://api.linxservices.ca";
+    const token = localStorage.getItem("linx_token") || sessionStorage.getItem("linx_token") || "";
+    const grid = document.getElementById("metric-grid");
+    const rows = document.getElementById("ai-rows");
+    const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[character]));
+    async function loadAnalytics() {
+      const response = await fetch(`${API_BASE}/api/admin/analytics`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await response.json();
+      if (!response.ok) { grid.innerHTML = `<div class="card">${escapeHtml(data.error || "Administrator access is required.")}</div>`; return; }
+      const metrics = [["Users",data.summary.users],["Active subscriptions",data.summary.active_subscriptions],["Page visits · 30 days",data.summary.page_visits_30d],["AI requests · 30 days",data.summary.ai_requests_30d]];
+      grid.innerHTML = metrics.map(([label,value]) => `<div class="card"><div class="metric-label">${escapeHtml(label)}</div><div class="metric-value">${escapeHtml(value)}</div></div>`).join("");
+      rows.innerHTML = data.ai_usage.length ? data.ai_usage.map(row => `<tr><td>${escapeHtml(row.day)}</td><td>${escapeHtml(row.public_requests)}</td><td>${escapeHtml(row.admin_requests)}</td></tr>`).join("") : "<tr><td colspan=\"3\">No AI requests have been recorded.</td></tr>";
+    }
+    document.getElementById("logout").addEventListener("click", () => { localStorage.removeItem("linx_token"); sessionStorage.removeItem("linx_token"); location.href = "index.html"; });
+    loadAnalytics();
+  </script>
+</body>
+</html>

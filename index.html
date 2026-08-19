@@ -218,16 +218,19 @@
     <span class="l">Lin</span><span class="x">X</span>
   </a>
   <ul class="nav__links">
+    <li><a href="about.html">About</a></li>
+    <li><a href="services.html">Services</a></li>
     <li><a href="#how">How It Works</a></li>
     <li><a href="#who">Who It's For</a></li>
     <li><a href="marketplace">Marketplace</a></li>
     <li><a href="ecosystem">Ecosystem</a></li>
+    <li><a href="clam-code.html">Clam Code</a></li>
     <li><a href="status/">System Status</a></li>
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
   <div class="nav__actions">
-    <a href="#contact" class="btn btn--outline btn--sm">Sign In</a>
+    <a href="clam-code.html" class="btn btn--outline btn--sm">Clam Code</a>
     <a href="#contact" class="btn btn--primary btn--sm">Get Started Free</a>
   </div>
 </nav>
@@ -236,8 +239,8 @@
 <section class="hero">
   <div class="container">
     <div class="hero__eyebrow">Est. 2024 — Canada's Contractor Network</div>
-    <h1><em>Lin</em>X</h1>
-    <p class="hero__sub">
+    <h1 id="hero-headline"><em>Lin</em>X</h1>
+    <p class="hero__sub" id="hero-subhead">
       Quiet automation for busy trades.<br>
       SMS, CRM, AI agents, and a marketplace that earns while you work.
     </p>
@@ -246,85 +249,65 @@
       <a href="#contact" class="btn btn--outline btn--lg">Join as Contractor</a>
       <a href="ecosystem" class="btn btn--ghost btn--lg">Open Ecosystem Hub</a>
     </div>
-    <div class="hero__stats-bar">
+    <div class="hero__stats-bar" aria-label="LINX Services capabilities">
       <div class="hero__stat">
-        <div class="stat-num">1,400+</div>
-        <div class="stat-lbl">Contractors</div>
+        <div class="stat-num">01</div>
+        <div class="stat-lbl">Post projects</div>
       </div>
       <div class="hero__stat">
-        <div class="stat-num">3,200+</div>
-        <div class="stat-lbl">Projects Posted</div>
+        <div class="stat-num">02</div>
+        <div class="stat-lbl">Find trades</div>
       </div>
       <div class="hero__stat">
-        <div class="stat-num">97%</div>
-        <div class="stat-lbl">Match Rate</div>
+        <div class="stat-num">03</div>
+        <div class="stat-lbl">Manage leads</div>
       </div>
       <div class="hero__stat">
-        <div class="stat-num">4.9 ★</div>
-        <div class="stat-lbl">Avg Rating</div>
+        <div class="stat-num">04</div>
+        <div class="stat-lbl">Ask Clam Code</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── LIVE FEED ── -->
+<!-- ── PLATFORM CAPABILITIES ── -->
 <section class="section section--alt">
   <div class="container">
     <div class="live-header">
       <div>
-        <span class="eyebrow">Real-Time Activity</span>
-        <h2 class="section-title" style="margin-bottom:0;font-size:22px">Live Project Feed</h2>
+        <span class="eyebrow">LINX Services</span>
+        <h2 class="section-title" style="margin-bottom:0;font-size:22px">A clearer path from request to next step.</h2>
       </div>
-      <span class="badge badge--green badge--live">LIVE</span>
+      <a class="btn btn--ghost btn--sm" href="services.html">Explore services</a>
     </div>
     <div class="live-grid" id="live-feed">
       <div class="live-card">
-        <div class="live-icon">🏠</div>
+        <div class="live-icon">01</div>
         <div style="flex:1">
-          <div class="live-title">Kitchen Renovation</div>
-          <div class="live-meta">Toronto, ON · CAD $22k–$30k · 2h ago</div>
+          <div class="live-title">Project intake</div>
+          <div class="live-meta">Structure the scope, timing, and contact details for a new service request.</div>
         </div>
-        <span class="badge badge--green live-badge">LIVE</span>
       </div>
       <div class="live-card">
-        <div class="live-icon">⚡</div>
+        <div class="live-icon">02</div>
         <div style="flex:1">
-          <div class="live-title">Panel Upgrade — 200A</div>
-          <div class="live-meta">Calgary, AB · CAD $4,500 · 4h ago</div>
+          <div class="live-title">Contractor discovery</div>
+          <div class="live-meta">Find a suitable trade category and begin a direct, informed conversation.</div>
         </div>
-        <span class="badge badge--blue live-badge">NEW</span>
       </div>
       <div class="live-card">
-        <div class="live-icon">🔧</div>
+        <div class="live-icon">03</div>
         <div style="flex:1">
-          <div class="live-title">Roof Repair — Shingles</div>
-          <div class="live-meta">Vancouver, BC · CAD $5,000 · 6h ago</div>
+          <div class="live-title">Lead operations</div>
+          <div class="live-meta">Organize contractor follow-up and working context in the LINX operations hub.</div>
         </div>
-        <span class="badge badge--red live-badge">HOT</span>
       </div>
       <div class="live-card">
-        <div class="live-icon">🚿</div>
+        <div class="live-icon">04</div>
         <div style="flex:1">
-          <div class="live-title">Bathroom Remodel</div>
-          <div class="live-meta">Ottawa, ON · CAD $12k–$18k · 8h ago</div>
+          <div class="live-title">Clam Code assistance</div>
+          <div class="live-meta">Ask text-based questions with model access selected securely by your role.</div>
         </div>
-        <span class="badge badge--blue live-badge">NEW</span>
-      </div>
-      <div class="live-card">
-        <div class="live-icon">🌳</div>
-        <div style="flex:1">
-          <div class="live-title">Backyard Landscaping</div>
-          <div class="live-meta">Barrie, ON · CAD $6,000 · 10h ago</div>
-        </div>
-        <span class="badge badge--green live-badge">LIVE</span>
-      </div>
-      <div class="live-card">
-        <div class="live-icon">🏗️</div>
-        <div style="flex:1">
-          <div class="live-title">Basement Finishing</div>
-          <div class="live-meta">Edmonton, AB · CAD $35k · 12h ago</div>
-        </div>
-        <span class="badge badge--red live-badge">HOT</span>
       </div>
     </div>
   </div>
@@ -486,29 +469,29 @@
   </div>
 </section>
 
-<!-- ── TESTIMONIALS ── -->
+<!-- ── PLATFORM PRINCIPLES ── -->
 <section class="section section--alt">
   <div class="container">
-    <span class="eyebrow">Client Stories</span>
-    <h2 class="section-title">What People Are Saying</h2>
+    <span class="eyebrow">Designed for real work</span>
+    <h2 class="section-title">What LINX keeps in focus</h2>
     <div class="testimonials-grid">
       <div class="testimonial card">
-        <div class="stars">★★★★★</div>
-        <p class="testimonial-body">"I found a roofer in 10 minutes. Posted my project, got 3 quotes by the next morning. The contractor was verified and the work was done in two days. LinX is exactly what this industry needed."</p>
-        <div class="testimonial-author">Jennifer M.</div>
-        <div class="testimonial-role">Homeowner · Barrie, ON</div>
+        <div class="stars">01</div>
+        <p class="testimonial-body">Clear project details help contractors understand the job before the first conversation.</p>
+        <div class="testimonial-author">Structured requests</div>
+        <div class="testimonial-role">For homeowners</div>
       </div>
       <div class="testimonial card">
-        <div class="stars">★★★★★</div>
-        <p class="testimonial-body">"I went from 3 leads a month to 12 in my first 30 days on LinX. The CRM keeps everything organized and the automated follow-ups save me hours every week."</p>
-        <div class="testimonial-author">Mike T.</div>
-        <div class="testimonial-role">Electrical Contractor · Calgary, AB</div>
+        <div class="stars">02</div>
+        <p class="testimonial-body">Lead context and follow-up workflows should be visible, useful, and easy to pick up again.</p>
+        <div class="testimonial-author">Practical operations</div>
+        <div class="testimonial-role">For contractors</div>
       </div>
       <div class="testimonial card">
-        <div class="stars">★★★★★</div>
-        <p class="testimonial-body">"We'd been burned by contractors before — no-shows, inflated quotes. LinX's verification process gave us real confidence. Our kitchen renovation turned out beautifully."</p>
-        <div class="testimonial-author">Sandra &amp; Dave K.</div>
-        <div class="testimonial-role">Homeowners · Toronto, ON</div>
+        <div class="stars">03</div>
+        <p class="testimonial-body">AI assistance should respect access boundaries and state clearly when more information is needed.</p>
+        <div class="testimonial-author">Role-aware assistance</div>
+        <div class="testimonial-role">With Clam Code</div>
       </div>
     </div>
   </div>
@@ -699,6 +682,8 @@
       <div class="footer__col">
         <h4>Platform</h4>
         <ul class="footer__links">
+          <li><a href="about.html">About LINX Services</a></li>
+          <li><a href="services.html">Services</a></li>
           <li><a href="#how">How It Works</a></li>
           <li><a href="#who">For Homeowners</a></li>
           <li><a href="#who">For Contractors</a></li>
@@ -710,6 +695,8 @@
         <ul class="footer__links">
           <li><a href="#who">Lead Matching</a></li>
           <li><a href="#who">CRM Pipeline</a></li>
+          <li><a href="clam-code.html">Clam Code</a></li>
+          <li><a href="subscriber-access.html">Subscriber Access</a></li>
           <li><a href="admin/index.html?panel=shortener">URL Shortener &amp; Analytics</a></li>
           <li><a href="marketplace">EchoForge</a></li>
           <li><a href="ecosystem">Ecosystem Hub</a></li>
@@ -724,6 +711,7 @@
           <li><a href="contact.html">Contact</a></li>
           <li><a href="mailto:Darrenethier991@gmail.com">Support</a></li>
           <li><a href="admin/index.html">Admin</a></li>
+          <li><a href="admin/analytics.html">Admin Analytics</a></li>
         </ul>
       </div>
     </div>
@@ -737,6 +725,13 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // ── PUBLIC CONTENT OVERRIDES ───────────────────────────────────────────────
+  fetch('https://api.linxservices.ca/api/content/home').then(response => response.ok ? response.json() : null).then(payload => {
+    const content = payload?.content || {};
+    if (content.hero_headline) document.getElementById('hero-headline').textContent = content.hero_headline;
+    if (content.hero_subhead) document.getElementById('hero-subhead').textContent = content.hero_subhead;
+  }).catch(() => {});
+
   // ── CURSOR ──────────────────────────────────────────────────────────────────
   const cursor = document.getElementById('cursor');
   document.addEventListener('mousemove', e => {

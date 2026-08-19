@@ -1,10 +1,12 @@
 {
   "name": "linx-website",
   "version": "1.0.0",
+  "type": "module",
   "description": "LinX — Canada's Contractor Network public website",
   "scripts": {
     "build": "echo 'Static site — no build step required'",
-    "deploy": "wrangler pages deploy . --project-name=linx-db"
+    "deploy": "wrangler pages deploy . --project-name=linx-db",
+    "test:worker": "node --test workers/tests/*.test.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.105.0"

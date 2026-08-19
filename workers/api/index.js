@@ -1,3 +1,10 @@
+import {
+  completeAdminChat,
+  completePublicChat,
+  normalizeMessages,
+  responseEnvelope,
+} from "./clam-code.js";
+
 /**
  * LinX API — Cloudflare Worker
  * ─────────────────────────────────────────────────────────────────────────────
@@ -109,6 +116,73 @@ function json(obj, status = 200, origin = '') {
     status,
     headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
   });
+}
+
+function requestId() {
+  return crypto.randomUUID();
+}
+
+function createAccessCode() {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 16).toUpperCase();
+}
+
+function validSubscriptionStatus(value) {
+  return ['pending', 'approved', 'active', 'paused', 'cancelled', 'expired'].includes(value);
+}
+
+function validUserStatus(value) {
+  return ['active', 'suspended', 'invited'].includes(value);
+}
+
+async function recordAiUsage(env, event) {
+  if (!env.DB) return;
+  try {
+    await env.DB.prepare(`
+      INSERT INTO ai_usage_events (id,request_id,role,provider,model,input_messages,input_characters,output_characters,input_tokens,output_tokens,total_tokens,cost,status,latency_ms)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    `).bind(
+      requestId(), event.requestId, event.role, event.provider, event.model,
+      event.inputMessages, event.inputCharacters, event.outputCharacters,
+      event.usage?.input_tokens ?? null, event.usage?.output_tokens ?? null,
+      event.usage?.total_tokens ?? null, event.usage?.cost ?? null,
+      event.status, event.latencyMs,
+    ).run();
+  } catch (error) {
+    console.warn("[Clam Code] Usage event was not recorded", error?.message || error);
+  }
+}
+
+async function getPlatformSnapshot(env) {
+  const unavailable = { available: false, reason: "Analytics storage is not configured." };
+  if (!env.DB) return unavailable;
+  try {
+    const [users, subscriptions, pages, ai] = await Promise.all([
+      env.DB.prepare("SELECT COUNT(*) AS n FROM platform_users").first(),
+      env.DB.prepare("SELECT COUNT(*) AS n FROM subscription_entitlements WHERE status IN ('approved','active')").first(),
+      env.DB.prepare("SELECT COUNT(*) AS n FROM page_events WHERE created_at >= datetime('now','-30 day')").first(),
+      env.DB.prepare("SELECT COUNT(*) AS n FROM ai_usage_events WHERE created_at >= datetime('now','-30 day')").first(),
+    ]);
+    return {
+      available: true,
+      users: users?.n || 0,
+      active_subscriptions: subscriptions?.n || 0,
+      page_visits_30d: pages?.n || 0,
+      ai_requests_30d: ai?.n || 0,
+    };
+  } catch (error) {
+    return unavailable;
+  }
+}
+
+async function recordPageView(env, body) {
+  if (!env.DB) return;
+  const path = typeof body.path === "string" ? body.path.slice(0, 200) : "/";
+  try {
+    await env.DB.prepare("INSERT INTO page_events (id,path,event_type,role) VALUES (?,?,?,?)")
+      .bind(requestId(), path, "page_view", "public").run();
+  } catch (error) {
+    console.warn("[Analytics] Page event was not recorded", error?.message || error);
+  }
 }
 
 // ─── Lead classifier (ported from leads/classifier.js) ───────────────────────
@@ -234,6 +308,84 @@ export default {
 
     const method = request.method.toUpperCase();
 
+    // ── POST /api/events/pageview — privacy-safe public telemetry ──────────
+    if (path === '/api/events/pageview' && method === 'POST') {
+      const body = await readBody(request);
+      await recordPageView(env, body);
+      return json({ ok: true }, 202, origin);
+    }
+
+    // ── GET /api/content/home — approved public text overrides ──────────────
+    if (path === '/api/content/home' && method === 'GET') {
+      if (!env.DB) return json({ content: {} }, 200, origin);
+      try {
+        const rows = await env.DB.prepare("SELECT content_key, content_value FROM site_content WHERE content_key IN ('hero_headline','hero_subhead')").all();
+        return json({ content: Object.fromEntries((rows.results || []).map(row => [row.content_key, row.content_value])) }, 200, origin);
+      } catch (error) {
+        return json({ content: {} }, 200, origin);
+      }
+    }
+
+    // ── GET /api/clam-code/health — role-aware UI capability check ─────────
+    if (path === '/api/clam-code/health' && method === 'GET') {
+      const identity = await requireAuth(request, env);
+      const role = identity?.role === 'admin' ? 'admin' : identity?.role === 'subscriber' ? 'subscriber' : 'public';
+      return json({
+        ok: true,
+        interface: 'clam-code',
+        role,
+        public_model_available: Boolean(env.AI),
+        admin_model_available: role === 'admin' && Boolean(env.CLAUDE_API_KEY || env.OPENROUTER_API_KEY),
+      }, 200, origin);
+    }
+
+    // ── POST /api/clam-code/chat — unified public/admin JSON interface ──────
+    if (path === '/api/clam-code/chat' && method === 'POST') {
+      const identity = await requireAuth(request, env);
+      const role = identity?.role === 'admin' ? 'admin' : identity?.role === 'subscriber' ? 'subscriber' : 'public';
+      const body = await readBody(request);
+      const messages = normalizeMessages(body.messages);
+      if (!messages.length || !messages.some(message => message.role === 'user')) {
+        return json({ ok: false, error: 'At least one user message is required.' }, 400, origin);
+      }
+
+      const id = requestId();
+      const startedAt = Date.now();
+      const inputCharacters = messages.reduce((total, message) => total + message.content.length, 0);
+      try {
+        const result = role === 'admin'
+          ? await completeAdminChat(env, messages, await getPlatformSnapshot(env), identity?.sub)
+          : await completePublicChat(env, messages);
+        const latencyMs = Date.now() - startedAt;
+        await recordAiUsage(env, {
+          requestId: id,
+          role,
+          provider: result.provider,
+          model: result.model,
+          inputMessages: messages.length,
+          inputCharacters,
+          outputCharacters: result.content.length,
+          usage: result.usage,
+          status: 'success',
+          latencyMs,
+        });
+        return json(responseEnvelope({ requestId: id, role, ...result }), 200, origin);
+      } catch (error) {
+        await recordAiUsage(env, {
+          requestId: id,
+          role,
+          provider: role === 'admin' ? 'openai-compatible-claude' : 'cloudflare-workers-ai',
+          model: role === 'admin' ? (env.CLAUDE_MODEL || 'anthropic/claude-sonnet-4.6') : (env.PUBLIC_AI_MODEL || '@cf/meta/llama-3.1-8b-instruct'),
+          inputMessages: messages.length,
+          inputCharacters,
+          outputCharacters: 0,
+          status: 'error',
+          latencyMs: Date.now() - startedAt,
+        });
+        return json({ ok: false, request_id: id, error: error?.message || 'Clam Code could not complete the request.' }, 502, origin);
+      }
+    }
+
     // ── POST /api/auth/login ───────────────────────────────────────────────
     if (path === '/api/auth/login' && method === 'POST') {
       const { username, password } = await readBody(request);
@@ -252,6 +404,33 @@ export default {
       return json({ token, expiresIn: 1800 }, 200, origin);
     }
 
+    // ── POST /api/auth/access — approved subscriber access code sign-in ────
+    if (path === '/api/auth/access' && method === 'POST') {
+      const { email, code } = await readBody(request);
+      const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+      const normalizedCode = typeof code === 'string' ? code.trim().toUpperCase() : '';
+      if (!normalizedEmail || !normalizedCode) {
+        return json({ error: 'email and access code are required' }, 400, origin);
+      }
+      if (!env.DB) return json({ error: 'Subscriber access storage is not configured.' }, 503, origin);
+      const codeHash = await sha256hex(normalizedCode);
+      const member = await env.DB.prepare(`
+        SELECT u.id, u.email, u.display_name, u.role, u.status, c.id AS code_id
+        FROM access_codes c
+        JOIN platform_users u ON u.id = c.user_id
+        JOIN subscription_entitlements s ON s.user_id = u.id
+        WHERE lower(u.email) = ? AND c.code_hash = ? AND c.used_at IS NULL AND c.expires_at > datetime('now')
+          AND u.status = 'active' AND s.status IN ('approved','active')
+        ORDER BY s.updated_at DESC
+        LIMIT 1
+      `).bind(normalizedEmail, codeHash).first();
+      if (!member) return json({ error: 'Invalid or expired access code.' }, 401, origin);
+      await env.DB.prepare("UPDATE access_codes SET used_at = datetime('now') WHERE id = ?").bind(member.code_id).run();
+      const now = Math.floor(Date.now() / 1000);
+      const token = await jwtSign({ sub: member.id, email: member.email, role: 'subscriber', iat: now, exp: now + 43200 }, env.JWT_SECRET);
+      return json({ token, expiresIn: 43200, user: { id: member.id, email: member.email, name: member.display_name, role: 'subscriber' } }, 200, origin);
+    }
+
     // ── POST /api/auth/refresh ─────────────────────────────────────────────
     if (path === '/api/auth/refresh' && method === 'POST') {
       const payload = await requireAuth(request, env);
@@ -264,6 +443,110 @@ export default {
     // All routes below require auth
     const admin = await requireAuth(request, env);
     if (!admin) return json({ error: 'Unauthorized' }, 401, origin);
+
+    if (path === '/api/admin/analytics' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const summary = await getPlatformSnapshot(env);
+      if (!summary.available) return json({ error: summary.reason }, 503, origin);
+      const aiUsage = await env.DB.prepare(`
+        SELECT substr(created_at, 1, 10) AS day,
+          SUM(CASE WHEN role IN ('public','subscriber') THEN 1 ELSE 0 END) AS public_requests,
+          SUM(CASE WHEN role = 'admin' THEN 1 ELSE 0 END) AS admin_requests
+        FROM ai_usage_events
+        WHERE created_at >= datetime('now','-30 day')
+        GROUP BY substr(created_at, 1, 10)
+        ORDER BY day DESC
+      `).all();
+      return json({ summary, ai_usage: aiUsage.results || [] }, 200, origin);
+    }
+
+    // ── GET /api/admin/users — user and entitlement overview ───────────────
+    if (path === '/api/admin/users' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const users = await env.DB.prepare(`
+        SELECT u.id, u.email, u.display_name, u.role, u.status, u.created_at,
+          (SELECT tier FROM subscription_entitlements s WHERE s.user_id = u.id ORDER BY s.updated_at DESC LIMIT 1) AS tier,
+          (SELECT status FROM subscription_entitlements s WHERE s.user_id = u.id ORDER BY s.updated_at DESC LIMIT 1) AS subscription_status
+        FROM platform_users u
+        ORDER BY u.created_at DESC
+        LIMIT 200
+      `).all();
+      return json({ users: users.results || [] }, 200, origin);
+    }
+
+    // ── GET /api/admin/content — current editable public copy ───────────────
+    if (path === '/api/admin/content' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const rows = await env.DB.prepare("SELECT content_key, content_value, updated_at FROM site_content WHERE content_key IN ('hero_headline','hero_subhead')").all();
+      return json({ content: Object.fromEntries((rows.results || []).map(row => [row.content_key, row.content_value])), updated_at: Object.fromEntries((rows.results || []).map(row => [row.content_key, row.updated_at])) }, 200, origin);
+    }
+
+    // ── PUT /api/admin/content — constrained public copy controls ───────────
+    if (path === '/api/admin/content' && method === 'PUT') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const { hero_headline, hero_subhead } = await readBody(request);
+      const updates = [
+        ['hero_headline', hero_headline, 180],
+        ['hero_subhead', hero_subhead, 340],
+      ].filter(([, value]) => typeof value === 'string');
+      if (!updates.length) return json({ error: 'No editable content fields were supplied.' }, 400, origin);
+      for (const [key, value, limit] of updates) {
+        const text = value.trim().slice(0, limit);
+        if (!text) return json({ error: `${key} cannot be empty.` }, 400, origin);
+        await env.DB.prepare(`
+          INSERT INTO site_content (content_key,content_value,updated_by,updated_at)
+          VALUES (?,?,?,datetime('now'))
+          ON CONFLICT(content_key) DO UPDATE SET content_value = excluded.content_value, updated_by = excluded.updated_by, updated_at = excluded.updated_at
+        `).bind(key, text, admin.sub).run();
+      }
+      return json({ ok: true }, 200, origin);
+    }
+
+    // ── POST /api/admin/users — approved user + one-time access code ───────
+    if (path === '/api/admin/users' && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const { email, display_name = '', tier = 'approved', subscription_status = 'approved' } = await readBody(request);
+      const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+      if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) return json({ error: 'A valid email is required.' }, 400, origin);
+      if (!validSubscriptionStatus(subscription_status)) return json({ error: 'Invalid subscription status.' }, 400, origin);
+      const exists = await env.DB.prepare("SELECT id FROM platform_users WHERE email = ?").bind(normalizedEmail).first();
+      if (exists) return json({ error: 'A platform user with this email already exists.' }, 409, origin);
+      const userId = requestId();
+      const entitlementId = requestId();
+      const accessCode = createAccessCode();
+      const accessCodeHash = await sha256hex(accessCode);
+      const codeId = requestId();
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      await env.DB.batch([
+        env.DB.prepare("INSERT INTO platform_users (id,email,display_name,role,status) VALUES (?,?,?,?,?)").bind(userId, normalizedEmail, String(display_name).slice(0, 160), 'subscriber', 'active'),
+        env.DB.prepare("INSERT INTO subscription_entitlements (id,user_id,tier,status,source,approved_by,starts_at) VALUES (?,?,?,?,?,?,datetime('now'))").bind(entitlementId, userId, String(tier).slice(0, 80), subscription_status, 'manual_approval', admin.sub),
+        env.DB.prepare("INSERT INTO access_codes (id,user_id,code_hash,expires_at) VALUES (?,?,?,?)").bind(codeId, userId, accessCodeHash, expiresAt),
+      ]);
+      return json({ ok: true, user: { id: userId, email: normalizedEmail, display_name: String(display_name).slice(0, 160), role: 'subscriber' }, access_code: accessCode, access_code_expires_at: expiresAt }, 201, origin);
+    }
+
+    // ── PATCH /api/admin/users/:id — account and entitlement control ────────
+    const adminUserPatch = path.match(/^\/api\/admin\/users\/([^/]+)$/);
+    if (adminUserPatch && method === 'PATCH') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const { status, subscription_status, tier } = await readBody(request);
+      if (status !== undefined && !validUserStatus(status)) return json({ error: 'Invalid user status.' }, 400, origin);
+      if (subscription_status !== undefined && !validSubscriptionStatus(subscription_status)) return json({ error: 'Invalid subscription status.' }, 400, origin);
+      const user = await env.DB.prepare("SELECT id FROM platform_users WHERE id = ?").bind(adminUserPatch[1]).first();
+      if (!user) return json({ error: 'Platform user not found.' }, 404, origin);
+      if (status !== undefined) await env.DB.prepare("UPDATE platform_users SET status = ?, updated_at = datetime('now') WHERE id = ?").bind(status, user.id).run();
+      if (subscription_status !== undefined || tier !== undefined) {
+        const current = await env.DB.prepare("SELECT id, tier, status FROM subscription_entitlements WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1").bind(user.id).first();
+        if (current) {
+          await env.DB.prepare("UPDATE subscription_entitlements SET tier = ?, status = ?, updated_at = datetime('now') WHERE id = ?")
+            .bind(tier !== undefined ? String(tier).slice(0, 80) : current.tier, subscription_status !== undefined ? subscription_status : current.status, current.id).run();
+        } else {
+          await env.DB.prepare("INSERT INTO subscription_entitlements (id,user_id,tier,status,source,approved_by,starts_at) VALUES (?,?,?,?,?,?,datetime('now'))")
+            .bind(requestId(), user.id, String(tier || 'approved').slice(0, 80), subscription_status || 'approved', 'manual_approval', admin.sub).run();
+        }
+      }
+      return json({ ok: true }, 200, origin);
+    }
 
     // ── GET /api/leads/stats ───────────────────────────────────────────────
     if (path === '/api/leads/stats' && method === 'GET') {

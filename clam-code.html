@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Clam Code is LINX Services' text assistant for contractors, homeowners, and administrators." />
+  <title>Clam Code — LINX Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/linx-design-system.css" />
+  <style>
+    .clam-shell { min-height:calc(100vh - var(--nav-h)); padding:48px 0; background:radial-gradient(circle at 50% 0%,rgba(124,92,216,.16),transparent 34%),var(--bg-deep); }
+    .clam-grid { display:grid; grid-template-columns:280px minmax(0,1fr); gap:20px; align-items:start; }
+    .clam-side { position:sticky; top:88px; }
+    .clam-brand { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
+    .clam-mark { width:44px; height:44px; display:grid; place-items:center; border-radius:14px; background:linear-gradient(135deg,var(--neon-violet),var(--neon-cyan)); color:#fff; font-weight:900; box-shadow:0 0 28px rgba(124,92,216,.35); }
+    .clam-title { font-size:18px; font-weight:800; line-height:1.1; }
+    .clam-subtitle { color:var(--text-muted); font-size:12px; margin-top:4px; }
+    .mode-card { padding:16px; background:rgba(124,92,216,.08); border:1px solid rgba(124,92,216,.3); border-radius:var(--radius); }
+    .mode-label { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--neon-cyan); margin-bottom:6px; }
+    .mode-copy { font-size:12px; line-height:1.65; color:var(--text-muted); }
+    .chat-card { min-height:620px; padding:0; overflow:hidden; display:flex; flex-direction:column; }
+    .chat-head { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:16px; }
+    .chat-head h1 { font-size:18px; font-weight:800; }
+    .chat-head p { font-size:12px; color:var(--text-muted); margin-top:4px; }
+    .chat-log { flex:1; min-height:390px; padding:24px; display:flex; flex-direction:column; gap:16px; overflow-y:auto; }
+    .chat-message { max-width:82%; border:1px solid var(--border); border-radius:14px; padding:13px 15px; white-space:pre-wrap; font-size:13px; line-height:1.65; }
+    .chat-message.user { align-self:flex-end; border-color:var(--border-gold); background:rgba(212,168,83,.09); }
+    .chat-message.assistant { align-self:flex-start; background:var(--bg-surface); }
+    .chat-message.error { align-self:flex-start; border-color:rgba(239,68,68,.55); color:#fecaca; }
+    .chat-compose { padding:16px; border-top:1px solid var(--border); background:var(--bg-surface); }
+    .chat-compose textarea { min-height:96px; }
+    .compose-actions { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; }
+    .compose-note { color:var(--text-dim); font-size:11px; line-height:1.45; }
+    .quick-prompts { margin-top:20px; display:flex; flex-wrap:wrap; gap:8px; }
+    .quick-prompts button { padding:8px 10px; border:1px solid var(--border); border-radius:999px; color:var(--text-muted); font-size:11px; }
+    .quick-prompts button:hover { border-color:var(--border-gold); color:var(--gold); }
+    @media (max-width:800px) { .clam-grid { grid-template-columns:1fr; } .clam-side { position:static; } .chat-card { min-height:calc(100vh - 160px); } }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav__logo" href="index.html"><span class="l">Lin</span><span class="x">X</span></a>
+    <ul class="nav__links"><li><a href="index.html">Home</a></li><li><a href="ecosystem">Ecosystem</a></li><li><a href="marketplace">Marketplace</a></li><li><a href="contact.html">Contact</a></li></ul>
+    <div class="nav__actions"><a class="btn btn--outline btn--sm" href="admin/index.html">Admin sign in</a></div>
+  </nav>
+  <main class="clam-shell">
+    <div class="container clam-grid">
+      <aside class="clam-side">
+        <div class="clam-brand"><div class="clam-mark">CC</div><div><div class="clam-title">Clam Code</div><div class="clam-subtitle">The LINX Services assistant</div></div></div>
+        <div class="mode-card"><div class="mode-label" id="mode-label">Public mode</div><p class="mode-copy" id="mode-copy">Get practical text-based help for LINX Services, contractor workflows, and your next project. Administrator sessions automatically receive their authorized operational assistant.</p></div>
+        <div class="quick-prompts" aria-label="Suggested questions">
+          <button type="button" data-prompt="How does LINX Services help contractors follow up with leads?">Contractor workflow</button>
+          <button type="button" data-prompt="What should I include when posting a home project?">Post a project</button>
+          <button type="button" data-prompt="Help me write a concise follow-up message for a new lead.">Draft a follow-up</button>
+        </div>
+      </aside>
+      <section class="card chat-card" aria-label="Clam Code conversation">
+        <header class="chat-head"><div><h1>Ask Clam Code</h1><p>One familiar interface. The right model is selected securely by the Worker.</p></div><span class="badge badge--violet" id="mode-badge">Public</span></header>
+        <div class="chat-log" id="chat-log" role="log" aria-live="polite"><div class="chat-message assistant">Hello. I’m Clam Code. How can I help with LINX Services today?</div></div>
+        <form class="chat-compose" id="chat-form"><label class="form-label" for="chat-input">Your message</label><textarea class="form-input form-textarea" id="chat-input" maxlength="4000" placeholder="Ask about a project, contractor workflow, or LINX Services…" required></textarea><div class="compose-actions"><span class="compose-note">Please do not include passwords, payment details, or private client information.</span><button class="btn btn--primary" id="send-button" type="submit">Send</button></div></form>
+      </section>
+    </div>
+  </main>
+  <script>
+    const API_BASE = window.LINX_API_BASE || "https://api.linxservices.ca";
+    const storageKeys = ["linx_token", "linx_admin_token"];
+    const token = storageKeys.map(key => localStorage.getItem(key) || sessionStorage.getItem(key)).find(Boolean) || "";
+    const history = [];
+    const log = document.getElementById("chat-log");
+    const input = document.getElementById("chat-input");
+    const form = document.getElementById("chat-form");
+    const button = document.getElementById("send-button");
+
+    function addMessage(role, content) {
+      const node = document.createElement("div");
+      node.className = `chat-message ${role}`;
+      node.textContent = content;
+      log.appendChild(node);
+      log.scrollTop = log.scrollHeight;
+      return node;
+    }
+
+    async function refreshMode() {
+      try {
+        const response = await fetch(`${API_BASE}/api/clam-code/health`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        const status = await response.json();
+        if (status.role === "admin") {
+          document.getElementById("mode-label").textContent = "Administrator mode";
+          document.getElementById("mode-copy").textContent = "Your authorized administrator session unlocks enhanced analysis for operational summaries, analytics interpretation, and report drafting.";
+          document.getElementById("mode-badge").textContent = "Administrator";
+        } else if (status.role === "subscriber") {
+          document.getElementById("mode-label").textContent = "Subscriber mode";
+          document.getElementById("mode-copy").textContent = "Your approved LINX Services session gives you a dedicated workspace while Clam Code continues to use the fast public text model for everyday questions.";
+          document.getElementById("mode-badge").textContent = "Subscriber";
+        }
+      } catch (_) { /* The chat endpoint provides the actionable error if the API is unavailable. */ }
+    }
+
+    async function trackPageView() {
+      fetch(`${API_BASE}/api/events/pageview`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path: "/clam-code" }) }).catch(() => {});
+    }
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      const content = input.value.trim();
+      if (!content) return;
+      history.push({ role: "user", content });
+      addMessage("user", content);
+      input.value = "";
+      button.disabled = true;
+      button.textContent = "Thinking…";
+      const pending = addMessage("assistant", "Clam Code is preparing a response…");
+      try {
+        const response = await fetch(`${API_BASE}/api/clam-code/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify({ messages: history.slice(-8) }),
+        });
+        const payload = await response.json();
+        pending.remove();
+        if (!response.ok || !payload.ok) throw new Error(payload.error || "Clam Code could not complete that request.");
+        history.push(payload.message);
+        addMessage("assistant", payload.message.content);
+        if (payload.role === "admin") {
+          document.getElementById("mode-label").textContent = "Administrator mode";
+          document.getElementById("mode-badge").textContent = "Administrator";
+        } else if (payload.role === "subscriber") {
+          document.getElementById("mode-label").textContent = "Subscriber mode";
+          document.getElementById("mode-badge").textContent = "Subscriber";
+        }
+      } catch (error) {
+        pending.remove();
+        addMessage("error", error.message || "Unable to connect to Clam Code.");
+      } finally {
+        button.disabled = false;
+        button.textContent = "Send";
+        input.focus();
+      }
+    });
+
+    document.querySelectorAll("[data-prompt]").forEach(prompt => prompt.addEventListener("click", () => { input.value = prompt.dataset.prompt; input.focus(); }));
+    refreshMode();
+    trackPageView();
+  </script>
+</body>
+</html>

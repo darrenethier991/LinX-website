@@ -193,6 +193,10 @@
     </a>
     <ul class="nav__links">
       <li><a href="../index.html">Public Site</a></li>
+      <li><a href="../clam-code.html">Clam Code</a></li>
+      <li><a href="analytics.html">Analytics</a></li>
+      <li><a href="users.html">Users & Access</a></li>
+      <li><a href="content.html">Content Controls</a></li>
       <li><a href="crawler-dashboard.html">Crawler</a></li>
       <li><a href="contractor-leads.html">Leads</a></li>
     </ul>
@@ -868,9 +872,8 @@
 
 <script>
   // ── SIMPLE AUTH ──────────────────────────────────────────────────────────────
-  const ADMIN_USER = 'admin';
-  const ADMIN_PASS = 'linx2024'; // Change in production
-  let _token = sessionStorage.getItem('linx_admin_token') || '';
+  const API_BASE = window.LINX_API_BASE || 'https://api.linxservices.ca';
+  let _token = sessionStorage.getItem('linx_token') || '';
 
   function showToast(msg, type = '') {
     const t = document.getElementById('toast');
@@ -885,23 +888,30 @@
     document.getElementById('login-screen').style.display = 'flex';
   }
 
-  document.getElementById('login-btn').addEventListener('click', () => {
+  document.getElementById('login-btn').addEventListener('click', async () => {
     const u = document.getElementById('login-user').value.trim();
     const p = document.getElementById('login-pass').value.trim();
-    if (u === ADMIN_USER && p === ADMIN_PASS) {
-      _token = btoa(u + ':' + Date.now());
-      sessionStorage.setItem('linx_admin_token', _token);
+    const error = document.getElementById('login-err');
+    error.textContent = '';
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) });
+      const payload = await response.json();
+      if (!response.ok || !payload.token) throw new Error(payload.error || 'Invalid credentials.');
+      _token = payload.token;
+      sessionStorage.setItem('linx_token', _token);
+      localStorage.setItem('linx_token', _token);
       sessionStorage.setItem('linx_admin_user', u);
       showApp(u);
-    } else {
-      document.getElementById('login-err').textContent = 'Invalid credentials.';
+    } catch (loginError) {
+      error.textContent = loginError.message || 'Unable to sign in.';
     }
   });
   document.getElementById('login-pass').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('login-btn').click();
   });
   document.getElementById('logout-btn').addEventListener('click', () => {
-    sessionStorage.removeItem('linx_admin_token');
+    sessionStorage.removeItem('linx_token');
+    localStorage.removeItem('linx_token');
     sessionStorage.removeItem('linx_admin_user');
     location.reload();
   });
