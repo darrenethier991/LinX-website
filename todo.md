@@ -18,3 +18,6 @@
 - [x] Review and correct the `/linxservices.ca/` route as a dedicated white-label services page.
 - [x] Add a polished white-label service offering, clear feature scope, and inquiry call to action without fabricated client claims.
 - [x] Validate the white-label route and include it in the next local repository commit.
+- [x] Replace the homepage starfield with a premium circuit-board highway background in LINX gold, cyan, and violet.
+- [x] Add a subtle, accessible flowing-glow treatment and respect reduced-motion preferences.
+- [x] Validate and deploy the circuit-board background update to the live LINX Services site.
