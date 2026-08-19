@@ -30,7 +30,7 @@
 - [ ] Obtain approval for the proposed Google Sheet schema and welcome-SMS message before sending any messages.
 - [ ] Add secure Cloudflare Worker integration for Google Sheets, owner notification, and Twilio welcome SMS.
 - [ ] Add tests and deploy the approved signup automation only after required credentials are configured.
-- [ ] Replace the deprecated public Clam Code Workers AI model with a currently supported model and verify public chat responses.
+- [x] Replace the deprecated public Clam Code Workers AI model with a currently supported model and verify public chat responses.
 - [ ] Add consent-aware admin-approval triggers for Google Sheets sync, owner notification, and Twilio welcome SMS.
 - [ ] Configure required Google Sheets and Twilio Cloudflare secrets and non-secret variables through secure settings.
 - [x] Update the deployed administrator username to the user-specified email and rotate the administrator password hash through Cloudflare secrets without committing the password.

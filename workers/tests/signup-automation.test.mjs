@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildWelcomeMessage, isE164, normalizeSubscriberInput, processApprovalAutomation } from "../api/signup-automation.js";
+import { buildWelcomeMessage, isE164, isTwilioMessagingServiceSid, normalizeSubscriberInput, processApprovalAutomation } from "../api/signup-automation.js";
 
 test("subscriber phone and consent normalization requires E.164 format and an explicit source", () => {
   assert.equal(isE164("+14165550123"), true);
@@ -15,6 +15,11 @@ test("welcome SMS identifies LINX Services and includes the approved opt-out ins
   const message = buildWelcomeMessage("Alex Morgan");
   assert.match(message, /^LINX Services: Welcome, Alex\./);
   assert.match(message, /Reply STOP to unsubscribe\.$/);
+});
+
+test("Twilio automation accepts only Messaging Service identifiers", () => {
+  assert.equal(isTwilioMessagingServiceSid("MG0123456789abcdef0123456789abcdef"), true);
+  assert.equal(isTwilioMessagingServiceSid("AC0123456789abcdef0123456789abcdef"), false);
 });
 
 test("approval automation never calls external services while the production switch is disabled", async () => {

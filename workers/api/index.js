@@ -4,7 +4,7 @@ import {
   normalizeMessages,
   responseEnvelope,
 } from "./clam-code.js";
-import { normalizeSubscriberInput, processApprovalAutomation } from "./signup-automation.js";
+import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 
 /**
  * LinX API — Cloudflare Worker
@@ -314,6 +314,22 @@ export default {
       const body = await readBody(request);
       await recordPageView(env, body);
       return json({ ok: true }, 202, origin);
+    }
+
+    // ── POST /api/webhooks/twilio/status — signed delivery receipts ─────────
+    if (path === '/api/webhooks/twilio/status' && method === 'POST') {
+      const rawBody = await request.text();
+      const valid = await verifyTwilioStatusCallback(request, rawBody, env.TWILIO_AUTH_TOKEN);
+      if (!valid) return json({ error: 'Invalid Twilio signature.' }, 403, origin);
+      const form = new URLSearchParams(rawBody);
+      const messageSid = form.get('MessageSid') || form.get('SmsSid');
+      const messageStatus = (form.get('MessageStatus') || '').toLowerCase();
+      if (env.DB && messageSid) {
+        const status = ['failed', 'undelivered'].includes(messageStatus) ? 'failed' : ['delivered', 'sent', 'accepted', 'queued'].includes(messageStatus) ? 'sent' : 'pending';
+        await env.DB.prepare("UPDATE signup_delivery_events SET status = ?, last_error = ?, updated_at = datetime('now') WHERE external_id = ?")
+          .bind(status, status === 'failed' ? (form.get('ErrorCode') || messageStatus || 'Twilio delivery failed') : null, messageSid).run();
+      }
+      return new Response(null, { status: 204 });
     }
 
     // ── GET /api/content/home — approved public text overrides ──────────────

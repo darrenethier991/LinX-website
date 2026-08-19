@@ -20,6 +20,10 @@ export function isE164(value) {
   return /^\+[1-9]\d{7,14}$/.test(value || "");
 }
 
+export function isTwilioMessagingServiceSid(value) {
+  return /^MG[0-9a-fA-F]{32}$/.test(value || "");
+}
+
 export function normalizeSubscriberInput(input = {}) {
   const phoneE164 = safeText(input.phone_e164, 20);
   const smsConsent = input.sms_consent === true;
@@ -98,20 +102,41 @@ async function appendSignupToSheet(env, subscriber, state) {
 }
 
 async function sendTwilioSms(env, to, body) {
-  if (!env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN || !env.TWILIO_MESSAGING_SERVICE_SID) {
+  const messagingServiceSid = safeText(env.TWILIO_MESSAGING_SERVICE_SID, 40);
+  if (!env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN || !messagingServiceSid) {
     throw new Error("Twilio Messaging Service credentials are not configured.");
   }
+  if (!isTwilioMessagingServiceSid(messagingServiceSid)) throw new Error("TWILIO_MESSAGING_SERVICE_SID must be a Twilio Messaging Service ID beginning with MG.");
+  const statusCallback = safeText(env.TWILIO_STATUS_CALLBACK_URL, 500);
   const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${env.TWILIO_ACCOUNT_SID}/Messages.json`, {
     method: "POST",
     headers: {
       Authorization: `Basic ${btoa(`${env.TWILIO_ACCOUNT_SID}:${env.TWILIO_AUTH_TOKEN}`)}`,
       "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: new URLSearchParams({ To: to, Body: body, MessagingServiceSid: env.TWILIO_MESSAGING_SERVICE_SID, ...(env.TWILIO_STATUS_CALLBACK_URL ? { StatusCallback: env.TWILIO_STATUS_CALLBACK_URL } : {}) }),
+    body: new URLSearchParams({ To: to, Body: body, MessagingServiceSid: messagingServiceSid, ...(statusCallback ? { StatusCallback: statusCallback } : {}) }),
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(payload?.message || "Twilio could not queue the SMS.");
   return payload.sid || "queued";
+}
+
+function timingSafeEqual(left, right) {
+  if (left.length !== right.length) return false;
+  let mismatch = 0;
+  for (let index = 0; index < left.length; index += 1) mismatch |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  return mismatch === 0;
+}
+
+export async function verifyTwilioStatusCallback(request, formBody, authToken) {
+  const receivedSignature = request.headers.get("X-Twilio-Signature") || "";
+  if (!receivedSignature || !authToken) return false;
+  const entries = [...new URLSearchParams(formBody).entries()].sort(([left], [right]) => left.localeCompare(right));
+  const signingText = `${new URL(request.url).origin}${new URL(request.url).pathname}${entries.map(([key, value]) => `${key}${value}`).join("")}`;
+  const key = await crypto.subtle.importKey("raw", utf8(authToken), { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+  const signature = await crypto.subtle.sign("HMAC", key, utf8(signingText));
+  const expectedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)));
+  return timingSafeEqual(expectedSignature, receivedSignature);
 }
 
 async function startDelivery(env, userId, eventType) {
