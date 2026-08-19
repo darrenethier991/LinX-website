@@ -12,7 +12,8 @@
 - [x] Add Worker bindings and secret configuration for the public model, Claude-compatible endpoint, API key, and optional model override.
 - [x] Track role-safe AI usage events for administrator analytics without storing sensitive prompt content by default.
 - [x] Add automated tests and locally validate the Worker API, unified AI contract, and administrator role routing.
-- [ ] Apply the remote D1 migration and configure the Claude-provider secret before production deployment.
+- [x] Apply the remote D1 migration and verify the deployed `OPENROUTER_API_KEY` fallback secret for the Claude-compatible administrator provider.
+- [x] Grant the deployment credential Cloudflare account-level D1 edit/query and Worker deployment access.
 - [x] Prepare an auditable local commit for the existing LINX Services repository; do not deploy or publish without approval.
 - [x] Review and correct the `/linxservices.ca/` route as a dedicated white-label services page.
 - [x] Add a polished white-label service offering, clear feature scope, and inquiry call to action without fabricated client claims.
