@@ -6,7 +6,7 @@ import worker from "../api/index.js";
 const publicEnv = {
   AI: {
     async run(model, body) {
-      assert.equal(model, "@cf/meta/llama-3.1-8b-instruct");
+      assert.equal(model, "@cf/meta/llama-3.1-8b-instruct-fast");
       assert.equal(body.messages.at(-1).content, "How can LINX help?");
       return { response: "LINX can help organize your project request." };
     },
@@ -25,7 +25,7 @@ test("public Clam Code chat uses the Worker model and returns the unified envelo
   assert.equal(body.ok, true);
   assert.equal(body.role, "public");
   assert.equal(body.provider, "cloudflare-workers-ai");
-  assert.equal(body.model, "@cf/meta/llama-3.1-8b-instruct");
+  assert.equal(body.model, "@cf/meta/llama-3.1-8b-instruct-fast");
   assert.equal(body.message.content, "LINX can help organize your project request.");
 });
 

@@ -21,7 +21,8 @@
     "binding": "AI"
   },
   "vars": {
-    "PUBLIC_AI_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+    "PUBLIC_AI_MODEL": "@cf/meta/llama-3.1-8b-instruct-fast",
+    "AUTOMATION_ENABLED": "false",
     "CLAUDE_API_BASE": "https://openrouter.ai/api/v1/chat/completions",
     "CLAUDE_MODEL": "anthropic/claude-sonnet-4.6"
   }

@@ -4,6 +4,7 @@ import {
   normalizeMessages,
   responseEnvelope,
 } from "./clam-code.js";
+import { normalizeSubscriberInput, processApprovalAutomation } from "./signup-automation.js";
 
 /**
  * LinX API — Cloudflare Worker
@@ -375,7 +376,7 @@ export default {
           requestId: id,
           role,
           provider: role === 'admin' ? 'openai-compatible-claude' : 'cloudflare-workers-ai',
-          model: role === 'admin' ? (env.CLAUDE_MODEL || 'anthropic/claude-sonnet-4.6') : (env.PUBLIC_AI_MODEL || '@cf/meta/llama-3.1-8b-instruct'),
+          model: role === 'admin' ? (env.CLAUDE_MODEL || 'anthropic/claude-sonnet-4.6') : (env.PUBLIC_AI_MODEL || '@cf/meta/llama-3.1-8b-instruct-fast'),
           inputMessages: messages.length,
           inputCharacters,
           outputCharacters: 0,
@@ -505,10 +506,13 @@ export default {
     // ── POST /api/admin/users — approved user + one-time access code ───────
     if (path === '/api/admin/users' && method === 'POST') {
       if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
-      const { email, display_name = '', tier = 'approved', subscription_status = 'approved' } = await readBody(request);
+      const { email, display_name = '', tier = 'approved', subscription_status = 'approved', ...signupInput } = await readBody(request);
       const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
       if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) return json({ error: 'A valid email is required.' }, 400, origin);
       if (!validSubscriptionStatus(subscription_status)) return json({ error: 'Invalid subscription status.' }, 400, origin);
+      let subscriberInput;
+      try { subscriberInput = normalizeSubscriberInput(signupInput); }
+      catch (error) { return json({ error: error.message }, 400, origin); }
       const exists = await env.DB.prepare("SELECT id FROM platform_users WHERE email = ?").bind(normalizedEmail).first();
       if (exists) return json({ error: 'A platform user with this email already exists.' }, 409, origin);
       const userId = requestId();
@@ -517,12 +521,21 @@ export default {
       const accessCodeHash = await sha256hex(accessCode);
       const codeId = requestId();
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      const displayName = String(display_name).slice(0, 160);
+      const approvedAt = new Date().toISOString();
+      const automationEnabled = env.AUTOMATION_ENABLED === 'true';
+      const userInsert = automationEnabled
+        ? env.DB.prepare("INSERT INTO platform_users (id,email,display_name,phone_e164,company,sms_consent,sms_consent_at,sms_consent_source,role,status) VALUES (?,?,?,?,?,?,?,?,?,?)").bind(userId, normalizedEmail, displayName, subscriberInput.phone_e164 || null, subscriberInput.company || null, subscriberInput.sms_consent ? 1 : 0, subscriberInput.sms_consent ? approvedAt : null, subscriberInput.sms_consent_source || null, 'subscriber', 'active')
+        : env.DB.prepare("INSERT INTO platform_users (id,email,display_name,role,status) VALUES (?,?,?,?,?)").bind(userId, normalizedEmail, displayName, 'subscriber', 'active');
       await env.DB.batch([
-        env.DB.prepare("INSERT INTO platform_users (id,email,display_name,role,status) VALUES (?,?,?,?,?)").bind(userId, normalizedEmail, String(display_name).slice(0, 160), 'subscriber', 'active'),
+        userInsert,
         env.DB.prepare("INSERT INTO subscription_entitlements (id,user_id,tier,status,source,approved_by,starts_at) VALUES (?,?,?,?,?,?,datetime('now'))").bind(entitlementId, userId, String(tier).slice(0, 80), subscription_status, 'manual_approval', admin.sub),
         env.DB.prepare("INSERT INTO access_codes (id,user_id,code_hash,expires_at) VALUES (?,?,?,?)").bind(codeId, userId, accessCodeHash, expiresAt),
       ]);
-      return json({ ok: true, user: { id: userId, email: normalizedEmail, display_name: String(display_name).slice(0, 160), role: 'subscriber' }, access_code: accessCode, access_code_expires_at: expiresAt }, 201, origin);
+      const automation = automationEnabled
+        ? await processApprovalAutomation(env, { id: userId, email: normalizedEmail, display_name: displayName, approved_at_utc: approvedAt, phone_e164: subscriberInput.phone_e164, company: subscriberInput.company, tier: String(tier).slice(0, 80), entitlement_status: subscription_status, sms_consent: subscriberInput.sms_consent, sms_consent_at_utc: subscriberInput.sms_consent ? approvedAt : null, sms_consent_source: subscriberInput.sms_consent_source })
+        : { enabled: false, sheet_sync: 'disabled', owner_notification: 'disabled', welcome_sms: 'disabled' };
+      return json({ ok: true, user: { id: userId, email: normalizedEmail, display_name: displayName, role: 'subscriber' }, access_code: accessCode, access_code_expires_at: expiresAt, automation }, 201, origin);
     }
 
     // ── PATCH /api/admin/users/:id — account and entitlement control ────────

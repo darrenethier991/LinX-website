@@ -1,4 +1,4 @@
-export const PUBLIC_MODEL = "@cf/meta/llama-3.1-8b-instruct";
+export const PUBLIC_MODEL = "@cf/meta/llama-3.1-8b-instruct-fast";
 export const ADMIN_MODEL = "anthropic/claude-sonnet-4.6";
 export const OPENROUTER_COMPLETIONS_URL = "https://openrouter.ai/api/v1/chat/completions";
 
