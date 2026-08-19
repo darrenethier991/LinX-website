@@ -3,12 +3,12 @@
   "name": "linx-api",
   "main": "workers/api/index.js",
   "compatibility_date": "2025-01-01",
-  "migrations_dir": "workers/migrations",
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "linx-db-staging",
-      "database_id": "f48dd10b-977b-4401-a959-1a8a33839294"
+      "database_id": "f48dd10b-977b-4401-a959-1a8a33839294",
+      "migrations_dir": "workers/migrations"
     }
   ],
   "kv_namespaces": [
