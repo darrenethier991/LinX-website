@@ -17,9 +17,42 @@
     .hero {
       padding: 120px 0 90px;
       text-align: center;
-      position: relative;
+      position: relative; isolation: isolate;
       overflow: hidden;
-      background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(212,168,83,0.07) 0%, transparent 70%);
+      background:
+        radial-gradient(ellipse 70% 66% at 50% 120%, rgba(124,92,216,0.13) 0%, transparent 62%),
+        radial-gradient(ellipse 80% 54% at 50% -20%, rgba(212,168,83,0.12) 0%, transparent 72%),
+        #030306;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0; z-index: -3; pointer-events: none;
+      background-image:
+        linear-gradient(90deg, rgba(6,182,212,0.055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(212,168,83,0.04) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: linear-gradient(to bottom, black, rgba(0,0,0,.72) 60%, transparent 100%);
+    }
+    .hero::after {
+      content: ''; position: absolute; inset: auto 10% -130px; height: 300px; z-index: -2; pointer-events: none;
+      background: radial-gradient(ellipse, rgba(212,168,83,.18), rgba(6,182,212,.07) 38%, transparent 70%);
+      filter: blur(24px);
+    }
+    .hero .container { position: relative; z-index: 2; }
+    .circuit-highway { position:absolute; inset:0; z-index:-1; pointer-events:none; overflow:hidden; opacity:.9; }
+    .circuit-highway svg { width:100%; height:100%; min-width:980px; transform:translateX(50%) translateX(-490px); }
+    .circuit-board-line { fill:none; stroke:rgba(105,122,141,.38); stroke-width:1.1; vector-effect:non-scaling-stroke; }
+    .circuit-board-line--gold { stroke:rgba(212,168,83,.56); }
+    .circuit-board-line--cyan { stroke:rgba(6,182,212,.48); }
+    .circuit-board-line--violet { stroke:rgba(124,92,216,.5); }
+    .circuit-node { fill:#060608; stroke-width:1.5; }
+    .circuit-node--gold { stroke:var(--gold); filter:drop-shadow(0 0 6px rgba(212,168,83,.85)); }
+    .circuit-node--cyan { stroke:var(--neon-cyan); filter:drop-shadow(0 0 6px rgba(6,182,212,.8)); }
+    .circuit-flow { fill:none; stroke-width:2.25; stroke-linecap:round; stroke-dasharray:2 30; vector-effect:non-scaling-stroke; filter:drop-shadow(0 0 7px currentColor); }
+    .circuit-flow--gold { stroke:var(--gold); color:var(--gold); animation:circuitFlow 5.5s linear infinite; }
+    .circuit-flow--cyan { stroke:var(--neon-cyan); color:var(--neon-cyan); animation:circuitFlow 7s linear infinite reverse; }
+    .circuit-flow--violet { stroke:var(--neon-violet); color:var(--neon-violet); animation:circuitFlow 8.5s linear infinite; }
+    @keyframes circuitFlow { to { stroke-dashoffset:-320; } }
+    @media (prefers-reduced-motion: reduce) { .circuit-flow { animation:none; } }
     }
     .hero__eyebrow {
       display: inline-flex; align-items: center; gap: 8px;
@@ -237,6 +270,32 @@
 
 <!-- ── HERO ── -->
 <section class="hero">
+  <div class="circuit-highway" aria-hidden="true">
+    <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" role="presentation">
+      <defs>
+        <linearGradient id="circuitFade" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#fff" stop-opacity=".08"/><stop offset=".62" stop-color="#fff" stop-opacity=".78"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+      </defs>
+      <g stroke="url(#circuitFade)">
+        <path class="circuit-board-line circuit-board-line--gold" d="M-80 568 C120 510 236 456 400 410 S704 292 1080 48"/>
+        <path class="circuit-board-line circuit-board-line--gold" d="M88 700 C258 572 392 524 492 400 S750 226 972 -40"/>
+        <path class="circuit-board-line circuit-board-line--cyan" d="M-70 610 C156 548 302 492 424 376 S676 220 1080 104"/>
+        <path class="circuit-board-line circuit-board-line--cyan" d="M278 700 C368 598 484 520 560 426 S720 236 826 -18"/>
+        <path class="circuit-board-line circuit-board-line--violet" d="M812 700 C726 586 654 520 622 410 S488 194 256 -30"/>
+        <path class="circuit-board-line circuit-board-line--violet" d="M1080 548 C882 506 724 440 604 340 S408 120 -30 70"/>
+        <path class="circuit-board-line" d="M-40 310 H206 L266 252 H440"/>
+        <path class="circuit-board-line" d="M1040 362 H800 L750 312 H608"/>
+      </g>
+      <g>
+        <path class="circuit-flow circuit-flow--gold" d="M-80 568 C120 510 236 456 400 410 S704 292 1080 48"/>
+        <path class="circuit-flow circuit-flow--cyan" d="M-70 610 C156 548 302 492 424 376 S676 220 1080 104"/>
+        <path class="circuit-flow circuit-flow--violet" d="M812 700 C726 586 654 520 622 410 S488 194 256 -30"/>
+        <path class="circuit-flow circuit-flow--gold" d="M1080 548 C882 506 724 440 604 340 S408 120 -30 70"/>
+      </g>
+      <g>
+        <circle class="circuit-node circuit-node--gold" cx="400" cy="410" r="5"/><circle class="circuit-node circuit-node--cyan" cx="424" cy="376" r="4"/><circle class="circuit-node circuit-node--violet" cx="622" cy="410" r="5"/><circle class="circuit-node circuit-node--gold" cx="604" cy="340" r="4"/><circle class="circuit-node circuit-node--cyan" cx="750" cy="312" r="4"/><circle class="circuit-node circuit-node--violet" cx="266" cy="252" r="4"/>
+      </g>
+    </svg>
+  </div>
   <div class="container">
     <div class="hero__eyebrow">Est. 2024 — Canada's Contractor Network</div>
     <h1 id="hero-headline"><em>Lin</em>X</h1>
@@ -742,18 +801,6 @@
     el.addEventListener('mouseenter', () => { cursor.style.width = '34px'; cursor.style.height = '34px'; });
     el.addEventListener('mouseleave', () => { cursor.style.width = '20px'; cursor.style.height = '20px'; });
   });
-
-  // ── STAR FIELD ──────────────────────────────────────────────────────────────
-  for (let i = 0; i < 50; i++) {
-    const s = document.createElement('div');
-    s.className = 'star';
-    s.style.left            = Math.random() * window.innerWidth + 'px';
-    s.style.top             = Math.random() * document.body.scrollHeight * 0.3 + 'px';
-    s.style.animationDelay  = Math.random() * 4 + 's';
-    s.style.width           = (Math.random() * 1.5 + 0.5) + 'px';
-    s.style.height          = s.style.width;
-    document.body.appendChild(s);
-  }
 
   // ── PRICING TOGGLE ──────────────────────────────────────────────────────────
   let isAnnual = false;
