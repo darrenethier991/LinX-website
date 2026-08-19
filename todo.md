@@ -14,3 +14,6 @@
 - [x] Add automated tests and locally validate the Worker API, unified AI contract, and administrator role routing.
 - [ ] Apply the remote D1 migration and configure the Claude-provider secret before production deployment.
 - [x] Prepare an auditable local commit for the existing LINX Services repository; do not deploy or publish without approval.
+- [x] Review and correct the `/linxservices.ca/` route as a dedicated white-label services page.
+- [x] Add a polished white-label service offering, clear feature scope, and inquiry call to action without fabricated client claims.
+- [ ] Validate the white-label route and include it in the next local repository commit.

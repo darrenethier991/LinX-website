@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="White-label lead operations, intake, and AI assistance from LINX Services—branded for your business." />
+  <title>White-Label Services — LINX Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/linx-design-system.css" />
+  <style>
+    .wl-hero { padding:100px 0 68px; background:radial-gradient(circle at 68% 0%,rgba(124,92,216,.22),transparent 34%),radial-gradient(circle at 20% 20%,rgba(212,168,83,.12),transparent 32%),var(--bg-deep); }
+    .wl-grid { display:grid; grid-template-columns:1.18fr .82fr; gap:22px; align-items:stretch; }
+    .wl-title { font-size:clamp(38px,6vw,68px); line-height:1.02; letter-spacing:-.055em; max-width:740px; margin:10px 0 18px; }
+    .wl-title .accent { color:var(--gold); }
+    .wl-sub { max-width:640px; color:var(--text-muted); font-size:16px; line-height:1.8; }
+    .wl-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:28px; }
+    .wl-panel { padding:26px; background:linear-gradient(145deg,rgba(124,92,216,.14),rgba(10,10,14,.96) 60%); border-color:rgba(124,92,216,.35); box-shadow:0 22px 60px rgba(0,0,0,.4); }
+    .wl-panel h2 { font-size:16px; margin:12px 0 8px; }
+    .wl-panel p { font-size:13px; line-height:1.7; color:var(--text-muted); }
+    .brand-preview { margin-top:20px; padding:16px; border:1px solid var(--border); background:#0d0d11; border-radius:var(--radius-sm); }
+    .brand-preview__top { display:flex; justify-content:space-between; padding-bottom:12px; margin-bottom:14px; border-bottom:1px solid var(--border); font-size:11px; color:var(--text-muted); }
+    .brand-preview__name { color:#fff; font-weight:800; letter-spacing:-.03em; }
+    .brand-preview__dot { width:8px; height:8px; border-radius:50%; background:var(--gold); display:inline-block; margin-right:6px; }
+    .brand-preview__card { padding:13px; background:var(--bg-card); border:1px solid var(--border); border-radius:10px; }
+    .brand-preview__line { height:7px; background:linear-gradient(90deg,rgba(255,255,255,.16),rgba(255,255,255,.04)); border-radius:99px; margin-top:9px; }
+    .brand-preview__line.short { width:57%; }
+    .feature-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:28px; }
+    .feature h2 { font-size:16px; margin:12px 0 8px; }
+    .feature p { color:var(--text-muted); font-size:13px; line-height:1.75; }
+    .workflow { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:28px; }
+    .step { position:relative; padding:18px; }
+    .step:not(:last-child)::after { content:'→'; position:absolute; right:-10px; top:50%; transform:translateY(-50%); color:var(--gold); z-index:2; font-size:20px; }
+    .step-number { font-size:10px; color:var(--gold); letter-spacing:.15em; font-weight:800; }
+    .step h2 { font-size:14px; margin:8px 0; }
+    .step p { font-size:12px; color:var(--text-muted); line-height:1.6; }
+    .cta { padding:64px 0; border-top:1px solid var(--border); background:linear-gradient(105deg,rgba(212,168,83,.12),rgba(124,92,216,.09),transparent); }
+    @media(max-width:900px){.wl-grid,.feature-grid{grid-template-columns:1fr}.workflow{grid-template-columns:repeat(2,1fr)}.step:nth-child(2)::after{display:none}} @media(max-width:520px){.workflow{grid-template-columns:1fr}.step:not(:last-child)::after{display:none}}
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav__logo" href="../index.html"><span class="l">Lin</span><span class="x">X</span></a>
+    <ul class="nav__links"><li><a href="../services.html">Services</a></li><li><a href="../about.html">About</a></li><li><a href="../contact.html">Contact</a></li></ul>
+    <div class="nav__actions"><a class="btn btn--primary btn--sm" href="#inquire">Discuss white-label</a></div>
+  </nav>
+  <main>
+    <section class="wl-hero">
+      <div class="container wl-grid">
+        <div>
+          <span class="eyebrow">White-label services</span>
+          <h1 class="wl-title">The LINX operating layer, <span class="accent">branded as yours.</span></h1>
+          <p class="wl-sub">Offer a cohesive lead intake, workflow, and AI-assistance experience under your own brand. LINX Services supplies the underlying operating components while your customers see your identity and service model.</p>
+          <div class="wl-actions"><a class="btn btn--primary btn--lg" href="#inquire">Plan your white-label service</a><a class="btn btn--outline btn--lg" href="#scope">See what is included</a></div>
+        </div>
+        <aside class="card wl-panel">
+          <span class="badge badge--violet">Your brand, your workflow</span>
+          <h2>A branded experience without rebuilding the operating layer.</h2>
+          <p>Choose the parts that make sense for your business: intake, lead routing, service pages, client communications, and a controlled AI entry point.</p>
+          <div class="brand-preview" aria-label="Illustrative branded workspace preview">
+            <div class="brand-preview__top"><span class="brand-preview__name"><span class="brand-preview__dot"></span>Your Company</span><span>Client workspace</span></div>
+            <div class="brand-preview__card"><strong style="font-size:12px">New project request</strong><div class="brand-preview__line"></div><div class="brand-preview__line short"></div></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+    <section class="section" id="scope">
+      <div class="container"><span class="eyebrow">Service scope</span><h2 class="section-title">Build the client-facing layer around the tools your team needs.</h2><p class="section-sub">Each white-label engagement begins with a scoped implementation plan. Components can be selected individually or delivered as a connected operating experience.</p>
+        <div class="feature-grid">
+          <article class="card feature"><span class="badge badge--gold">Brand layer</span><h2>Identity, pages, and intake</h2><p>Present a service experience using your business name, approved visual direction, service copy, and project-intake flows.</p></article>
+          <article class="card feature"><span class="badge badge--blue">Operations layer</span><h2>Lead workflows that stay organized</h2><p>Connect contact intake, qualification, routing, and follow-up so your team can manage the next step from a clear operational view.</p></article>
+          <article class="card feature"><span class="badge badge--violet">AI layer</span><h2>Guarded assistance by role</h2><p>Offer a text-first assistant with model access determined by the signed-in role and the context your team has explicitly authorized.</p></article>
+        </div>
+      </div>
+    </section>
+    <section class="section section--alt"><div class="container"><span class="eyebrow">Implementation approach</span><h2 class="section-title">A practical path from existing process to branded service.</h2><div class="workflow"><article class="card step"><div class="step-number">01 / DISCOVER</div><h2>Map the service</h2><p>Define audiences, workflows, brand surfaces, and the first operational outcome to improve.</p></article><article class="card step"><div class="step-number">02 / CONFIGURE</div><h2>Set the boundaries</h2><p>Configure roles, approved content, data access, and the components that belong in the white-label experience.</p></article><article class="card step"><div class="step-number">03 / BRAND</div><h2>Shape the experience</h2><p>Apply your approved identity to the public and signed-in surfaces that customers and staff will use.</p></article><article class="card step"><div class="step-number">04 / OPERATE</div><h2>Measure and refine</h2><p>Use administrator analytics and content controls to review adoption and make deliberate improvements.</p></article></div></div></section>
+    <section class="cta" id="inquire"><div class="container wl-grid"><div><span class="eyebrow">Start a conversation</span><h2 class="section-title">Tell us what you want to offer under your own name.</h2><p class="section-sub">Share your audience, the workflow you want to improve, and the brand surface you need. We will use that information to scope a suitable white-label implementation.</p></div><div class="card"><h2 style="font-size:16px;margin-bottom:10px">White-label inquiry</h2><p style="font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:18px">For a focused first conversation, include your company name, intended audience, and the operating workflow you want to support.</p><a class="btn btn--primary btn--full" href="mailto:Darrenethier991@gmail.com?subject=LINX%20Services%20White-Label%20Inquiry">Email LINX Services</a></div></div></section>
+  </main>
+</body>
+</html>
