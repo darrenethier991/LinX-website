@@ -21,3 +21,8 @@
 - [x] Replace the homepage starfield with a premium circuit-board highway background in LINX gold, cyan, and violet.
 - [x] Add a subtle, accessible flowing-glow treatment and respect reduced-motion preferences.
 - [x] Validate and deploy the circuit-board background update to the live LINX Services site.
+- [x] Audit www.linxservices.ca routing and identify why it resolves to the current white-label fallback page.
+- [x] Create a dedicated `/white-label` business automation and website-building page with scoped services and transparent pricing.
+- [x] Remove lead-generation, homeowner/contractor, marketplace, CRM, and lead-matching content from the white-label experience.
+- [x] Keep the non-www `linxservices.ca` homepage unchanged while applying the www-specific routing fix.
+- [x] Validate and deploy the corrected white-label sub-route and www behavior.
