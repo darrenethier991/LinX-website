@@ -13,4 +13,4 @@
 - [x] Track role-safe AI usage events for administrator analytics without storing sensitive prompt content by default.
 - [x] Add automated tests and locally validate the Worker API, unified AI contract, and administrator role routing.
 - [ ] Apply the remote D1 migration and configure the Claude-provider secret before production deployment.
-- [ ] Prepare an auditable commit for the existing LINX Services repository; do not deploy or publish without approval.
+- [x] Prepare an auditable local commit for the existing LINX Services repository; do not deploy or publish without approval.
