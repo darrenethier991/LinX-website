@@ -20,6 +20,15 @@
   "ai": {
     "binding": "AI"
   },
+  "routes": [
+    {
+      "pattern": "api.linxservices.ca/*",
+      "zone_name": "linxservices.ca"
+    }
+  ],
+  "triggers": {
+    "crons": ["0 * * * *"]
+  },
   "vars": {
     "PUBLIC_AI_MODEL": "@cf/meta/llama-3.1-8b-instruct-fast",
     "AUTOMATION_ENABLED": "false",
