@@ -4,6 +4,10 @@
 # Admin redirect
 /admin          /admin/index.html  302
 
+# Retire the legacy www destination and preserve a clear white-label URL.
+/linxservices.ca   /white-label/   301
+/linxservices.ca/  /white-label/   301
+
 # API and SMS workers pass-through (served by Cloudflare Workers, not Pages)
 # These routes are handled by DNS routing to worker subdomains
 # api.linxservices.ca → api.js Worker
