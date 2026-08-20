@@ -33,5 +33,14 @@
 - [x] Replace the deprecated public Clam Code Workers AI model with a currently supported model and verify public chat responses.
 - [ ] Add consent-aware admin-approval triggers for Google Sheets sync, owner notification, and Twilio welcome SMS.
 - [ ] Configure required Google Sheets and Twilio Cloudflare secrets and non-secret variables through secure settings.
+- [ ] Define the Stripe subscription tiers, prices, payment mode, success/cancel routes, and entitlement lifecycle before integrating checkout.
+- [ ] Replace subscription buttons that currently route to Contact with approved Stripe checkout actions.
+- [ ] Complete the requested Clam Code enhancement scope without changing unrelated site behavior.
+- [ ] Obtain the Lovable OSINT application source or public link and convert it into a safely scoped LINX Services subpage.
+- [ ] Add LinX Amplify, OSINT, and the requested public destinations to a clearer shared navigation structure.
+- [ ] Test and deploy only the requested Stripe, Clam Code, OSINT, and navigation changes.
+- [ ] Create a dedicated LINX HailShield™ fleet and dealership hail-damage recovery subpage with accurate service scope, workflow, packages, and assessment CTA.
+- [ ] Add HailShield™ to the reorganized LINX navigation without changing unrelated public pages.
+- [ ] Validate and deploy the HailShield™ subpage as part of the approved public-site update.
 - [x] Update the deployed administrator username to the user-specified email and rotate the administrator password hash through Cloudflare secrets without committing the password.
 - [x] Diagnose and resolve the failed production verification of the rotated administrator credentials before resuming other changes.
