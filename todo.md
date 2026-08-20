@@ -39,8 +39,8 @@
 - [ ] Obtain the Lovable OSINT application source or public link and convert it into a safely scoped LINX Services subpage.
 - [ ] Add LinX Amplify, OSINT, and the requested public destinations to a clearer shared navigation structure.
 - [ ] Test and deploy only the requested Stripe, Clam Code, OSINT, and navigation changes.
-- [ ] Create a dedicated LINX HailShield™ fleet and dealership hail-damage recovery subpage with accurate service scope, workflow, packages, and assessment CTA.
-- [ ] Add HailShield™ to the reorganized LINX navigation without changing unrelated public pages.
-- [ ] Validate and deploy the HailShield™ subpage as part of the approved public-site update.
+- [x] Create a dedicated LINX HailShield™ fleet and dealership hail-damage recovery subpage with accurate service scope, workflow, packages, and assessment CTA.
+- [x] Add HailShield™ to the existing LINX navigation without changing unrelated public pages.
+- [x] Validate and deploy the HailShield™ subpage as part of the approved public-site update.
 - [x] Update the deployed administrator username to the user-specified email and rotate the administrator password hash through Cloudflare secrets without committing the password.
 - [x] Diagnose and resolve the failed production verification of the rotated administrator credentials before resuming other changes.
