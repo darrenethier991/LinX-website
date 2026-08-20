@@ -42,5 +42,7 @@
 - [x] Create a dedicated LINX HailShield™ fleet and dealership hail-damage recovery subpage with accurate service scope, workflow, packages, and assessment CTA.
 - [x] Add HailShield™ to the existing LINX navigation without changing unrelated public pages.
 - [x] Validate and deploy the HailShield™ subpage as part of the approved public-site update.
+- [ ] Update HailShield™ to accept Canada-wide service inquiries and replace generic packages with the supplied event-based starting prices.
+- [ ] Retain factual operating boundaries and avoid unverified performance, insurance-reimbursement, market-size, or board-endorsement claims in the HailShield™ content.
 - [x] Update the deployed administrator username to the user-specified email and rotate the administrator password hash through Cloudflare secrets without committing the password.
 - [x] Diagnose and resolve the failed production verification of the rotated administrator credentials before resuming other changes.
