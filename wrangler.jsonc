@@ -3,6 +3,8 @@
   "name": "linx-api",
   "main": "workers/api/index.js",
   "compatibility_date": "2025-01-01",
+  "workers_dev": true,
+  "preview_urls": true,
   "d1_databases": [
     {
       "binding": "DB",
