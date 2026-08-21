@@ -64,3 +64,6 @@
 - [x] Replace the nonfunctional crawler controls with a usable Phase 1 lead-intake dashboard for CSV and manual imports.
 - [ ] Prepare the Phase 2 dedicated-crawler foundation with explicit source authorization, robots, rate-limit, and operational-health requirements.
 - [x] Refine the Clam Code mascot toward the supplied premium pearlescent cyber-clam direction with rounded shell form, cyan interior, and compact mechanical claw details.
+- [ ] Design and implement an administrator-only Clam Code engineering workspace with a bounded repository action protocol, test gating, diff review, and audit records.
+- [ ] Require an explicit administrator confirmation for every push, deployment, or other external engineering action initiated from Clam Code.
+- [ ] Implement the bounded passive public-domain observation workflow and report view for the LINX OSINT subpage without retaining scan history by default.

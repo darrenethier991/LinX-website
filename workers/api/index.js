@@ -5,6 +5,7 @@ import {
   responseEnvelope,
 } from "./clam-code.js";
 import { normalizeImportedLead, normalizeLeadSourceInput, parseApprovedFeed, sourceReadiness } from "./lead-pipeline.js";
+import { runPassiveDomainObservation } from "./passive-osint.js";
 import { enhancePrompt, normalizePromptEnhancementInput } from "./prompt-enhancer.js";
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 
@@ -589,6 +590,17 @@ export default {
                .replace(/^\/_api_leads\//, '/api/leads/');
 
     const method = request.method.toUpperCase();
+
+    // ── POST /api/osint/passive-scan — bounded public domain observations ───
+    if (path === '/api/osint/passive-scan' && method === 'POST') {
+      const { target } = await readBody(request);
+      try {
+        const report = await runPassiveDomainObservation(target);
+        return json({ ok: true, report }, 200, origin);
+      } catch (error) {
+        return json({ ok: false, error: String(error?.message || 'Passive observation could not be completed.').slice(0, 240) }, 400, origin);
+      }
+    }
 
     // ── POST /api/events/pageview — privacy-safe public telemetry ──────────
     if (path === '/api/events/pageview' && method === 'POST') {
