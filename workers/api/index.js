@@ -198,8 +198,9 @@ async function getAdminClamContext(env) {
 
 const STRIPE_PLANS = Object.freeze({
   starter: { label: 'Starter', priceBinding: 'STRIPE_PRICE_STARTER' },
-  pro: { label: 'Pro', priceBinding: 'STRIPE_PRICE_PRO' },
-  enterprise: { label: 'Enterprise', priceBinding: 'STRIPE_PRICE_ENTERPRISE' },
+  growth: { label: 'Growth', priceBinding: 'STRIPE_PRICE_GROWTH' },
+  unlimited: { label: 'Unlimited', priceBinding: 'STRIPE_PRICE_UNLIMITED' },
+  unlimited_trial: { label: 'Unlimited Trial', priceBinding: 'STRIPE_PRICE_UNLIMITED', entitlementTier: 'unlimited', trialDays: 2 },
 });
 
 export function getStripePlan(env, plan) {
@@ -207,7 +208,7 @@ export function getStripePlan(env, plan) {
   const configured = STRIPE_PLANS[key];
   if (!configured) return null;
   const priceId = String(env?.[configured.priceBinding] || '').trim();
-  return priceId ? { key, ...configured, priceId } : null;
+  return priceId ? { key, entitlementTier: configured.entitlementTier || key, ...configured, priceId } : null;
 }
 
 export function mapStripeSubscriptionStatus(status) {
@@ -277,8 +278,10 @@ async function createStripeCheckoutSession(env, requestedPlan) {
   form.set('line_items[0][price]', plan.priceId);
   form.set('line_items[0][quantity]', '1');
   form.set('allow_promotion_codes', 'true');
-  form.set('metadata[linx_tier]', plan.key);
-  form.set('subscription_data[metadata][linx_tier]', plan.key);
+  form.set('metadata[linx_tier]', plan.entitlementTier);
+  form.set('metadata[linx_checkout_plan]', plan.key);
+  form.set('subscription_data[metadata][linx_tier]', plan.entitlementTier);
+  if (plan.trialDays) form.set('subscription_data[trial_period_days]', String(plan.trialDays));
   form.set('success_url', env.STRIPE_SUCCESS_URL || 'https://linxservices.ca/checkout-success.html?session_id={CHECKOUT_SESSION_ID}');
   form.set('cancel_url', env.STRIPE_CANCEL_URL || 'https://linxservices.ca/checkout-cancel.html');
   const session = await stripeRequest(env, '/v1/checkout/sessions', { method: 'POST', form });

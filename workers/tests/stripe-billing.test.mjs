@@ -4,8 +4,9 @@ import test from "node:test";
 import { getStripePlan, mapStripeSubscriptionStatus, verifyStripeWebhookSignature } from "../api/index.js";
 
 test("Stripe plan lookup permits only configured LINX subscription tiers", () => {
-  const env = { STRIPE_PRICE_STARTER: "price_starter", STRIPE_PRICE_PRO: "price_pro", STRIPE_PRICE_ENTERPRISE: "price_enterprise" };
-  assert.deepEqual(getStripePlan(env, "PRO"), { key: "pro", label: "Pro", priceBinding: "STRIPE_PRICE_PRO", priceId: "price_pro" });
+  const env = { STRIPE_PRICE_STARTER: "price_starter", STRIPE_PRICE_GROWTH: "price_growth", STRIPE_PRICE_UNLIMITED: "price_unlimited" };
+  assert.deepEqual(getStripePlan(env, "GROWTH"), { key: "growth", entitlementTier: "growth", label: "Growth", priceBinding: "STRIPE_PRICE_GROWTH", priceId: "price_growth" });
+  assert.deepEqual(getStripePlan(env, "unlimited_trial"), { key: "unlimited_trial", entitlementTier: "unlimited", label: "Unlimited Trial", priceBinding: "STRIPE_PRICE_UNLIMITED", trialDays: 2, priceId: "price_unlimited" });
   assert.equal(getStripePlan(env, "free"), null);
   assert.equal(getStripePlan({}, "starter"), null);
 });

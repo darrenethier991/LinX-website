@@ -4,8 +4,30 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Contractor Plans &amp; Pricing — LinX</title>
-  <meta name="description" content="LinX contractor plans from $60 CAD/month. Unlimited matched leads, automation, and SMS alerts. No free trials — fully self-serve."/>
+  <meta name="description" content="LINX Services contractor membership options, including a free tier, monthly plans, and a two-day Unlimited trial."/>
   <link rel="stylesheet" href="css/app.css"/>
+  <style>
+    .pricing-hero { padding-bottom:1.15rem; }
+    .pricing-note { max-width:820px; margin:0 auto 2.2rem; text-align:center; }
+    .pricing-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; align-items:stretch; }
+    .pricing-tier { display:flex; flex-direction:column; min-height:490px; padding:22px 18px; border:1px solid rgba(118,130,173,.32); background:linear-gradient(180deg,rgba(23,29,51,.92),rgba(12,16,30,.96)); border-radius:16px; }
+    .pricing-tier--featured { border-color:rgba(212,168,83,.72); box-shadow:0 0 0 1px rgba(212,168,83,.16),0 18px 40px rgba(0,0,0,.22); transform:translateY(-7px); }
+    .pricing-tier__eyebrow { min-height:18px; margin:0 0 11px; color:var(--gold); font-size:.63rem; font-weight:800; letter-spacing:.11em; text-transform:uppercase; }
+    .pricing-tier__name { margin:0; font-size:1.1rem; line-height:1.22; font-family:var(--font-head); }
+    .pricing-tier__price { display:flex; align-items:baseline; gap:3px; margin:16px 0 7px; color:#fff; font-size:1.8rem; font-weight:900; letter-spacing:-.05em; }
+    .pricing-tier__price span { color:var(--white-60); font-size:.75rem; font-weight:600; letter-spacing:0; }
+    .pricing-tier__access { min-height:54px; padding:11px 0; border-top:1px solid rgba(118,130,173,.26); border-bottom:1px solid rgba(118,130,173,.26); color:#dfe8ff; font-size:.78rem; font-weight:700; line-height:1.35; }
+    .pricing-tier__features { flex:1; margin:16px 0; padding:0; list-style:none; }
+    .pricing-tier__features li { position:relative; margin:0 0 10px; padding-left:17px; color:var(--white-60); font-size:.76rem; line-height:1.48; }
+    .pricing-tier__features li::before { content:'•'; position:absolute; left:1px; color:var(--neon-cyan); font-weight:900; }
+    .pricing-tier__audience { min-height:46px; margin:0 0 17px; color:var(--text-muted); font-size:.72rem; line-height:1.45; }
+    .pricing-tier__audience strong { color:var(--white-85); }
+    .pricing-tier .btn { width:100%; text-align:center; }
+    .pricing-tier .pricing-disabled { display:block; cursor:default; opacity:.72; }
+    .pricing-disclosure { max-width:940px; margin:24px auto 0; color:var(--text-dim); font-size:.73rem; line-height:1.55; text-align:center; }
+    @media (max-width:1100px) { .pricing-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } .pricing-tier--featured { transform:none; } }
+    @media (max-width:720px) { .pricing-grid { grid-template-columns:1fr; } .pricing-tier { min-height:0; } .pricing-tier__access,.pricing-tier__audience { min-height:0; } }
+  </style>
 </head>
 <body>
 
@@ -31,69 +53,22 @@
 
     <div class="section-head" style="text-align:center;max-width:640px;margin-left:auto;margin-right:auto;">
       <p class="eyebrow">For contractors</p>
-      <h1 class="section-title">Plans built to pay for themselves</h1>
-      <p class="section-sub" style="margin:0 auto;">One matched job typically covers months of membership. Homeowners never pay — posting jobs is always free.</p>
+      <h1 class="section-title">Choose the LINX access that fits your workflow.</h1>
+      <p class="section-sub" style="margin:0 auto;">Start at no cost, step into a monthly plan when you need more capacity, or preview Unlimited for two days.</p>
     </div>
 
-    <div class="notice-band" style="max-width:760px;margin:0 auto 2.2rem;text-align:center;">
-      <strong>No free trials.</strong> Subscriptions activate instantly at Stripe checkout, and everything is self-serve — upgrade, downgrade, or cancel anytime from your billing portal.
+    <div class="notice-band pricing-note">
+      <strong>Transparent access options.</strong> Paid plans use secure Stripe checkout. The free tier is available during LINX onboarding, and the Unlimited Trial starts a two-day subscription trial before the monthly Unlimited price applies.
     </div>
 
-    <div class="grid-3">
-
-      <!-- Starter -->
-      <div class="card price-card">
-        <div class="plan-name">Starter</div>
-        <div class="plan-price">$60 <span>CAD / month</span></div>
-        <div style="font-size:.8rem;color:var(--white-35);">For solo trades getting started</div>
-        <ul>
-          <li>Unlimited matched leads in your trade &amp; area</li>
-          <li>Contractor dashboard &amp; lead pipeline</li>
-          <li>Basic automation</li>
-          <li>AI self-service helpdesk &amp; knowledge base</li>
-          <li>100 SMS notifications / month</li>
-          <li>Self-serve onboarding via LinX Launchpad</li>
-        </ul>
-        <!-- Replace href with the Starter Stripe Payment Link -->
-        <a class="btn btn--outline btn--block" href="#" data-plan="starter">Get Started</a>
-      </div>
-
-      <!-- Pro (featured) -->
-      <div class="card price-card price-card--featured">
-        <div class="plan-name">Pro <span class="tag tag--gold">MOST POPULAR</span></div>
-        <div class="plan-price">$140 <span>CAD / month</span></div>
-        <div style="font-size:.8rem;color:var(--white-35);">For crews that live on steady lead flow</div>
-        <ul>
-          <li>Everything in Starter</li>
-          <li>Full EchoForge integration <span class="tag tag--blue" style="font-size:.6rem;">EchoForge</span></li>
-          <li>AI lead scoring &amp; predictive automation</li>
-          <li>Real-time SMS lead alerts</li>
-          <li>Advanced analytics + AI insights</li>
-          <li>Automation rule builder</li>
-          <li>Priority processing queue</li>
-        </ul>
-        <!-- Replace href with the Pro Stripe Payment Link -->
-        <a class="btn btn--gold btn--block" href="#" data-plan="pro">Get Started</a>
-      </div>
-
-      <!-- Enterprise -->
-      <div class="card price-card">
-        <div class="plan-name">Enterprise</div>
-        <div class="plan-price">$399+ <span>CAD / month</span></div>
-        <div style="font-size:.8rem;color:var(--white-35);">For multi-crew operations &amp; franchises</div>
-        <ul>
-          <li>Everything in Pro</li>
-          <li>White-label branding &amp; custom domain</li>
-          <li>Full API access + custom webhooks</li>
-          <li>Unlimited everything</li>
-          <li>Dedicated EchoForge processing cluster</li>
-          <li>Advanced admin controls &amp; audit logs</li>
-        </ul>
-        <!-- Replace href with the Enterprise Stripe Payment Link -->
-        <a class="btn btn--outline btn--block" href="#" data-plan="enterprise">Get Started</a>
-      </div>
-
+    <div class="pricing-grid">
+      <article class="pricing-tier"><p class="pricing-tier__eyebrow">Start without payment</p><h2 class="pricing-tier__name">Free Until<br>First Job</h2><div class="pricing-tier__price">$0</div><div class="pricing-tier__access">Unlimited job browsing<br>1 accepted job</div><ul class="pricing-tier__features"><li>Basic messaging</li><li>Basic scheduling</li><li>Basic profile</li><li>In-app notifications only</li></ul><p class="pricing-tier__audience"><strong>For:</strong> contractors exploring LINX with no upfront cost.</p><span class="btn btn--outline pricing-disabled">Free at onboarding</span></article>
+      <article class="pricing-tier"><p class="pricing-tier__eyebrow">Essentials</p><h2 class="pricing-tier__name">Starter</h2><div class="pricing-tier__price">$29 <span>CAD / month</span></div><div class="pricing-tier__access">10 leads / month</div><ul class="pricing-tier__features"><li>Email notifications</li><li>Basic CRM</li><li>Limited automation</li><li>1 integration</li><li>Small marketplace boost</li></ul><p class="pricing-tier__audience"><strong>For:</strong> contractors building a repeatable lead workflow.</p><a class="btn btn--outline" href="#" data-plan="starter">Start Starter</a></article>
+      <article class="pricing-tier pricing-tier--featured"><p class="pricing-tier__eyebrow">Recommended</p><h2 class="pricing-tier__name">Growth</h2><div class="pricing-tier__price">$79 <span>CAD / month</span></div><div class="pricing-tier__access">75 leads / month</div><ul class="pricing-tier__features"><li>Full CRM</li><li>Email and SMS notifications</li><li>Moderate automation</li><li>3 integrations</li><li>Priority placement</li></ul><p class="pricing-tier__audience"><strong>For:</strong> teams coordinating a more active lead flow.</p><a class="btn btn--gold" href="#" data-plan="growth">Start Growth</a></article>
+      <article class="pricing-tier"><p class="pricing-tier__eyebrow">Full access</p><h2 class="pricing-tier__name">Unlimited</h2><div class="pricing-tier__price">$199 <span>CAD / month</span></div><div class="pricing-tier__access">Unlimited lead access</div><ul class="pricing-tier__features"><li>Full automation</li><li>AI agents</li><li>EcoHome</li><li>Multi-location access</li><li>Unlimited integrations</li><li>Top placement</li></ul><p class="pricing-tier__audience"><strong>For:</strong> teams that need the broadest LINX capability set.</p><a class="btn btn--outline" href="#" data-plan="unlimited">Start Unlimited</a></article>
+      <article class="pricing-tier"><p class="pricing-tier__eyebrow">Preview</p><h2 class="pricing-tier__name">Unlimited<br>Trial</h2><div class="pricing-tier__price">Free <span>for 2 days</span></div><div class="pricing-tier__access">Unlimited access<br><span style="font-weight:500;color:var(--white-60)">(restricted)</span></div><ul class="pricing-tier__features"><li>No automation</li><li>No boosts</li><li>No CRM export</li><li>No analytics</li></ul><p class="pricing-tier__audience"><strong>For:</strong> a short preview before the Unlimited monthly plan begins.</p><a class="btn btn--outline" href="#" data-plan="unlimited_trial">Start 2-day trial</a></article>
     </div>
+    <p class="pricing-disclosure">All dollar amounts are in Canadian dollars. The Unlimited Trial begins a two-day trial of the Unlimited subscription; cancelling before the trial ends avoids the first recurring charge. Feature availability is governed by the applicable plan and account status.</p>
 
     <!-- FAQ -->
     <div class="section-head" style="margin-top:3.5rem;">
@@ -102,8 +77,8 @@
     </div>
     <div class="grid-2">
       <div class="card">
-        <h3 style="font-family:var(--font-head);font-size:.98rem;margin:0 0 .4rem;">Is there a free trial?</h3>
-        <p style="font-size:.86rem;color:var(--white-60);margin:0;">No. Your subscription activates the moment Stripe checkout completes, and leads start flowing immediately. Keeping LinX fully self-serve is what keeps plans affordable.</p>
+        <h3 style="font-family:var(--font-head);font-size:.98rem;margin:0 0 .4rem;">Is there a free option?</h3>
+        <p style="font-size:.86rem;color:var(--white-60);margin:0;">Yes. Free Until First Job provides job browsing and one accepted job during LINX onboarding. Unlimited also offers a separate two-day trial through Stripe checkout.</p>
       </div>
       <div class="card">
         <h3 style="font-family:var(--font-head);font-size:.98rem;margin:0 0 .4rem;">How do leads reach me?</h3>
@@ -111,7 +86,7 @@
       </div>
       <div class="card">
         <h3 style="font-family:var(--font-head);font-size:.98rem;margin:0 0 .4rem;">Can I cancel or change plans?</h3>
-        <p style="font-size:.86rem;color:var(--white-60);margin:0;">Anytime, self-serve, from your Stripe billing portal — no calls, no emails, no retention scripts. Upgrades and downgrades take effect right away.</p>
+        <p style="font-size:.86rem;color:var(--white-60);margin:0;">You can contact LINX Services to discuss a change to your plan or billing access. Stripe securely processes recurring payment information for paid plans.</p>
       </div>
       <div class="card">
         <h3 style="font-family:var(--font-head);font-size:.98rem;margin:0 0 .4rem;">Do homeowners pay anything?</h3>

@@ -41,9 +41,9 @@
     "OWNER_NOTIFICATION_PHONE": "+17057160803",
     "TWILIO_MESSAGING_SERVICE_SID": "ACb808f0ef1424e0677506dd797d8bd197",
     "TWILIO_STATUS_CALLBACK_URL": "https://api.linxservices.ca/api/webhooks/twilio/status",
-    "STRIPE_PRICE_STARTER": "price_1U6jPgI1snstTqUkrYy9dfH4",
-    "STRIPE_PRICE_PRO": "price_1U6jPmI1snstTqUk3BDdHAaU",
-    "STRIPE_PRICE_ENTERPRISE": "price_1U6jPtI1snstTqUkLNsC7z6X",
+    "STRIPE_PRICE_STARTER": "price_1U6zEqI1snstTqUk6QY4NWBi",
+    "STRIPE_PRICE_GROWTH": "price_1U6zF1I1snstTqUkV6VgdHJX",
+    "STRIPE_PRICE_UNLIMITED": "price_1U6zFBI1snstTqUkKyFSrDmb",
     "STRIPE_SUCCESS_URL": "https://linxservices.ca/checkout-success.html?session_id={CHECKOUT_SESSION_ID}",
     "STRIPE_CANCEL_URL": "https://linxservices.ca/checkout-cancel.html"
   }
