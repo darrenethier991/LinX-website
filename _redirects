@@ -13,6 +13,3 @@
 # api.linxservices.ca → api.js Worker
 # sms.linxservices.ca → sms.js Worker
 # ai.linxservices.ca  → ai-gateway.js Worker
-
-# Branded short links are resolved by the API Worker and then redirect to their stored destination.
-/r/*  https://api.linxservices.ca/r/:splat  200

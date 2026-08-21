@@ -26,6 +26,10 @@
     {
       "pattern": "api.linxservices.ca/*",
       "zone_name": "linxservices.ca"
+    },
+    {
+      "pattern": "linxservices.ca/r/*",
+      "zone_name": "linxservices.ca"
     }
   ],
   "triggers": {
