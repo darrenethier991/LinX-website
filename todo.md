@@ -35,7 +35,7 @@
 - [ ] Configure required Google Sheets and Twilio Cloudflare secrets and non-secret variables through secure settings.
 - [ ] Define the Stripe subscription tiers, prices, payment mode, success/cancel routes, and entitlement lifecycle before integrating checkout.
 - [ ] Replace subscription buttons that currently route to Contact with approved Stripe checkout actions.
-- [ ] Complete the requested Clam Code enhancement scope without changing unrelated site behavior.
+- [x] Complete the requested Clam Code enhancement scope without changing unrelated site behavior.
 - [ ] Obtain the Lovable OSINT application source or public link and convert it into a safely scoped LINX Services subpage.
 - [ ] Add LinX Amplify, OSINT, and the requested public destinations to a clearer shared navigation structure.
 - [ ] Test and deploy only the requested Stripe, Clam Code, OSINT, and navigation changes.
@@ -48,5 +48,5 @@
 - [x] Diagnose and resolve the failed production verification of the rotated administrator credentials before resuming other changes.
 - [x] Diagnose and permanently resolve the renewed production administrator login failure before resuming all other LINX Services work.
 - [x] Normalize deployed administrator credential secret values during comparison to prevent trailing-whitespace configuration errors.
-- [ ] Implement the approved interactive cyber-clam avatar with accessible expression and motion states on the Clam Code page.
-- [ ] Expand the administrator-only Clam Code workflow with a clearly scoped Claude-capable tool interface while preserving public-user restrictions.
+- [x] Implement the approved interactive cyber-clam avatar with accessible expression and motion states on the Clam Code page.
+- [x] Expand the administrator-only Clam Code workflow with a clearly scoped Claude-capable tool interface while preserving public-user restrictions.
