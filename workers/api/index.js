@@ -196,6 +196,190 @@ async function getAdminClamContext(env) {
   }
 }
 
+const STRIPE_PLANS = Object.freeze({
+  starter: { label: 'Starter', priceBinding: 'STRIPE_PRICE_STARTER' },
+  pro: { label: 'Pro', priceBinding: 'STRIPE_PRICE_PRO' },
+  enterprise: { label: 'Enterprise', priceBinding: 'STRIPE_PRICE_ENTERPRISE' },
+});
+
+export function getStripePlan(env, plan) {
+  const key = typeof plan === 'string' ? plan.trim().toLowerCase() : '';
+  const configured = STRIPE_PLANS[key];
+  if (!configured) return null;
+  const priceId = String(env?.[configured.priceBinding] || '').trim();
+  return priceId ? { key, ...configured, priceId } : null;
+}
+
+export function mapStripeSubscriptionStatus(status) {
+  if (['active', 'trialing'].includes(status)) return 'active';
+  if (['past_due', 'paused'].includes(status)) return 'paused';
+  if (['canceled', 'unpaid', 'incomplete_expired'].includes(status)) return 'cancelled';
+  return 'pending';
+}
+
+function normalizeEmail(value) {
+  const email = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  return /^\S+@\S+\.\S+$/.test(email) ? email : '';
+}
+
+function unixSecondsToIso(value) {
+  return Number.isFinite(Number(value)) && Number(value) > 0
+    ? new Date(Number(value) * 1000).toISOString()
+    : null;
+}
+
+async function hmacSha256Hex(secret, value) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value));
+  return [...new Uint8Array(signature)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function safeStringEqual(left, right) {
+  if (typeof left !== 'string' || typeof right !== 'string' || left.length !== right.length) return false;
+  let diff = 0;
+  for (let index = 0; index < left.length; index += 1) diff |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  return diff === 0;
+}
+
+export async function verifyStripeWebhookSignature(rawBody, header, secret, nowSeconds = Math.floor(Date.now() / 1000)) {
+  if (!rawBody || !header || !secret) return false;
+  const values = header.split(',').reduce((result, part) => {
+    const [key, value] = part.split('=', 2);
+    if (key && value) (result[key] ||= []).push(value);
+    return result;
+  }, {});
+  const timestamp = Number(values.t?.[0]);
+  if (!Number.isFinite(timestamp) || Math.abs(nowSeconds - timestamp) > 300) return false;
+  const expected = await hmacSha256Hex(secret, `${timestamp}.${rawBody}`);
+  return (values.v1 || []).some(signature => safeStringEqual(signature, expected));
+}
+
+async function stripeRequest(env, path, { method = 'GET', form = null } = {}) {
+  if (!env.STRIPE_SECRET_KEY) throw new Error('Stripe is not configured.');
+  const response = await fetch(`https://api.stripe.com${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+      ...(form ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
+    },
+    body: form ? form.toString() : undefined,
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload?.error?.message || 'Stripe rejected the request.');
+  return payload;
+}
+
+async function createStripeCheckoutSession(env, requestedPlan) {
+  const plan = getStripePlan(env, requestedPlan);
+  if (!plan) throw new Error('The selected subscription plan is unavailable.');
+  const form = new URLSearchParams();
+  form.set('mode', 'subscription');
+  form.set('line_items[0][price]', plan.priceId);
+  form.set('line_items[0][quantity]', '1');
+  form.set('allow_promotion_codes', 'true');
+  form.set('metadata[linx_tier]', plan.key);
+  form.set('subscription_data[metadata][linx_tier]', plan.key);
+  form.set('success_url', env.STRIPE_SUCCESS_URL || 'https://linxservices.ca/checkout-success.html?session_id={CHECKOUT_SESSION_ID}');
+  form.set('cancel_url', env.STRIPE_CANCEL_URL || 'https://linxservices.ca/checkout-cancel.html');
+  const session = await stripeRequest(env, '/v1/checkout/sessions', { method: 'POST', form });
+  if (!session?.url) throw new Error('Stripe did not return a checkout URL.');
+  return { plan, session };
+}
+
+async function getOrCreateStripeUser(env, { email, customerId }) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail || !customerId) return null;
+  let user = await env.DB.prepare('SELECT id, email FROM platform_users WHERE email = ?').bind(normalizedEmail).first();
+  if (!user) {
+    const userId = requestId();
+    await env.DB.prepare("INSERT INTO platform_users (id,email,display_name,role,status) VALUES (?,?,?,?,?)")
+      .bind(userId, normalizedEmail, '', 'subscriber', 'active').run();
+    user = { id: userId, email: normalizedEmail };
+  } else {
+    await env.DB.prepare("UPDATE platform_users SET status = 'active', updated_at = datetime('now') WHERE id = ?").bind(user.id).run();
+  }
+  await env.DB.prepare(`
+    INSERT INTO stripe_customer_links (id,stripe_customer_id,user_id,email,updated_at)
+    VALUES (?,?,?,?,datetime('now'))
+    ON CONFLICT(stripe_customer_id) DO UPDATE SET user_id = excluded.user_id, email = excluded.email, updated_at = datetime('now')
+  `).bind(requestId(), customerId, user.id, normalizedEmail).run();
+  return user;
+}
+
+async function upsertStripeEntitlement(env, { userId, tier, status, customerId, subscriptionId, priceId, endsAt = null }) {
+  if (!userId || !subscriptionId) return;
+  const current = await env.DB.prepare('SELECT id FROM subscription_entitlements WHERE stripe_subscription_id = ? LIMIT 1').bind(subscriptionId).first();
+  if (current) {
+    await env.DB.prepare(`
+      UPDATE subscription_entitlements
+      SET tier = ?, status = ?, stripe_customer_id = ?, stripe_price_id = ?, ends_at = ?, updated_at = datetime('now')
+      WHERE id = ?
+    `).bind(tier, status, customerId || null, priceId || null, endsAt, current.id).run();
+    return;
+  }
+  await env.DB.prepare(`
+    INSERT INTO subscription_entitlements (id,user_id,tier,status,source,starts_at,ends_at,stripe_customer_id,stripe_subscription_id,stripe_price_id)
+    VALUES (?,?,?,?,?,datetime('now'),?,?,?,?)
+  `).bind(requestId(), userId, tier, status, 'stripe', endsAt, customerId || null, subscriptionId, priceId || null).run();
+}
+
+async function processStripeEvent(env, event) {
+  const object = event?.data?.object || {};
+  if (event.type === 'checkout.session.completed') {
+    const customerId = typeof object.customer === 'string' ? object.customer : object.customer?.id;
+    const subscriptionId = typeof object.subscription === 'string' ? object.subscription : object.subscription?.id;
+    const email = object.customer_details?.email || object.customer_email;
+    const user = await getOrCreateStripeUser(env, { email, customerId });
+    if (!user || !subscriptionId) return { status: 'ignored', reason: 'Checkout event did not include a usable customer email and subscription.' };
+    const tier = getStripePlan(env, object.metadata?.linx_tier)?.key || String(object.metadata?.linx_tier || 'subscriber').slice(0, 80);
+    const priceId = getStripePlan(env, tier)?.priceId || null;
+    const entitlementStatus = object.payment_status === 'paid' ? 'active' : 'pending';
+    await upsertStripeEntitlement(env, { userId: user.id, tier, status: entitlementStatus, customerId, subscriptionId, priceId });
+    return { status: 'processed' };
+  }
+
+  const subscriptionId = typeof object.subscription === 'string' ? object.subscription : object.subscription?.id || object.id;
+  if (!subscriptionId) return { status: 'ignored', reason: 'Subscription identifier was not present.' };
+  const entitlement = await env.DB.prepare('SELECT id, user_id, tier, stripe_price_id FROM subscription_entitlements WHERE stripe_subscription_id = ? LIMIT 1').bind(subscriptionId).first();
+  if (!entitlement) return { status: 'ignored', reason: 'Subscription is not yet linked to a LINX entitlement.' };
+
+  if (event.type === 'invoice.paid') {
+    const period = object.lines?.data?.[0]?.period?.end || object.period_end;
+    await upsertStripeEntitlement(env, { userId: entitlement.user_id, tier: entitlement.tier, status: 'active', customerId: object.customer, subscriptionId, priceId: entitlement.stripe_price_id, endsAt: unixSecondsToIso(period) });
+    return { status: 'processed' };
+  }
+  if (event.type === 'invoice.payment_failed') {
+    await upsertStripeEntitlement(env, { userId: entitlement.user_id, tier: entitlement.tier, status: 'paused', customerId: object.customer, subscriptionId, priceId: entitlement.stripe_price_id });
+    return { status: 'processed' };
+  }
+  if (['customer.subscription.updated', 'customer.subscription.deleted'].includes(event.type)) {
+    const stripeStatus = event.type === 'customer.subscription.deleted' ? 'canceled' : object.status;
+    await upsertStripeEntitlement(env, { userId: entitlement.user_id, tier: entitlement.tier, status: mapStripeSubscriptionStatus(stripeStatus), customerId: object.customer, subscriptionId, priceId: entitlement.stripe_price_id, endsAt: unixSecondsToIso(object.current_period_end || object.cancel_at) });
+    return { status: 'processed' };
+  }
+  return { status: 'ignored', reason: 'Event type is not handled.' };
+}
+
+async function processVerifiedStripeEvent(env, event) {
+  const existing = await env.DB.prepare('SELECT status FROM stripe_webhook_events WHERE stripe_event_id = ?').bind(event.id).first();
+  if (existing?.status === 'processed' || existing?.status === 'ignored') return { duplicate: true, status: existing.status };
+  if (existing) {
+    await env.DB.prepare("UPDATE stripe_webhook_events SET status = 'processing', last_error = NULL WHERE stripe_event_id = ?").bind(event.id).run();
+  } else {
+    await env.DB.prepare('INSERT INTO stripe_webhook_events (stripe_event_id,event_type,status) VALUES (?,?,?)').bind(event.id, event.type, 'processing').run();
+  }
+  try {
+    const result = await processStripeEvent(env, event);
+    await env.DB.prepare("UPDATE stripe_webhook_events SET status = ?, processed_at = datetime('now'), last_error = NULL WHERE stripe_event_id = ?")
+      .bind(result.status, event.id).run();
+    return result;
+  } catch (error) {
+    await env.DB.prepare("UPDATE stripe_webhook_events SET status = 'failed', last_error = ? WHERE stripe_event_id = ?")
+      .bind(String(error?.message || 'Stripe event processing failed').slice(0, 500), event.id).run();
+    throw error;
+  }
+}
+
 async function recordPageView(env, body) {
   if (!env.DB) return;
   const path = typeof body.path === "string" ? body.path.slice(0, 200) : "/";
@@ -351,6 +535,37 @@ export default {
           .bind(status, status === 'failed' ? (form.get('ErrorCode') || messageStatus || 'Twilio delivery failed') : null, messageSid).run();
       }
       return new Response(null, { status: 204 });
+    }
+
+    // ── POST /api/billing/checkout — server-created Stripe subscription flow ─
+    if (path === '/api/billing/checkout' && method === 'POST') {
+      if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe checkout is not configured.' }, 503, origin);
+      const { plan } = await readBody(request);
+      try {
+        const checkout = await createStripeCheckoutSession(env, plan);
+        return json({ ok: true, plan: checkout.plan.key, checkout_url: checkout.session.url }, 200, origin);
+      } catch (error) {
+        return json({ error: error?.message || 'Stripe checkout could not be started.' }, 400, origin);
+      }
+    }
+
+    // ── POST /api/webhooks/stripe — signed Stripe subscription state sync ───
+    if (path === '/api/webhooks/stripe' && method === 'POST') {
+      if (!env.DB) return json({ error: 'Subscription storage is not configured.' }, 503, origin);
+      if (!env.STRIPE_WEBHOOK_SECRET) return json({ error: 'Stripe webhook verification is not configured.' }, 503, origin);
+      const rawBody = await request.text();
+      const valid = await verifyStripeWebhookSignature(rawBody, request.headers.get('Stripe-Signature'), env.STRIPE_WEBHOOK_SECRET);
+      if (!valid) return json({ error: 'Invalid Stripe signature.' }, 400, origin);
+      let event;
+      try { event = JSON.parse(rawBody); } catch (_) { return json({ error: 'Invalid Stripe event payload.' }, 400, origin); }
+      if (!event?.id || !event?.type) return json({ error: 'Incomplete Stripe event.' }, 400, origin);
+      try {
+        const result = await processVerifiedStripeEvent(env, event);
+        return json({ received: true, ...result }, 200, origin);
+      } catch (error) {
+        console.error('[Stripe] Event processing failed', error?.message || error);
+        return json({ error: 'Stripe event processing failed.' }, 500, origin);
+      }
     }
 
     // ── GET /api/content/home — approved public text overrides ──────────────

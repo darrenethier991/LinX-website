@@ -132,5 +132,34 @@
 </footer>
 
 <script src="js/app.js"></script>
+<script>
+  (() => {
+    const API_BASE = window.LINX_API_BASE || 'https://api.linxservices.ca';
+    const buttons = [...document.querySelectorAll('[data-plan]')];
+    const originalLabels = new Map(buttons.map(button => [button, button.textContent]));
+    buttons.forEach(button => button.addEventListener('click', async event => {
+      event.preventDefault();
+      if (button.dataset.loading === 'true') return;
+      button.dataset.loading = 'true';
+      button.setAttribute('aria-busy', 'true');
+      button.textContent = 'Opening secure checkout…';
+      try {
+        const response = await fetch(`${API_BASE}/api/billing/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: button.dataset.plan }),
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.checkout_url) throw new Error(payload.error || 'Checkout could not be opened.');
+        window.location.assign(payload.checkout_url);
+      } catch (error) {
+        button.textContent = error.message || 'Checkout unavailable';
+        button.dataset.loading = 'false';
+        button.removeAttribute('aria-busy');
+        window.setTimeout(() => { button.textContent = originalLabels.get(button); }, 3200);
+      }
+    }));
+  })();
+</script>
 </body>
 </html>

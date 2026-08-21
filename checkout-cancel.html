@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LINX Services subscription checkout was cancelled." />
+  <title>Checkout not completed — LINX Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/linx-design-system.css" />
+  <style>
+    .checkout-shell { min-height:calc(100vh - var(--nav-h)); display:grid; place-items:center; padding:48px 20px; background:radial-gradient(circle at 50% 15%,rgba(124,92,216,.16),transparent 33%),var(--bg-deep); }
+    .checkout-card { width:min(600px,100%); text-align:center; padding:42px 34px; }
+    .checkout-card h1 { margin:0; font-size:30px; letter-spacing:-.04em; }
+    .checkout-card p { max-width:470px; margin:15px auto 0; color:var(--text-muted); line-height:1.7; }
+    .checkout-actions { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; margin-top:28px; }
+  </style>
+</head>
+<body>
+  <nav class="nav"><a class="nav__logo" href="index.html"><span class="l">Lin</span><span class="x">X</span></a></nav>
+  <main class="checkout-shell"><section class="card checkout-card"><p class="eyebrow">Checkout cancelled</p><h1>No subscription was started.</h1><p>Your payment information was not submitted through LINX Services. You can return to the plans whenever you are ready.</p><div class="checkout-actions"><a class="btn btn--primary" href="pricing.html">Return to plans</a><a class="btn btn--outline" href="contact.html">Ask a question</a></div></section></main>
+</body>
+</html>

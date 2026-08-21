@@ -35,6 +35,11 @@
     "PUBLIC_AI_MODEL": "@cf/meta/llama-3.1-8b-instruct-fast",
     "AUTOMATION_ENABLED": "false",
     "CLAUDE_API_BASE": "https://openrouter.ai/api/v1/chat/completions",
-    "CLAUDE_MODEL": "anthropic/claude-sonnet-4.6"
+    "CLAUDE_MODEL": "anthropic/claude-sonnet-4.6",
+    "STRIPE_PRICE_STARTER": "price_1U6jPgI1snstTqUkrYy9dfH4",
+    "STRIPE_PRICE_PRO": "price_1U6jPmI1snstTqUk3BDdHAaU",
+    "STRIPE_PRICE_ENTERPRISE": "price_1U6jPtI1snstTqUkLNsC7z6X",
+    "STRIPE_SUCCESS_URL": "https://linxservices.ca/checkout-success.html?session_id={CHECKOUT_SESSION_ID}",
+    "STRIPE_CANCEL_URL": "https://linxservices.ca/checkout-cancel.html"
   }
 }
