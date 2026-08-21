@@ -58,7 +58,7 @@
 - [x] Replace the LinX Amplify service-overview page with the working prompt-enhancer application from the referenced task.
 - [x] Replace the current Clam Code mascot with a premium original cyber-clam avatar inspired by the supplied neon-tech reference.
 - [ ] Inspect the supplied LINX Recon source safely and integrate only its appropriately scoped OSINT functionality into a LINX Services subpage.
-- [ ] Diagnose and repair the reported Web Crawler and Lead Pipeline failure without changing unrelated LINX Services functionality.
-- [ ] Add D1-backed approved-source records and import-audit storage with source authorization, method, and operational status fields.
-- [ ] Add secured Worker APIs for manual lead import, CSV validation, source management, and lead-pipeline status.
-- [ ] Replace the nonfunctional crawler controls with a usable Phase 1 lead-intake dashboard for CSV and manual imports.
+- [x] Diagnose and repair the reported Web Crawler and Lead Pipeline failure without changing unrelated LINX Services functionality.
+- [x] Add D1-backed approved-source records and import-audit storage with source authorization, method, and operational status fields.
+- [x] Add secured Worker APIs for manual lead import, CSV validation, source management, and lead-pipeline status.
+- [x] Replace the nonfunctional crawler controls with a usable Phase 1 lead-intake dashboard for CSV and manual imports.
