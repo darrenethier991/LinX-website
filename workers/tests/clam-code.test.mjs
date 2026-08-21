@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  adminSystemMessage,
   extractOpenAiText,
   extractWorkerText,
   normalizeMessages,
@@ -44,4 +45,13 @@ test("responseEnvelope keeps one role-aware JSON contract", () => {
 test("provider response readers tolerate both Workers AI and OpenAI-compatible shapes", () => {
   assert.equal(extractWorkerText({ response: "Public reply" }), "Public reply");
   assert.equal(extractOpenAiText({ choices: [{ message: { content: "Admin reply" } }] }), "Admin reply");
+});
+
+test("administrator system message supports guarded operational and technical planning", () => {
+  const message = adminSystemMessage({ available: true, users: 3, top_pages_30d: [] }).content;
+
+  assert.match(message, /technical troubleshooting/i);
+  assert.match(message, /file-level implementation planning/i);
+  assert.match(message, /Never claim access to source control/i);
+  assert.match(message, /"users":3/);
 });

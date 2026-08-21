@@ -175,6 +175,27 @@ async function getPlatformSnapshot(env) {
   }
 }
 
+async function getAdminClamContext(env) {
+  const overview = await getPlatformSnapshot(env);
+  if (!env.DB || !overview.available) return overview;
+  try {
+    const [tiers, statuses, popularPaths] = await Promise.all([
+      env.DB.prepare("SELECT tier, COUNT(*) AS count FROM subscription_entitlements GROUP BY tier ORDER BY count DESC LIMIT 12").all(),
+      env.DB.prepare("SELECT status, COUNT(*) AS count FROM subscription_entitlements GROUP BY status ORDER BY count DESC").all(),
+      env.DB.prepare("SELECT path, COUNT(*) AS count FROM page_events WHERE created_at >= datetime('now','-30 day') GROUP BY path ORDER BY count DESC LIMIT 8").all(),
+    ]);
+    return {
+      ...overview,
+      subscriptions_by_tier: tiers.results || [],
+      subscriptions_by_status: statuses.results || [],
+      top_pages_30d: popularPaths.results || [],
+    };
+  } catch (error) {
+    console.warn("[Clam Code] Administrator context details were unavailable", error?.message || error);
+    return overview;
+  }
+}
+
 async function recordPageView(env, body) {
   if (!env.DB) return;
   const path = typeof body.path === "string" ? body.path.slice(0, 200) : "/";
@@ -353,6 +374,7 @@ export default {
         role,
         public_model_available: Boolean(env.AI),
         admin_model_available: role === 'admin' && Boolean(env.CLAUDE_API_KEY || env.OPENROUTER_API_KEY),
+        admin_capabilities: role === 'admin' ? ['operations', 'analytics', 'report_drafting', 'technical_planning'] : [],
       }, 200, origin);
     }
 
@@ -368,10 +390,10 @@ export default {
 
       const id = requestId();
       const startedAt = Date.now();
-      const inputCharacters = messages.reduce((total, message) => total + message.content.length, 0);
-      try {
-        const result = role === 'admin'
-          ? await completeAdminChat(env, messages, await getPlatformSnapshot(env), identity?.sub)
+        const inputCharacters = messages.reduce((total, message) => total + message.content.length, 0);
+        try {
+          const result = role === 'admin'
+          ? await completeAdminChat(env, messages, await getAdminClamContext(env), identity?.sub)
           : await completePublicChat(env, messages);
         const latencyMs = Date.now() - startedAt;
         await recordAiUsage(env, {

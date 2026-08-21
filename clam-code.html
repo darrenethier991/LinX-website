@@ -13,11 +13,46 @@
     .clam-shell { min-height:calc(100vh - var(--nav-h)); padding:48px 0; background:radial-gradient(circle at 50% 0%,rgba(124,92,216,.16),transparent 34%),var(--bg-deep); }
     .clam-grid { display:grid; grid-template-columns:280px minmax(0,1fr); gap:20px; align-items:start; }
     .clam-side { position:sticky; top:88px; }
-    .clam-brand { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
+    .clam-brand { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
     .clam-mark { width:44px; height:44px; display:grid; place-items:center; border-radius:14px; background:linear-gradient(135deg,var(--neon-violet),var(--neon-cyan)); color:#fff; font-weight:900; box-shadow:0 0 28px rgba(124,92,216,.35); }
     .clam-title { font-size:18px; font-weight:800; line-height:1.1; }
     .clam-subtitle { color:var(--text-muted); font-size:12px; margin-top:4px; }
-    .mode-card { padding:16px; background:rgba(124,92,216,.08); border:1px solid rgba(124,92,216,.3); border-radius:var(--radius); }
+    .clam-avatar { --tilt-x:0deg; --tilt-y:0deg; width:100%; position:relative; display:block; padding:8px 10px 12px; overflow:hidden; border:1px solid rgba(6,182,212,.30); border-radius:22px; color:inherit; background:linear-gradient(145deg,rgba(6,182,212,.10),rgba(124,92,216,.14) 55%,rgba(212,168,83,.08)); cursor:pointer; isolation:isolate; transition:border-color 180ms cubic-bezier(.23,1,.32,1),box-shadow 180ms cubic-bezier(.23,1,.32,1),transform 160ms cubic-bezier(.23,1,.32,1); }
+    .clam-avatar::before,.clam-avatar::after { content:""; position:absolute; border-radius:999px; pointer-events:none; z-index:-1; }
+    .clam-avatar::before { width:170px; height:170px; top:-58px; left:-45px; background:radial-gradient(circle,rgba(6,182,212,.26),transparent 68%); filter:blur(8px); }
+    .clam-avatar::after { width:160px; height:160px; bottom:-70px; right:-48px; background:radial-gradient(circle,rgba(124,92,216,.30),transparent 68%); filter:blur(9px); }
+    .clam-avatar:hover { border-color:rgba(212,168,83,.66); box-shadow:0 16px 42px rgba(6,182,212,.12),0 0 28px rgba(124,92,216,.18); }
+    .clam-avatar:active { transform:scale(.98); }
+    .clam-avatar:focus-visible { outline:3px solid rgba(212,168,83,.72); outline-offset:3px; }
+    .clam-avatar__svg { display:block; width:100%; max-height:192px; overflow:visible; filter:drop-shadow(0 10px 17px rgba(0,0,0,.30)); transform:perspective(550px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)); transition:transform 120ms cubic-bezier(.23,1,.32,1),filter 220ms cubic-bezier(.23,1,.32,1); }
+    .clam-avatar__frame { transform-origin:100px 104px; }
+    .clam-shell-top { fill:url(#shell-outer); stroke:rgba(212,168,83,.72); stroke-width:2; }
+    .clam-shell-lower { fill:url(#shell-lower); stroke:rgba(6,182,212,.68); stroke-width:2; }
+    .clam-shell-ridge { fill:none; stroke:rgba(255,255,255,.27); stroke-width:2; stroke-linecap:round; }
+    .clam-shell-circuit { fill:none; stroke:url(#circuit-line); stroke-width:2.4; stroke-linecap:round; }
+    .clam-shell-node { fill:#d4a853; filter:url(#glow-gold); }
+    .clam-face { fill:rgba(6,14,32,.92); stroke:rgba(6,182,212,.34); stroke-width:1.5; }
+    .clam-eye { fill:#f8fbff; stroke:rgba(212,168,83,.40); stroke-width:1.4; }
+    .clam-pupil { fill:#071323; transform-origin:center; transition:transform 180ms cubic-bezier(.23,1,.32,1); }
+    .clam-eye-glint { fill:#fff; }
+    .clam-blush { fill:rgba(212,168,83,.30); opacity:.75; }
+    .clam-mouth { fill:none; stroke:#e9f7ff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; transition:opacity 160ms cubic-bezier(.23,1,.32,1),transform 160ms cubic-bezier(.23,1,.32,1); }
+    .clam-mouth--happy { opacity:0; transform:translateY(3px); }
+    .clam-orbital { fill:none; stroke:rgba(6,182,212,.24); stroke-width:1.2; stroke-dasharray:4 6; transform-origin:100px 105px; }
+    .clam-avatar__caption { position:relative; display:block; margin-top:-3px; color:var(--text-muted); font-size:11px; line-height:1.4; text-align:center; }
+    .clam-avatar[data-state="thinking"] { border-color:rgba(6,182,212,.75); box-shadow:0 0 34px rgba(6,182,212,.20); }
+    .clam-avatar[data-state="thinking"] .clam-avatar__svg { filter:drop-shadow(0 0 12px rgba(6,182,212,.56)); }
+    .clam-avatar[data-state="thinking"] .clam-orbital { animation:clam-orbit 1.15s linear infinite; }
+    .clam-avatar[data-state="thinking"] .clam-pupil { transform:translateY(-2px); }
+    .clam-avatar[data-state="happy"] { border-color:rgba(212,168,83,.70); box-shadow:0 0 34px rgba(212,168,83,.22); }
+    .clam-avatar[data-state="happy"] .clam-mouth--ready { opacity:0; transform:translateY(-3px); }
+    .clam-avatar[data-state="happy"] .clam-mouth--happy { opacity:1; transform:translateY(0); }
+    .clam-avatar[data-state="happy"] .clam-face { stroke:rgba(212,168,83,.66); }
+    .clam-avatar[data-state="alert"] { border-color:rgba(239,68,68,.72); box-shadow:0 0 34px rgba(239,68,68,.16); }
+    .clam-avatar[data-state="alert"] .clam-mouth--ready { transform:translateY(1px) scaleX(.78); }
+    .clam-avatar[data-role="admin"] { border-color:rgba(212,168,83,.56); background:linear-gradient(145deg,rgba(212,168,83,.12),rgba(124,92,216,.16) 55%,rgba(6,182,212,.08)); }
+    .clam-avatar[data-role="admin"] .clam-shell-top { stroke:rgba(212,168,83,.96); }
+    .mode-card { margin-top:14px; padding:16px; background:rgba(124,92,216,.08); border:1px solid rgba(124,92,216,.3); border-radius:var(--radius); }
     .mode-label { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--neon-cyan); margin-bottom:6px; }
     .mode-copy { font-size:12px; line-height:1.65; color:var(--text-muted); }
     .chat-card { min-height:620px; padding:0; overflow:hidden; display:flex; flex-direction:column; }
@@ -36,7 +71,14 @@
     .quick-prompts { margin-top:20px; display:flex; flex-wrap:wrap; gap:8px; }
     .quick-prompts button { padding:8px 10px; border:1px solid var(--border); border-radius:999px; color:var(--text-muted); font-size:11px; }
     .quick-prompts button:hover { border-color:var(--border-gold); color:var(--gold); }
-    @media (max-width:800px) { .clam-grid { grid-template-columns:1fr; } .clam-side { position:static; } .chat-card { min-height:calc(100vh - 160px); } }
+    .admin-prompts { border-top:1px solid rgba(212,168,83,.18); padding-top:14px; }
+    .admin-prompts .admin-prompts__title { width:100%; margin:0 0 2px; color:var(--gold); font-size:10px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
+    @keyframes clam-orbit { to { transform:rotate(360deg); } }
+    @media (prefers-reduced-motion: no-preference) { .clam-avatar__frame { animation:clam-float 4.2s ease-in-out infinite; } .clam-avatar[data-state="happy"] .clam-avatar__frame { animation:clam-celebrate 620ms cubic-bezier(.23,1,.32,1) 2; } }
+    @keyframes clam-float { 50% { transform:translateY(-4px); } }
+    @keyframes clam-celebrate { 50% { transform:translateY(-6px) rotate(-2deg) scale(1.025); } }
+    @media (prefers-reduced-motion: reduce) { .clam-avatar *, .clam-avatar { animation:none !important; transition:none !important; } }
+    @media (max-width:800px) { .clam-grid { grid-template-columns:1fr; } .clam-side { position:static; } .clam-avatar { max-width:340px; } .chat-card { min-height:calc(100vh - 160px); } }
   </style>
 </head>
 <body>
@@ -49,11 +91,41 @@
     <div class="container clam-grid">
       <aside class="clam-side">
         <div class="clam-brand"><div class="clam-mark">CC</div><div><div class="clam-title">Clam Code</div><div class="clam-subtitle">The LINX Services assistant</div></div></div>
+        <button class="clam-avatar" id="clam-avatar" type="button" aria-label="Interact with Clam Code" data-state="ready" data-role="public">
+          <svg class="clam-avatar__svg" viewBox="0 0 200 205" role="img" aria-label="Clam Code cyber-clam mascot">
+            <defs>
+              <linearGradient id="shell-outer" x1="25" y1="20" x2="175" y2="165" gradientUnits="userSpaceOnUse"><stop stop-color="#d4a853"/><stop offset=".38" stop-color="#8054dc"/><stop offset="1" stop-color="#06b6d4"/></linearGradient>
+              <linearGradient id="shell-lower" x1="48" y1="104" x2="164" y2="172" gradientUnits="userSpaceOnUse"><stop stop-color="#12253e"/><stop offset="1" stop-color="#392760"/></linearGradient>
+              <linearGradient id="circuit-line" x1="38" y1="55" x2="166" y2="151" gradientUnits="userSpaceOnUse"><stop stop-color="#f4cc76"/><stop offset="1" stop-color="#43e8ff"/></linearGradient>
+              <filter id="glow-gold" x="-200%" y="-200%" width="400%" height="400%"><feGaussianBlur stdDeviation="2.6" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+            <g class="clam-avatar__frame">
+              <ellipse class="clam-orbital" cx="100" cy="103" rx="73" ry="83"/>
+              <path class="clam-shell-top" d="M31 104C30 54 61 24 99 24c39 0 70 30 70 80v22H31z"/>
+              <path class="clam-shell-lower" d="M38 121c11 43 42 59 62 59s51-16 62-59H38z"/>
+              <path class="clam-shell-ridge" d="M53 99V61M76 99V45M100 99V37M124 99V45M147 99V61"/>
+              <path class="clam-shell-circuit" d="M42 86h16l10-12h16m16-27v18l11 11h18l9 9m-33 43v14l-11 11H77l-9 10H51m97-47h13l9 9v17"/>
+              <circle class="clam-shell-node" cx="42" cy="86" r="3.3"/><circle class="clam-shell-node" cx="100" cy="47" r="3.3"/><circle class="clam-shell-node" cx="148" cy="128" r="3.3"/><circle class="clam-shell-node" cx="51" cy="163" r="3.3"/>
+              <path class="clam-face" d="M55 96c0-18 17-29 45-29s45 11 45 29v38c0 17-17 27-45 27s-45-10-45-27V96z"/>
+              <ellipse class="clam-eye" cx="81" cy="106" rx="13" ry="16"/><ellipse class="clam-eye" cx="119" cy="106" rx="13" ry="16"/>
+              <circle class="clam-pupil" cx="83" cy="108" r="6"/><circle class="clam-pupil" cx="117" cy="108" r="6"/><circle class="clam-eye-glint" cx="85" cy="105" r="2"/><circle class="clam-eye-glint" cx="119" cy="105" r="2"/>
+              <ellipse class="clam-blush" cx="69" cy="132" rx="8" ry="4"/><ellipse class="clam-blush" cx="131" cy="132" rx="8" ry="4"/>
+              <path class="clam-mouth clam-mouth--ready" d="M91 139c5 4 13 4 18 0"/><path class="clam-mouth clam-mouth--happy" d="M87 137c7 11 19 11 26 0"/>
+            </g>
+          </svg>
+          <span class="clam-avatar__caption" id="clam-avatar-caption">Tap Clam Code to wake the shell.</span>
+        </button>
         <div class="mode-card"><div class="mode-label" id="mode-label">Public mode</div><p class="mode-copy" id="mode-copy">Get practical text-based help for LINX Services, contractor workflows, and your next project. Administrator sessions automatically receive their authorized operational assistant.</p></div>
         <div class="quick-prompts" aria-label="Suggested questions">
           <button type="button" data-prompt="How does LINX Services help contractors follow up with leads?">Contractor workflow</button>
           <button type="button" data-prompt="What should I include when posting a home project?">Post a project</button>
           <button type="button" data-prompt="Help me write a concise follow-up message for a new lead.">Draft a follow-up</button>
+        </div>
+        <div class="quick-prompts admin-prompts" id="admin-prompts" aria-label="Administrator suggestions" hidden>
+          <p class="admin-prompts__title">Administrator workspace</p>
+          <button type="button" data-prompt="Prepare an executive operating summary from the current platform snapshot. Separate confirmed information from recommendations.">Operating summary</button>
+          <button type="button" data-prompt="Review the current analytics context and identify the most important operational questions to investigate next. Do not assume data that is not available.">Analytics review</button>
+          <button type="button" data-prompt="Create a file-level implementation plan for a LINX Services improvement. State assumptions, code changes, tests, deployment steps, and any integrations that require approval.">Technical plan</button>
         </div>
       </aside>
       <section class="card chat-card" aria-label="Clam Code conversation">
@@ -72,6 +144,39 @@
     const input = document.getElementById("chat-input");
     const form = document.getElementById("chat-form");
     const button = document.getElementById("send-button");
+    const avatar = document.getElementById("clam-avatar");
+    const avatarCaption = document.getElementById("clam-avatar-caption");
+    let avatarResetTimer;
+
+    function setAvatarState(state, caption) {
+      clearTimeout(avatarResetTimer);
+      avatar.dataset.state = state;
+      if (caption) avatarCaption.textContent = caption;
+    }
+
+    function settleAvatar(caption = "Clam Code is ready when you are.") {
+      clearTimeout(avatarResetTimer);
+      avatarResetTimer = setTimeout(() => {
+        avatar.dataset.state = "ready";
+        avatarCaption.textContent = caption;
+      }, 1050);
+    }
+
+    function setMode(role) {
+      const admin = role === "admin";
+      avatar.dataset.role = admin ? "admin" : "public";
+      document.getElementById("admin-prompts").hidden = !admin;
+      if (admin) {
+        document.getElementById("mode-label").textContent = "Administrator mode";
+        document.getElementById("mode-copy").textContent = "Claude-capable administrator assistance for operational analysis, analytics interpretation, structured reporting, and guarded technical planning. It does not claim access to systems or data that were not supplied.";
+        document.getElementById("mode-badge").textContent = "Administrator";
+        avatarCaption.textContent = "Administrator shell online. Ask for an operational or technical plan.";
+      } else if (role === "subscriber") {
+        document.getElementById("mode-label").textContent = "Subscriber mode";
+        document.getElementById("mode-copy").textContent = "Your approved LINX Services session gives you a dedicated workspace while Clam Code continues to use the fast public text model for everyday questions.";
+        document.getElementById("mode-badge").textContent = "Subscriber";
+      }
+    }
 
     function addMessage(role, content) {
       const node = document.createElement("div");
@@ -86,21 +191,30 @@
       try {
         const response = await fetch(`${API_BASE}/api/clam-code/health`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
         const status = await response.json();
-        if (status.role === "admin") {
-          document.getElementById("mode-label").textContent = "Administrator mode";
-          document.getElementById("mode-copy").textContent = "Your authorized administrator session unlocks enhanced analysis for operational summaries, analytics interpretation, and report drafting.";
-          document.getElementById("mode-badge").textContent = "Administrator";
-        } else if (status.role === "subscriber") {
-          document.getElementById("mode-label").textContent = "Subscriber mode";
-          document.getElementById("mode-copy").textContent = "Your approved LINX Services session gives you a dedicated workspace while Clam Code continues to use the fast public text model for everyday questions.";
-          document.getElementById("mode-badge").textContent = "Subscriber";
-        }
+        setMode(status.role);
       } catch (_) { /* The chat endpoint provides the actionable error if the API is unavailable. */ }
     }
 
     async function trackPageView() {
       fetch(`${API_BASE}/api/events/pageview`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path: "/clam-code" }) }).catch(() => {});
     }
+
+    avatar.addEventListener("click", () => {
+      setAvatarState("happy", "Shell awake. Your next question is ready for Clam Code.");
+      settleAvatar();
+      input.focus();
+    });
+    avatar.addEventListener("pointermove", event => {
+      const box = avatar.getBoundingClientRect();
+      const x = (event.clientX - box.left) / box.width - .5;
+      const y = (event.clientY - box.top) / box.height - .5;
+      avatar.style.setProperty("--tilt-y", `${x * 7}deg`);
+      avatar.style.setProperty("--tilt-x", `${y * -5}deg`);
+    });
+    avatar.addEventListener("pointerleave", () => {
+      avatar.style.setProperty("--tilt-y", "0deg");
+      avatar.style.setProperty("--tilt-x", "0deg");
+    });
 
     form.addEventListener("submit", async event => {
       event.preventDefault();
@@ -111,6 +225,7 @@
       input.value = "";
       button.disabled = true;
       button.textContent = "Thinking…";
+      setAvatarState("thinking", "Clam Code is mapping the best response…");
       const pending = addMessage("assistant", "Clam Code is preparing a response…");
       try {
         const response = await fetch(`${API_BASE}/api/clam-code/chat`, {
@@ -123,16 +238,14 @@
         if (!response.ok || !payload.ok) throw new Error(payload.error || "Clam Code could not complete that request.");
         history.push(payload.message);
         addMessage("assistant", payload.message.content);
-        if (payload.role === "admin") {
-          document.getElementById("mode-label").textContent = "Administrator mode";
-          document.getElementById("mode-badge").textContent = "Administrator";
-        } else if (payload.role === "subscriber") {
-          document.getElementById("mode-label").textContent = "Subscriber mode";
-          document.getElementById("mode-badge").textContent = "Subscriber";
-        }
+        setMode(payload.role);
+        setAvatarState("happy", "Response ready. Clam Code is listening.");
+        settleAvatar();
       } catch (error) {
         pending.remove();
         addMessage("error", error.message || "Unable to connect to Clam Code.");
+        setAvatarState("alert", "Connection needs attention. Please try again.");
+        settleAvatar("Clam Code is ready to try again.");
       } finally {
         button.disabled = false;
         button.textContent = "Send";
@@ -140,7 +253,7 @@
       }
     });
 
-    document.querySelectorAll("[data-prompt]").forEach(prompt => prompt.addEventListener("click", () => { input.value = prompt.dataset.prompt; input.focus(); }));
+    document.querySelectorAll("[data-prompt]").forEach(prompt => prompt.addEventListener("click", () => { input.value = prompt.dataset.prompt; setAvatarState("happy", "Good prompt. Add any details, then send it through."); settleAvatar(); input.focus(); }));
     refreshMode();
     trackPageView();
   </script>

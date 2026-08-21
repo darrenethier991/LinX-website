@@ -48,3 +48,5 @@
 - [x] Diagnose and resolve the failed production verification of the rotated administrator credentials before resuming other changes.
 - [x] Diagnose and permanently resolve the renewed production administrator login failure before resuming all other LINX Services work.
 - [x] Normalize deployed administrator credential secret values during comparison to prevent trailing-whitespace configuration errors.
+- [ ] Implement the approved interactive cyber-clam avatar with accessible expression and motion states on the Clam Code page.
+- [ ] Expand the administrator-only Clam Code workflow with a clearly scoped Claude-capable tool interface while preserving public-user restrictions.
