@@ -33,8 +33,8 @@
 - [x] Replace the deprecated public Clam Code Workers AI model with a currently supported model and verify public chat responses.
 - [ ] Add consent-aware admin-approval triggers for Google Sheets sync, owner notification, and Twilio welcome SMS.
 - [ ] Configure required Google Sheets and Twilio Cloudflare secrets and non-secret variables through secure settings.
-- [ ] Define the Stripe subscription tiers, prices, payment mode, success/cancel routes, and entitlement lifecycle before integrating checkout.
-- [ ] Replace subscription buttons that currently route to Contact with approved Stripe checkout actions.
+- [x] Define the Stripe subscription tiers, prices, payment mode, success/cancel routes, and entitlement lifecycle before integrating checkout.
+- [x] Replace subscription buttons that currently route to Contact with approved Stripe checkout actions.
 - [x] Complete the requested Clam Code enhancement scope without changing unrelated site behavior.
 - [ ] Obtain the Lovable OSINT application source or public link and convert it into a safely scoped LINX Services subpage.
 - [ ] Add LinX Amplify, OSINT, and the requested public destinations to a clearer shared navigation structure.
@@ -51,5 +51,5 @@
 - [x] Implement the approved interactive cyber-clam avatar with accessible expression and motion states on the Clam Code page.
 - [x] Expand the administrator-only Clam Code workflow with a clearly scoped Claude-capable tool interface while preserving public-user restrictions.
 - [x] Replace the public pricing page with the provided Free Until First Job, Starter, Growth, Unlimited, and Unlimited Trial tier structure.
-- [ ] Realign Stripe products, recurring prices, checkout mappings, and entitlement handling to the revised LINX pricing tiers.
-- [ ] Configure a supported Stripe Checkout payment method and reverify the live subscription-session flow.
+- [x] Realign Stripe products, recurring prices, checkout mappings, and entitlement handling to the revised LINX pricing tiers.
+- [x] Configure a supported Stripe Checkout payment method and reverify the live subscription-session flow.
