@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LinX Amplify helps trade businesses organize campaigns, follow-up, and customer communications around their approved LINX workflows." />
+  <title>LinX Amplify — LINX Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/linx-design-system.css" />
+  <style>
+    .amplify-hero { position:relative; overflow:hidden; padding:110px 0 88px; background:radial-gradient(circle at 78% 10%,rgba(6,182,212,.18),transparent 32%),radial-gradient(circle at 18% 80%,rgba(124,92,216,.18),transparent 36%),var(--bg-deep); }
+    .amplify-hero::before { content:''; position:absolute; inset:0; pointer-events:none; background:linear-gradient(90deg,rgba(6,182,212,.07) 1px,transparent 1px),linear-gradient(0deg,rgba(124,92,216,.06) 1px,transparent 1px); background-size:54px 54px; mask-image:linear-gradient(90deg,#000,transparent 88%); }
+    .amplify-layout { position:relative; display:grid; grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr); gap:42px; align-items:center; }
+    .amplify-title { max-width:720px; margin:0; font-size:clamp(42px,7vw,76px); line-height:.99; letter-spacing:-.065em; }
+    .amplify-title span { color:var(--gold); text-shadow:0 0 32px rgba(212,168,83,.26); }
+    .amplify-copy { max-width:610px; margin:22px 0 0; color:var(--text-muted); font-size:16px; line-height:1.8; }
+    .amplify-actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:30px; }
+    .signal-card { position:relative; padding:26px; overflow:hidden; }
+    .signal-card::before { content:''; position:absolute; width:210px; height:210px; top:-100px; right:-90px; border-radius:50%; background:radial-gradient(circle,rgba(6,182,212,.30),transparent 68%); }
+    .signal-card__label { position:relative; color:var(--neon-cyan); font-size:10px; font-weight:800; letter-spacing:.18em; text-transform:uppercase; }
+    .signal-card h2 { position:relative; margin:12px 0 0; font-size:24px; line-height:1.15; }
+    .signal-list { position:relative; display:grid; gap:12px; margin:22px 0 0; }
+    .signal-list div { display:flex; align-items:center; gap:11px; color:var(--text-muted); font-size:13px; }
+    .signal-list b { display:grid; place-items:center; width:24px; height:24px; border:1px solid var(--border-gold); border-radius:8px; color:var(--gold); font-size:11px; }
+    .amplify-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:38px; }
+    .amplify-grid h3 { margin:0; font-size:18px; }
+    .amplify-grid p { margin:10px 0 0; color:var(--text-muted); font-size:13px; line-height:1.7; }
+    .amplify-grid .card { min-height:210px; }
+    .workflow { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:34px; }
+    .workflow-step { position:relative; padding:20px; border:1px solid var(--border); border-radius:14px; background:rgba(255,255,255,.018); }
+    .workflow-step span { color:var(--gold); font-size:11px; font-weight:900; letter-spacing:.12em; }
+    .workflow-step h3 { margin:11px 0 0; font-size:15px; }
+    .workflow-step p { margin:8px 0 0; color:var(--text-muted); font-size:12px; line-height:1.6; }
+    .amplify-callout { margin-top:30px; padding:28px; display:flex; justify-content:space-between; align-items:center; gap:24px; }
+    .amplify-callout h2 { margin:0; font-size:24px; }
+    .amplify-callout p { max-width:620px; margin:8px 0 0; color:var(--text-muted); line-height:1.65; font-size:13px; }
+    @media (max-width:900px) { .amplify-layout,.amplify-grid { grid-template-columns:1fr; } .workflow { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:600px) { .amplify-hero { padding:76px 0 58px; } .workflow { grid-template-columns:1fr; } .amplify-callout { display:block; } .amplify-callout .btn { margin-top:18px; } }
+  </style>
+</head>
+<body>
+  <nav class="nav"><a class="nav__logo" href="index.html"><span class="l">Lin</span><span class="x">X</span></a><ul class="nav__links" aria-label="Primary navigation"><li><a href="about.html">About</a></li><li><a href="services.html">Services</a></li><li class="nav__menu"><details><summary>Explore</summary><div class="nav__menu-panel"><a href="index.html#how"><strong>How It Works</strong><span>Project to next step</span></a><a href="index.html#who"><strong>Who It’s For</strong><span>Homeowners and trades</span></a><a href="marketplace"><strong>Marketplace</strong><span>EchoForge workflows</span></a><a href="ecosystem"><strong>Ecosystem</strong><span>Connected LINX tools</span></a><a href="clam-code.html"><strong>Clam Code</strong><span>Role-aware AI help</span></a><a href="status/"><strong>System Status</strong><span>Service availability</span></a><a href="pricing.html"><strong>Pricing</strong><span>Plans and trials</span></a><a href="contact.html"><strong>Contact</strong><span>Talk with LINX</span></a></div></details></li></ul><div class="nav__actions"><a class="btn btn--outline btn--sm" href="pricing.html">Pricing</a><a class="btn btn--primary btn--sm" href="#connect">Plan Amplify</a></div></nav>
+  <main>
+    <section class="amplify-hero"><div class="container amplify-layout"><div><span class="eyebrow">LinX Amplify</span><h1 class="amplify-title">Make every approved customer signal <span>easier to act on.</span></h1><p class="amplify-copy">LinX Amplify is a focused growth-operations layer for trade businesses that want clearer campaigns, follow-up, and customer communications—without losing the human handoff that matters.</p><div class="amplify-actions"><a class="btn btn--primary btn--lg" href="#connect">Plan your workflow</a><a class="btn btn--outline btn--lg" href="clam-code.html">Ask Clam Code</a></div></div><aside class="card signal-card"><p class="signal-card__label">One connected sequence</p><h2>From interest to a useful next action.</h2><div class="signal-list"><div><b>01</b> Capture the approved source and intent.</div><div><b>02</b> Shape a clear, relevant follow-up.</div><div><b>03</b> Route the conversation to the right person.</div><div><b>04</b> Review what to improve next.</div></div></aside></div></section>
+    <section class="section"><div class="container"><span class="eyebrow">Focus areas</span><h2 class="section-title">Amplify the parts of your operation that need a clearer rhythm.</h2><p class="section-sub">Use an Amplify engagement to define the messaging, operational handoffs, and measurement approach that fit your actual team and customer journey.</p><div class="amplify-grid"><article class="card"><span class="badge badge--gold">Campaign foundation</span><h3>Sharper customer paths</h3><p>Clarify the moments where a prospect needs a helpful answer, a booking option, or a direct human conversation.</p></article><article class="card"><span class="badge badge--blue">Follow-up operations</span><h3>Consistent next steps</h3><p>Map practical follow-up sequences around approved contact preferences and the information your team actually needs.</p></article><article class="card"><span class="badge badge--violet">Connected reporting</span><h3>Useful review points</h3><p>Define the questions worth reviewing so campaign activity and customer handoffs remain understandable and accountable.</p></article></div></div></section>
+    <section class="section section--alt"><div class="container"><span class="eyebrow">Working method</span><h2 class="section-title">A deliberate way to build momentum.</h2><div class="workflow"><article class="workflow-step"><span>01 / ALIGN</span><h3>Set the outcome</h3><p>Agree on the audience, customer moment, and operational result that the workflow should support.</p></article><article class="workflow-step"><span>02 / MAP</span><h3>Design the handoff</h3><p>Connect the message, action, owner, and supporting information without assuming unnecessary automation.</p></article><article class="workflow-step"><span>03 / BUILD</span><h3>Prepare the system</h3><p>Translate the approved workflow into the right LINX surfaces, integrations, and human review points.</p></article><article class="workflow-step"><span>04 / REVIEW</span><h3>Learn and refine</h3><p>Use clear operational signals to decide what should be retained, clarified, or improved next.</p></article></div></div></section>
+    <section class="section"><div class="container"><div class="card amplify-callout" id="connect"><div><span class="eyebrow">Start with context</span><h2>Tell LINX what you want to amplify.</h2><p>Share the service, audience, or follow-up challenge you want to address. LINX can help frame a practical next step without promising a one-size-fits-all growth outcome.</p></div><a class="btn btn--primary" href="contact.html">Discuss LinX Amplify</a></div></div></section>
+  </main>
+</body>
+</html>

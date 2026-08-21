@@ -121,6 +121,16 @@ button { font-family: var(--font); cursor: pointer; border: none; background: no
 .nav__links a { color: var(--text-muted); }
 .nav__links a:hover, .nav__links a.active { color: var(--gold); }
 .nav__actions { display: flex; align-items: center; gap: 10px; }
+.nav__menu { position:relative; }
+.nav__menu summary { display:flex; align-items:center; gap:6px; color:var(--text-muted); cursor:pointer; list-style:none; }
+.nav__menu summary::-webkit-details-marker { display:none; }
+.nav__menu summary::after { content:'+'; color:var(--gold); font-size:15px; font-weight:400; line-height:1; transition:transform 160ms cubic-bezier(.23,1,.32,1); }
+.nav__menu details[open] summary { color:var(--gold); }
+.nav__menu details[open] summary::after { transform:rotate(45deg); }
+.nav__menu-panel { position:absolute; top:calc(100% + 18px); right:-24px; z-index:210; display:grid; grid-template-columns:repeat(2,minmax(170px,1fr)); gap:5px; width:450px; padding:12px; border:1px solid var(--border-gold); border-radius:16px; background:rgba(7,10,19,.98); box-shadow:0 20px 48px rgba(0,0,0,.42); }
+.nav__menu-panel a { display:flex; flex-direction:column; gap:3px; padding:10px; border:1px solid transparent; border-radius:10px; color:var(--text-muted); font-size:10px; letter-spacing:.08em; line-height:1.25; text-transform:uppercase; }
+.nav__menu-panel a strong { color:#fff; font-size:11px; letter-spacing:.1em; }
+.nav__menu-panel a:hover { border-color:var(--border-gold); background:rgba(212,168,83,.07); color:var(--gold); }
 
 /* ── BUTTONS ─────────────────────────────────────────────────────────────── */
 .btn {
@@ -281,10 +291,14 @@ button { font-family: var(--font); cursor: pointer; border: none; background: no
 
 /* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
-  .nav__links { display: none; }
+  .nav { gap:12px; padding:0 4%; }
+  .nav__links { display:flex; margin-left:auto; gap:0; }
+  .nav__links > li:not(.nav__menu) { display:none; }
+  .nav__menu-panel { position:fixed; top:calc(var(--nav-h) + 8px); right:16px; width:min(450px,calc(100vw - 32px)); }
   .footer__grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 600px) {
+  .nav__actions { display:none; }
   .section { padding: var(--sp-12) 0; }
   .footer__grid { grid-template-columns: 1fr; }
   .footer__bottom { flex-direction: column; align-items: flex-start; }
