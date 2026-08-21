@@ -46,5 +46,5 @@
 - [x] Retain factual operating boundaries and avoid unverified performance, insurance-reimbursement, market-size, or board-endorsement claims in the HailShield™ content.
 - [x] Update the deployed administrator username to the user-specified email and rotate the administrator password hash through Cloudflare secrets without committing the password.
 - [x] Diagnose and resolve the failed production verification of the rotated administrator credentials before resuming other changes.
-- [ ] Diagnose and permanently resolve the renewed production administrator login failure before resuming all other LINX Services work.
-- [ ] Normalize deployed administrator credential secret values during comparison to prevent trailing-whitespace configuration errors.
+- [x] Diagnose and permanently resolve the renewed production administrator login failure before resuming all other LINX Services work.
+- [x] Normalize deployed administrator credential secret values during comparison to prevent trailing-whitespace configuration errors.
