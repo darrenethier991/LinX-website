@@ -55,3 +55,4 @@
 - [x] Configure a supported Stripe Checkout payment method and reverify the live subscription-session flow.
 - [x] Create the LinX Amplify public subpage with scoped growth-operations content and a clear inquiry call to action.
 - [x] Reorganize the shared public navigation around the requested destinations with a compact accessible Explore menu.
+- [ ] Replace the LinX Amplify service-overview page with the working prompt-enhancer application from the referenced task.

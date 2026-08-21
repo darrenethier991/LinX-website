@@ -4,6 +4,7 @@ import {
   normalizeMessages,
   responseEnvelope,
 } from "./clam-code.js";
+import { enhancePrompt, normalizePromptEnhancementInput } from "./prompt-enhancer.js";
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 
 /**
@@ -641,6 +642,44 @@ export default {
           latencyMs: Date.now() - startedAt,
         });
         return json({ ok: false, request_id: id, error: error?.message || 'Clam Code could not complete the request.' }, 502, origin);
+      }
+    }
+
+    // ── POST /api/linx-amplify/enhance — public text prompt enhancement ─────
+    if (path === '/api/linx-amplify/enhance' && method === 'POST') {
+      const input = normalizePromptEnhancementInput(await readBody(request));
+      if (input.error) return json({ ok: false, error: input.error }, 400, origin);
+      const id = requestId();
+      const startedAt = Date.now();
+      try {
+        const result = await enhancePrompt(env, input);
+        await recordAiUsage(env, {
+          requestId: id,
+          role: 'public',
+          provider: result.provider,
+          model: result.model,
+          inputMessages: 1,
+          inputCharacters: input.idea.length,
+          outputCharacters: result.content.length,
+          usage: null,
+          status: 'success',
+          latencyMs: Date.now() - startedAt,
+        });
+        return json({ ok: true, request_id: id, prompt_type: input.promptType, enhanced_prompt: result.content, estimated_tokens: result.estimatedTokens }, 200, origin);
+      } catch (error) {
+        await recordAiUsage(env, {
+          requestId: id,
+          role: 'public',
+          provider: 'cloudflare-workers-ai',
+          model: env.PUBLIC_AI_MODEL || '@cf/meta/llama-3.1-8b-instruct-fast',
+          inputMessages: 1,
+          inputCharacters: input.idea.length,
+          outputCharacters: 0,
+          usage: null,
+          status: 'error',
+          latencyMs: Date.now() - startedAt,
+        });
+        return json({ ok: false, request_id: id, error: error?.message || 'Prompt enhancement could not be completed.' }, 502, origin);
       }
     }
 
