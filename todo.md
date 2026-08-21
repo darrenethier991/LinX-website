@@ -67,3 +67,4 @@
 - [ ] Design and implement an administrator-only Clam Code engineering workspace with a bounded repository action protocol, test gating, diff review, and audit records.
 - [ ] Require an explicit administrator confirmation for every push, deployment, or other external engineering action initiated from Clam Code.
 - [x] Implement the bounded passive public-domain observation workflow and report view for the LINX OSINT subpage without retaining scan history by default.
+- [ ] Diagnose and repair the URL shortener redirect defect that currently sends all generated links to https://www.401.ca/.

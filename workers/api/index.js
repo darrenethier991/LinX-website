@@ -7,6 +7,7 @@ import {
 import { normalizeImportedLead, normalizeLeadSourceInput, parseApprovedFeed, sourceReadiness } from "./lead-pipeline.js";
 import { runPassiveDomainObservation } from "./passive-osint.js";
 import { enhancePrompt, normalizePromptEnhancementInput } from "./prompt-enhancer.js";
+import { deviceCategory, generatedSlug, normalizeShortLinkInput, refererHost } from "./short-links.js";
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 
 /**
@@ -563,6 +564,34 @@ async function runApprovedSources(env, createdBy = 'scheduler') {
   return results;
 }
 
+async function createShortLink(env, input, createdBy) {
+  const normalized = normalizeShortLinkInput(input);
+  if (normalized.error) throw new Error(normalized.error);
+  let slug = normalized.slug;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    if (!slug) slug = generatedSlug();
+    const existing = await env.DB.prepare('SELECT id FROM short_links WHERE slug = ?').bind(slug).first();
+    if (!existing) break;
+    if (normalized.slug) throw new Error('That custom slug is already in use.');
+    slug = '';
+  }
+  if (!slug) throw new Error('A unique short-link slug could not be generated. Please try again.');
+  const id = requestId();
+  await env.DB.prepare('INSERT INTO short_links (id, slug, destination_url, created_by) VALUES (?, ?, ?, ?)').bind(id, slug, normalized.destination_url, createdBy || '').run();
+  const base = String(env.SHORT_LINK_BASE_URL || 'https://linxservices.ca/r').replace(/\/$/, '');
+  return { id, slug, destination_url: normalized.destination_url, short_url: `${base}/${slug}` };
+}
+
+async function shortLinkOverview(env) {
+  const [summary, links, country] = await Promise.all([
+    env.DB.prepare("SELECT COUNT(*) AS total_links, (SELECT COUNT(*) FROM short_link_clicks) AS total_clicks, (SELECT COUNT(*) FROM short_link_clicks WHERE date(clicked_at) = date('now')) AS clicks_today FROM short_links WHERE status = 'active'").first(),
+    env.DB.prepare("SELECT l.id, l.slug, l.destination_url, l.created_at, l.last_clicked_at, COUNT(c.id) AS clicks, COALESCE((SELECT country FROM short_link_clicks c2 WHERE c2.short_link_id = l.id AND c2.country != '' GROUP BY country ORDER BY COUNT(*) DESC, MAX(clicked_at) DESC LIMIT 1), '') AS top_country FROM short_links l LEFT JOIN short_link_clicks c ON c.short_link_id = l.id WHERE l.status = 'active' GROUP BY l.id ORDER BY l.created_at DESC LIMIT 100").all(),
+    env.DB.prepare("SELECT country FROM short_link_clicks WHERE country != '' GROUP BY country ORDER BY COUNT(*) DESC, MAX(clicked_at) DESC LIMIT 1").first(),
+  ]);
+  const base = String(env.SHORT_LINK_BASE_URL || 'https://linxservices.ca/r').replace(/\/$/, '');
+  return { summary: { total_links: Number(summary?.total_links || 0), total_clicks: Number(summary?.total_clicks || 0), clicks_today: Number(summary?.clicks_today || 0), top_country: country?.country || '—' }, links: (links.results || []).map(link => ({ ...link, clicks: Number(link.clicks || 0), short_url: `${base}/${link.slug}` })) };
+}
+
 // ─── Route handler ───────────────────────────────────────────────────────────
 
 export default {
@@ -591,6 +620,22 @@ export default {
 
     const method = request.method.toUpperCase();
 
+    // ── GET /r/:slug — branded short-link redirect with minimized analytics ──
+    const shortLinkMatch = path.match(/^\/r\/([a-z0-9_-]{3,64})$/i);
+    if (shortLinkMatch && method === 'GET') {
+      if (!env.DB) return new Response('Short links are temporarily unavailable.', { status: 503 });
+      const link = await env.DB.prepare("SELECT id, destination_url FROM short_links WHERE slug = ? AND status = 'active'").bind(shortLinkMatch[1].toLowerCase()).first();
+      if (!link) return new Response('Short link not found.', { status: 404, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } });
+      const country = String(request.cf?.country || '').slice(0, 2);
+      const device = deviceCategory(request.headers.get('User-Agent') || '');
+      const referer = refererHost(request.headers.get('Referer') || '');
+      await Promise.all([
+        env.DB.prepare('INSERT INTO short_link_clicks (id, short_link_id, country, device, referer_host) VALUES (?, ?, ?, ?, ?)').bind(requestId(), link.id, country, device, referer).run(),
+        env.DB.prepare("UPDATE short_links SET last_clicked_at = datetime('now') WHERE id = ?").bind(link.id).run(),
+      ]);
+      return Response.redirect(link.destination_url, 302);
+    }
+
     // ── POST /api/osint/passive-scan — bounded public domain observations ───
     if (path === '/api/osint/passive-scan' && method === 'POST') {
       const { target } = await readBody(request);
@@ -600,6 +645,21 @@ export default {
       } catch (error) {
         return json({ ok: false, error: String(error?.message || 'Passive observation could not be completed.').slice(0, 240) }, 400, origin);
       }
+    }
+
+    // ── Short-link management — administrator-only ──────────────────────────
+    if (path === '/api/admin/short-links' && method === 'GET') {
+      const identity = await requireAuth(request, env);
+      if (!identity || identity.role !== 'admin') return json({ error: 'Administrator authentication is required.' }, 401, origin);
+      if (!env.DB) return json({ error: 'Short-link storage is not configured.' }, 503, origin);
+      return json({ ok: true, ...(await shortLinkOverview(env)) }, 200, origin);
+    }
+    if (path === '/api/admin/short-links' && method === 'POST') {
+      const identity = await requireAuth(request, env);
+      if (!identity || identity.role !== 'admin') return json({ error: 'Administrator authentication is required.' }, 401, origin);
+      if (!env.DB) return json({ error: 'Short-link storage is not configured.' }, 503, origin);
+      try { return json({ ok: true, link: await createShortLink(env, await readBody(request), identity.sub || identity.username || 'admin') }, 201, origin); }
+      catch (error) { return json({ error: String(error?.message || 'Short link could not be created.').slice(0, 240) }, 400, origin); }
     }
 
     // ── POST /api/events/pageview — privacy-safe public telemetry ──────────

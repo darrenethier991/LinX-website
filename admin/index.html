@@ -993,15 +993,35 @@
   });
 
   // ── SHORTENER ────────────────────────────────────────────────────────────────
-  document.getElementById('shn-create-btn').addEventListener('click', () => {
+  async function loadShortLinks() {
+    const tbody = document.getElementById('shn-tbody');
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/short-links`, { headers: { Authorization: `Bearer ${_token}` } });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) throw new Error(payload.error || 'Unable to load short links.');
+      document.getElementById('shn-total').textContent = payload.summary.total_links;
+      document.getElementById('shn-clicks').textContent = payload.summary.total_clicks;
+      document.getElementById('shn-today').textContent = payload.summary.clicks_today;
+      document.getElementById('shn-country').textContent = payload.summary.top_country;
+      tbody.innerHTML = payload.links.length ? payload.links.map(link => `<tr><td><a href="${escHtml(link.short_url)}" target="_blank" rel="noopener" class="td-mono">${escHtml(link.short_url)}</a></td><td class="td-mono" title="${escHtml(link.destination_url)}">${escHtml(link.destination_url)}</td><td>${link.clicks}</td><td>${new Date(link.created_at + 'Z').toLocaleDateString()}</td><td>${escHtml(link.top_country || '—')}</td><td><button class="btn btn--ghost btn--sm" data-copy-link="${escHtml(link.short_url)}">Copy</button></td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-dim)">No links yet. Create your first one above.</td></tr>';
+    } catch (error) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:#fecaca">${escHtml(error.message || 'Unable to load short links.')}</td></tr>`; }
+  }
+  document.getElementById('shn-create-btn').addEventListener('click', async () => {
     const dest = document.getElementById('shn-dest').value.trim();
-    if (!dest) return;
-    const slug = document.getElementById('shn-slug').value.trim() || Math.random().toString(36).slice(2, 8);
-    const shortUrl = `https://linx.ca/${slug}`;
-    document.getElementById('shn-result').innerHTML = `✓ Created: <a href="${shortUrl}" style="color:var(--gold)">${shortUrl}</a>`;
-    document.getElementById('shn-dest').value = '';
-    document.getElementById('shn-slug').value = '';
+    const slug = document.getElementById('shn-slug').value.trim();
+    const result = document.getElementById('shn-result');
+    if (!dest) { result.textContent = 'Enter a destination URL.'; return; }
+    const create = document.getElementById('shn-create-btn'); create.disabled = true; create.textContent = 'Creating…';
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/short-links`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${_token}` }, body: JSON.stringify({ destination_url: dest, slug }) });
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) throw new Error(payload.error || 'Unable to create short link.');
+      result.innerHTML = `✓ Created: <a href="${escHtml(payload.link.short_url)}" target="_blank" rel="noopener" style="color:var(--gold)">${escHtml(payload.link.short_url)}</a>`;
+      document.getElementById('shn-dest').value = ''; document.getElementById('shn-slug').value = ''; await loadShortLinks();
+    } catch (error) { result.textContent = error.message || 'Unable to create short link.'; }
+    finally { create.disabled = false; create.textContent = 'Create'; }
   });
+  document.getElementById('shn-tbody').addEventListener('click', event => { const url = event.target?.dataset?.copyLink; if (url && navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('Short link copied.')); });
 
   // ── WORKFLOW TEST ────────────────────────────────────────────────────────────
   function testWorkflow(name) {
