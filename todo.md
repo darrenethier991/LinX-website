@@ -36,7 +36,7 @@
 - [x] Define the Stripe subscription tiers, prices, payment mode, success/cancel routes, and entitlement lifecycle before integrating checkout.
 - [x] Replace subscription buttons that currently route to Contact with approved Stripe checkout actions.
 - [x] Complete the requested Clam Code enhancement scope without changing unrelated site behavior.
-- [ ] Obtain the Lovable OSINT application source or public link and convert it into a safely scoped LINX Services subpage.
+- [x] Obtain the Lovable OSINT application source or public link and convert it into a safely scoped LINX Services subpage.
 - [ ] Add LinX Amplify, OSINT, and the requested public destinations to a clearer shared navigation structure.
 - [ ] Test and deploy only the requested Stripe, Clam Code, OSINT, and navigation changes.
 - [x] Create a dedicated LINX HailShield™ fleet and dealership hail-damage recovery subpage with accurate service scope, workflow, packages, and assessment CTA.
@@ -57,7 +57,7 @@
 - [x] Reorganize the shared public navigation around the requested destinations with a compact accessible Explore menu.
 - [x] Replace the LinX Amplify service-overview page with the working prompt-enhancer application from the referenced task.
 - [x] Replace the current Clam Code mascot with a premium original cyber-clam avatar inspired by the supplied neon-tech reference.
-- [ ] Inspect the supplied LINX Recon source safely and integrate only its appropriately scoped OSINT functionality into a LINX Services subpage.
+- [x] Inspect the supplied LINX Recon source safely and integrate only its appropriately scoped OSINT functionality into a LINX Services subpage.
 - [x] Diagnose and repair the reported Web Crawler and Lead Pipeline failure without changing unrelated LINX Services functionality.
 - [x] Add D1-backed approved-source records and import-audit storage with source authorization, method, and operational status fields.
 - [x] Add secured Worker APIs for manual lead import, CSV validation, source management, and lead-pipeline status.
@@ -66,4 +66,4 @@
 - [x] Refine the Clam Code mascot toward the supplied premium pearlescent cyber-clam direction with rounded shell form, cyan interior, and compact mechanical claw details.
 - [ ] Design and implement an administrator-only Clam Code engineering workspace with a bounded repository action protocol, test gating, diff review, and audit records.
 - [ ] Require an explicit administrator confirmation for every push, deployment, or other external engineering action initiated from Clam Code.
-- [ ] Implement the bounded passive public-domain observation workflow and report view for the LINX OSINT subpage without retaining scan history by default.
+- [x] Implement the bounded passive public-domain observation workflow and report view for the LINX OSINT subpage without retaining scan history by default.
