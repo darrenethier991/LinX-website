@@ -277,6 +277,7 @@ async function createStripeCheckoutSession(env, requestedPlan) {
   form.set('mode', 'subscription');
   form.set('line_items[0][price]', plan.priceId);
   form.set('line_items[0][quantity]', '1');
+  form.append('payment_method_types[]', 'card');
   form.set('allow_promotion_codes', 'true');
   form.set('metadata[linx_tier]', plan.entitlementTier);
   form.set('metadata[linx_checkout_plan]', plan.key);

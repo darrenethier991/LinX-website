@@ -52,3 +52,4 @@
 - [x] Expand the administrator-only Clam Code workflow with a clearly scoped Claude-capable tool interface while preserving public-user restrictions.
 - [x] Replace the public pricing page with the provided Free Until First Job, Starter, Growth, Unlimited, and Unlimited Trial tier structure.
 - [ ] Realign Stripe products, recurring prices, checkout mappings, and entitlement handling to the revised LINX pricing tiers.
+- [ ] Configure a supported Stripe Checkout payment method and reverify the live subscription-session flow.
