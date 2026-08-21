@@ -56,4 +56,4 @@
 - [x] Create the LinX Amplify public subpage with scoped growth-operations content and a clear inquiry call to action.
 - [x] Reorganize the shared public navigation around the requested destinations with a compact accessible Explore menu.
 - [x] Replace the LinX Amplify service-overview page with the working prompt-enhancer application from the referenced task.
-- [ ] Replace the current Clam Code mascot with a premium original cyber-clam avatar inspired by the supplied neon-tech reference.
+- [x] Replace the current Clam Code mascot with a premium original cyber-clam avatar inspired by the supplied neon-tech reference.
