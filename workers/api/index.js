@@ -409,11 +409,13 @@ export default {
       if (!username || !password)
         return json({ error: 'username and password are required' }, 400, origin);
 
-      if (username !== env.ADMIN_USERNAME)
+      const configuredUsername = String(env.ADMIN_USERNAME || '').trim();
+      const configuredPasswordHash = String(env.ADMIN_PASSWORD_HASH || '').trim();
+      if (String(username).trim() !== configuredUsername)
         return json({ error: 'Invalid credentials' }, 401, origin);
 
       const hash = await sha256hex(password);
-      if (hash !== env.ADMIN_PASSWORD_HASH)
+      if (!configuredPasswordHash || hash !== configuredPasswordHash)
         return json({ error: 'Invalid credentials' }, 401, origin);
 
       const now   = Math.floor(Date.now() / 1000);
