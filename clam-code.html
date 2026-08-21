@@ -24,26 +24,34 @@
     .clam-avatar:hover { border-color:rgba(212,168,83,.66); box-shadow:0 16px 42px rgba(6,182,212,.12),0 0 28px rgba(124,92,216,.18); }
     .clam-avatar:active { transform:scale(.98); }
     .clam-avatar:focus-visible { outline:3px solid rgba(212,168,83,.72); outline-offset:3px; }
-    .clam-avatar__svg { display:block; width:100%; max-height:192px; overflow:visible; filter:drop-shadow(0 10px 17px rgba(0,0,0,.30)); transform:perspective(550px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)); transition:transform 120ms cubic-bezier(.23,1,.32,1),filter 220ms cubic-bezier(.23,1,.32,1); }
-    .clam-avatar__frame { transform-origin:100px 104px; }
-    .clam-shell-top { fill:url(#shell-outer); stroke:rgba(212,168,83,.72); stroke-width:2; }
-    .clam-shell-lower { fill:url(#shell-lower); stroke:rgba(6,182,212,.68); stroke-width:2; }
-    .clam-shell-ridge { fill:none; stroke:rgba(255,255,255,.27); stroke-width:2; stroke-linecap:round; }
-    .clam-shell-circuit { fill:none; stroke:url(#circuit-line); stroke-width:2.4; stroke-linecap:round; }
-    .clam-shell-node { fill:#d4a853; filter:url(#glow-gold); }
-    .clam-face { fill:rgba(6,14,32,.92); stroke:rgba(6,182,212,.34); stroke-width:1.5; }
-    .clam-eye { fill:#f8fbff; stroke:rgba(212,168,83,.40); stroke-width:1.4; }
-    .clam-pupil { fill:#071323; transform-origin:center; transition:transform 180ms cubic-bezier(.23,1,.32,1); }
+    .clam-avatar__svg { --pupil-x:0px; --pupil-y:0px; display:block; width:100%; max-height:212px; overflow:visible; filter:drop-shadow(0 13px 22px rgba(0,0,0,.38)); transform:perspective(550px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y)); transition:transform 120ms cubic-bezier(.23,1,.32,1),filter 220ms cubic-bezier(.23,1,.32,1); }
+    .clam-avatar__frame { transform-origin:120px 123px; }
+    .clam-shell-top { fill:url(#armor-top); stroke:#36e5ff; stroke-width:2.2; }
+    .clam-shell-lower { fill:url(#armor-lower); stroke:#738fff; stroke-width:2.2; }
+    .clam-shell-plate { fill:url(#plate-metal); stroke:rgba(205,245,255,.55); stroke-width:1.1; }
+    .clam-shell-ridge { fill:none; stroke:rgba(221,250,255,.45); stroke-width:2.1; stroke-linecap:round; }
+    .clam-shell-circuit { fill:none; stroke:url(#circuit-line); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .clam-shell-node { fill:#f5d27e; filter:url(#glow-gold); }
+    .clam-face { fill:rgba(4,13,29,.95); stroke:rgba(88,239,255,.55); stroke-width:1.7; }
+    .clam-eye-housing { fill:#0a1732; stroke:rgba(124,240,255,.72); stroke-width:2; }
+    .clam-eye { fill:url(#eye-glass); stroke:rgba(240,254,255,.90); stroke-width:1.25; }
+    .clam-pupil { fill:#071c35; transform:translate(var(--pupil-x),var(--pupil-y)); transform-origin:center; transition:transform 130ms cubic-bezier(.23,1,.32,1); }
     .clam-eye-glint { fill:#fff; }
-    .clam-blush { fill:rgba(212,168,83,.30); opacity:.75; }
+    .clam-eye-spark { fill:#7bf7ff; filter:url(#glow-cyan); }
+    .clam-cheek { fill:rgba(238,86,239,.62); filter:url(#glow-pink); }
     .clam-mouth { fill:none; stroke:#e9f7ff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; transition:opacity 160ms cubic-bezier(.23,1,.32,1),transform 160ms cubic-bezier(.23,1,.32,1); }
     .clam-mouth--happy { opacity:0; transform:translateY(3px); }
-    .clam-orbital { fill:none; stroke:rgba(6,182,212,.24); stroke-width:1.2; stroke-dasharray:4 6; transform-origin:100px 105px; }
+    .clam-core-ring { fill:none; stroke:rgba(103,237,255,.46); stroke-width:1.5; transform-origin:120px 143px; }
+    .clam-core { fill:url(#core-light); filter:url(#glow-core); transform-origin:120px 143px; }
+    .clam-core-geo { fill:none; stroke:rgba(255,255,255,.72); stroke-width:1; }
+    .clam-orbital { fill:none; stroke:rgba(6,220,255,.36); stroke-width:1.2; stroke-dasharray:4 6; transform-origin:120px 125px; }
     .clam-avatar__caption { position:relative; display:block; margin-top:-3px; color:var(--text-muted); font-size:11px; line-height:1.4; text-align:center; }
     .clam-avatar[data-state="thinking"] { border-color:rgba(6,182,212,.75); box-shadow:0 0 34px rgba(6,182,212,.20); }
     .clam-avatar[data-state="thinking"] .clam-avatar__svg { filter:drop-shadow(0 0 12px rgba(6,182,212,.56)); }
     .clam-avatar[data-state="thinking"] .clam-orbital { animation:clam-orbit 1.15s linear infinite; }
-    .clam-avatar[data-state="thinking"] .clam-pupil { transform:translateY(-2px); }
+    .clam-avatar[data-state="thinking"] .clam-pupil { transform:translate(var(--pupil-x),calc(var(--pupil-y) - 2px)); }
+    .clam-avatar[data-state="thinking"] .clam-core-ring { animation:clam-orbit 1.15s linear infinite reverse; }
+    .clam-avatar[data-state="thinking"] .clam-core { animation:clam-core-pulse 1.05s ease-in-out infinite; }
     .clam-avatar[data-state="happy"] { border-color:rgba(212,168,83,.70); box-shadow:0 0 34px rgba(212,168,83,.22); }
     .clam-avatar[data-state="happy"] .clam-mouth--ready { opacity:0; transform:translateY(-3px); }
     .clam-avatar[data-state="happy"] .clam-mouth--happy { opacity:1; transform:translateY(0); }
@@ -52,6 +60,7 @@
     .clam-avatar[data-state="alert"] .clam-mouth--ready { transform:translateY(1px) scaleX(.78); }
     .clam-avatar[data-role="admin"] { border-color:rgba(212,168,83,.56); background:linear-gradient(145deg,rgba(212,168,83,.12),rgba(124,92,216,.16) 55%,rgba(6,182,212,.08)); }
     .clam-avatar[data-role="admin"] .clam-shell-top { stroke:rgba(212,168,83,.96); }
+    .clam-avatar[data-role="admin"] .clam-core { filter:url(#glow-gold); }
     .mode-card { margin-top:14px; padding:16px; background:rgba(124,92,216,.08); border:1px solid rgba(124,92,216,.3); border-radius:var(--radius); }
     .mode-label { font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--neon-cyan); margin-bottom:6px; }
     .mode-copy { font-size:12px; line-height:1.65; color:var(--text-muted); }
@@ -74,6 +83,7 @@
     .admin-prompts { border-top:1px solid rgba(212,168,83,.18); padding-top:14px; }
     .admin-prompts .admin-prompts__title { width:100%; margin:0 0 2px; color:var(--gold); font-size:10px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
     @keyframes clam-orbit { to { transform:rotate(360deg); } }
+    @keyframes clam-core-pulse { 50% { transform:scale(1.13); filter:url(#glow-cyan); } }
     @media (prefers-reduced-motion: no-preference) { .clam-avatar__frame { animation:clam-float 4.2s ease-in-out infinite; } .clam-avatar[data-state="happy"] .clam-avatar__frame { animation:clam-celebrate 620ms cubic-bezier(.23,1,.32,1) 2; } }
     @keyframes clam-float { 50% { transform:translateY(-4px); } }
     @keyframes clam-celebrate { 50% { transform:translateY(-6px) rotate(-2deg) scale(1.025); } }
@@ -92,25 +102,35 @@
       <aside class="clam-side">
         <div class="clam-brand"><div class="clam-mark">CC</div><div><div class="clam-title">Clam Code</div><div class="clam-subtitle">The LINX Services assistant</div></div></div>
         <button class="clam-avatar" id="clam-avatar" type="button" aria-label="Interact with Clam Code" data-state="ready" data-role="public">
-          <svg class="clam-avatar__svg" viewBox="0 0 200 205" role="img" aria-label="Clam Code cyber-clam mascot">
+          <svg class="clam-avatar__svg" viewBox="0 0 240 235" role="img" aria-label="Clam Code premium cyber-clam mascot">
             <defs>
-              <linearGradient id="shell-outer" x1="25" y1="20" x2="175" y2="165" gradientUnits="userSpaceOnUse"><stop stop-color="#d4a853"/><stop offset=".38" stop-color="#8054dc"/><stop offset="1" stop-color="#06b6d4"/></linearGradient>
-              <linearGradient id="shell-lower" x1="48" y1="104" x2="164" y2="172" gradientUnits="userSpaceOnUse"><stop stop-color="#12253e"/><stop offset="1" stop-color="#392760"/></linearGradient>
-              <linearGradient id="circuit-line" x1="38" y1="55" x2="166" y2="151" gradientUnits="userSpaceOnUse"><stop stop-color="#f4cc76"/><stop offset="1" stop-color="#43e8ff"/></linearGradient>
+              <linearGradient id="armor-top" x1="52" y1="38" x2="189" y2="147" gradientUnits="userSpaceOnUse"><stop stop-color="#096a88"/><stop offset=".42" stop-color="#243b85"/><stop offset=".72" stop-color="#773bac"/><stop offset="1" stop-color="#073d64"/></linearGradient>
+              <linearGradient id="armor-lower" x1="55" y1="144" x2="182" y2="208" gradientUnits="userSpaceOnUse"><stop stop-color="#0b5676"/><stop offset=".48" stop-color="#282d74"/><stop offset="1" stop-color="#571e78"/></linearGradient>
+              <linearGradient id="plate-metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3d6b93"/><stop offset=".48" stop-color="#101f47"/><stop offset="1" stop-color="#1f3566"/></linearGradient>
+              <linearGradient id="circuit-line" x1="44" y1="64" x2="198" y2="178" gradientUnits="userSpaceOnUse"><stop stop-color="#f4cc76"/><stop offset=".42" stop-color="#ff70e4"/><stop offset="1" stop-color="#48edff"/></linearGradient>
+              <radialGradient id="eye-glass" cx="35%" cy="25%"><stop stop-color="#ecffff"/><stop offset=".23" stop-color="#6fffff"/><stop offset=".70" stop-color="#118fcb"/><stop offset="1" stop-color="#082451"/></radialGradient>
+              <radialGradient id="core-light"><stop stop-color="#fffef4"/><stop offset=".22" stop-color="#ffd58b"/><stop offset=".48" stop-color="#ff6de4"/><stop offset=".72" stop-color="#6a79ff"/><stop offset="1" stop-color="#20e8ff"/></radialGradient>
               <filter id="glow-gold" x="-200%" y="-200%" width="400%" height="400%"><feGaussianBlur stdDeviation="2.6" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <filter id="glow-cyan" x="-200%" y="-200%" width="400%" height="400%"><feGaussianBlur stdDeviation="3.3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <filter id="glow-pink" x="-200%" y="-200%" width="400%" height="400%"><feGaussianBlur stdDeviation="2.1" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+              <filter id="glow-core" x="-240%" y="-240%" width="580%" height="580%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
             </defs>
             <g class="clam-avatar__frame">
-              <ellipse class="clam-orbital" cx="100" cy="103" rx="73" ry="83"/>
-              <path class="clam-shell-top" d="M31 104C30 54 61 24 99 24c39 0 70 30 70 80v22H31z"/>
-              <path class="clam-shell-lower" d="M38 121c11 43 42 59 62 59s51-16 62-59H38z"/>
-              <path class="clam-shell-ridge" d="M53 99V61M76 99V45M100 99V37M124 99V45M147 99V61"/>
-              <path class="clam-shell-circuit" d="M42 86h16l10-12h16m16-27v18l11 11h18l9 9m-33 43v14l-11 11H77l-9 10H51m97-47h13l9 9v17"/>
-              <circle class="clam-shell-node" cx="42" cy="86" r="3.3"/><circle class="clam-shell-node" cx="100" cy="47" r="3.3"/><circle class="clam-shell-node" cx="148" cy="128" r="3.3"/><circle class="clam-shell-node" cx="51" cy="163" r="3.3"/>
-              <path class="clam-face" d="M55 96c0-18 17-29 45-29s45 11 45 29v38c0 17-17 27-45 27s-45-10-45-27V96z"/>
-              <ellipse class="clam-eye" cx="81" cy="106" rx="13" ry="16"/><ellipse class="clam-eye" cx="119" cy="106" rx="13" ry="16"/>
-              <circle class="clam-pupil" cx="83" cy="108" r="6"/><circle class="clam-pupil" cx="117" cy="108" r="6"/><circle class="clam-eye-glint" cx="85" cy="105" r="2"/><circle class="clam-eye-glint" cx="119" cy="105" r="2"/>
-              <ellipse class="clam-blush" cx="69" cy="132" rx="8" ry="4"/><ellipse class="clam-blush" cx="131" cy="132" rx="8" ry="4"/>
-              <path class="clam-mouth clam-mouth--ready" d="M91 139c5 4 13 4 18 0"/><path class="clam-mouth clam-mouth--happy" d="M87 137c7 11 19 11 26 0"/>
+              <ellipse class="clam-orbital" cx="120" cy="125" rx="94" ry="100"/>
+              <path class="clam-shell-top" d="M32 122c2-53 37-88 88-88 50 0 85 35 88 88l-10 25H42z"/>
+              <path class="clam-shell-lower" d="M43 154c13 43 44 57 77 57s64-14 77-57l-8-12H51z"/>
+              <path class="clam-shell-plate" d="M48 105l23-29 23 12-11 34H51z"/><path class="clam-shell-plate" d="M192 105l-23-29-23 12 11 34h32z"/><path class="clam-shell-plate" d="M99 48h42l9 34H90z"/>
+              <path class="clam-shell-plate" d="M55 173l33-5 13 25-34 4z"/><path class="clam-shell-plate" d="M185 173l-33-5-13 25 34 4z"/>
+              <path class="clam-shell-ridge" d="M68 89l15-21m14 7 5-25m18 0 0 25m21-7-15 21M67 164l17 14m89-14-17 14"/>
+              <path class="clam-shell-circuit" d="M48 122h19l10-14h16m20-48v18l12 10h18l10 13m-17 66v13l-12 9h-22l-12 10H69m102-58h16l8 9v15"/>
+              <circle class="clam-shell-node" cx="48" cy="122" r="3.2"/><circle class="clam-shell-node" cx="113" cy="60" r="3.2"/><circle class="clam-shell-node" cx="171" cy="141" r="3.2"/><circle class="clam-shell-node" cx="69" cy="199" r="3.2"/>
+              <path class="clam-face" d="M65 105c0-19 21-34 55-34s55 15 55 34v36c0 18-20 30-55 30s-55-12-55-30v-36z"/>
+              <path class="clam-eye-housing" d="M70 104c0-20 13-31 29-31 17 0 28 11 28 31s-11 31-28 31c-16 0-29-11-29-31z"/><path class="clam-eye-housing" d="M113 104c0-20 11-31 28-31 16 0 29 11 29 31s-13 31-29 31c-17 0-28-11-28-31z"/>
+              <ellipse class="clam-eye" cx="98" cy="103" rx="19" ry="22"/><ellipse class="clam-eye" cx="142" cy="103" rx="19" ry="22"/>
+              <circle class="clam-pupil" cx="100" cy="106" r="8"/><circle class="clam-pupil" cx="140" cy="106" r="8"/><circle class="clam-eye-glint" cx="106" cy="97" r="4"/><circle class="clam-eye-glint" cx="146" cy="97" r="4"/><circle class="clam-eye-spark" cx="94" cy="114" r="2.4"/><circle class="clam-eye-spark" cx="134" cy="114" r="2.4"/>
+              <circle class="clam-cheek" cx="78" cy="136" r="4"/><circle class="clam-cheek" cx="162" cy="136" r="4"/>
+              <path class="clam-mouth clam-mouth--ready" d="M110 140c5 4 15 4 20 0"/><path class="clam-mouth clam-mouth--happy" d="M105 138c8 13 22 13 30 0"/>
+              <circle class="clam-core-ring" cx="120" cy="167" r="23"/><circle class="clam-core-ring" cx="120" cy="167" r="16"/><circle class="clam-core" cx="120" cy="167" r="11"/><path class="clam-core-geo" d="M120 154l11 13-11 13-11-13zM109 167h22M120 154v26"/>
             </g>
           </svg>
           <span class="clam-avatar__caption" id="clam-avatar-caption">Tap Clam Code to wake the shell.</span>
@@ -210,10 +230,14 @@
       const y = (event.clientY - box.top) / box.height - .5;
       avatar.style.setProperty("--tilt-y", `${x * 7}deg`);
       avatar.style.setProperty("--tilt-x", `${y * -5}deg`);
+      avatar.querySelector(".clam-avatar__svg").style.setProperty("--pupil-x", `${x * 4}px`);
+      avatar.querySelector(".clam-avatar__svg").style.setProperty("--pupil-y", `${y * 3}px`);
     });
     avatar.addEventListener("pointerleave", () => {
       avatar.style.setProperty("--tilt-y", "0deg");
       avatar.style.setProperty("--tilt-x", "0deg");
+      avatar.querySelector(".clam-avatar__svg").style.setProperty("--pupil-x", "0px");
+      avatar.querySelector(".clam-avatar__svg").style.setProperty("--pupil-y", "0px");
     });
 
     form.addEventListener("submit", async event => {
