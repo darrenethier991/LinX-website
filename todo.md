@@ -50,5 +50,5 @@
 - [x] Normalize deployed administrator credential secret values during comparison to prevent trailing-whitespace configuration errors.
 - [x] Implement the approved interactive cyber-clam avatar with accessible expression and motion states on the Clam Code page.
 - [x] Expand the administrator-only Clam Code workflow with a clearly scoped Claude-capable tool interface while preserving public-user restrictions.
-- [ ] Replace the public pricing page with the provided Free Until First Job, Starter, Growth, Unlimited, and Unlimited Trial tier structure.
+- [x] Replace the public pricing page with the provided Free Until First Job, Starter, Growth, Unlimited, and Unlimited Trial tier structure.
 - [ ] Realign Stripe products, recurring prices, checkout mappings, and entitlement handling to the revised LINX pricing tiers.
