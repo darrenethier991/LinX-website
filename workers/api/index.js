@@ -4,6 +4,7 @@ import {
   normalizeMessages,
   responseEnvelope,
 } from "./clam-code.js";
+import { normalizeImportedLead, normalizeLeadSourceInput, parseApprovedFeed, sourceReadiness } from "./lead-pipeline.js";
 import { enhancePrompt, normalizePromptEnhancementInput } from "./prompt-enhancer.js";
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 
@@ -491,6 +492,76 @@ async function readBody(req) {
   try { return await req.json(); } catch { return {}; }
 }
 
+function sourceView(row) {
+  if (!row) return null;
+  let mapping = {};
+  try { mapping = JSON.parse(row.field_mapping || '{}'); } catch (_) { mapping = {}; }
+  return { ...row, has_owner_permission: Boolean(row.has_owner_permission), robots_allows_crawl: Boolean(row.robots_allows_crawl), field_mapping: mapping, readiness: sourceReadiness(row) };
+}
+
+async function writeImportRun(env, run) {
+  await env.DB.prepare(`
+    INSERT INTO lead_import_runs (id,source_id,import_mode,status,received,valid,added,duplicates,rejected,errors,created_by,completed_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,datetime('now'))
+  `).bind(run.id, run.sourceId, run.importMode, run.status, run.received, run.valid, run.added, run.duplicates, run.rejected, JSON.stringify(run.errors || []), run.createdBy || '').run();
+}
+
+async function importLeadRows(env, source, rows, mapping, importMode, createdBy) {
+  const run = { id: requestId(), sourceId: source.id, importMode, status: 'completed', received: Math.min(Array.isArray(rows) ? rows.length : 0, 100), valid: 0, added: 0, duplicates: 0, rejected: 0, errors: [], createdBy };
+  const resolvedMapping = mapping && typeof mapping === 'object' ? mapping : (() => { try { return JSON.parse(source.field_mapping || '{}'); } catch (_) { return {}; } })();
+  for (const raw of (Array.isArray(rows) ? rows : []).slice(0, 100)) {
+    const normalized = normalizeImportedLead(raw, resolvedMapping);
+    if (normalized.error) { run.rejected++; run.errors.push(normalized.error); continue; }
+    run.valid++;
+    const now = new Date().toISOString();
+    const { category, score } = classifyLead(`${normalized.title} ${normalized.jobType} ${normalized.description}`);
+    const duplicateKey = `${source.id}|${normalized.address.toLowerCase()}|${normalized.contact.toLowerCase()}|${normalized.title.toLowerCase()}`;
+    const contentHash = await sha256hex(duplicateKey);
+    const lead = {
+      id: uuidv4(), title: normalized.title, description: normalized.description, source_url: normalized.sourceUrl,
+      source_platform: source.name, posted_at: now, scraped_at: now, category, category_score: score,
+      city: normalized.city, province: normalized.province, postal_code: normalized.postalCode,
+      contact_method: normalized.contact.slice(0, 320), status: 'active', claimed_by: null,
+      raw: JSON.stringify({ name: normalized.name, address: normalized.address, contact: normalized.contact, job_type: normalized.jobType, notes: normalized.description }).slice(0, 2000),
+    };
+    const duplicate = await isDuplicate(env.DB, lead, contentHash);
+    if (duplicate.isDuplicate) { run.duplicates++; continue; }
+    await env.DB.prepare(`
+      INSERT INTO leads (id,content_hash,title,description,source_url,source_platform,posted_at,scraped_at,category,category_score,city,province,postal_code,contact_method,status,claimed_by,raw,source_id)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    `).bind(lead.id, contentHash, lead.title, lead.description, lead.source_url, lead.source_platform, lead.posted_at, lead.scraped_at, lead.category, lead.category_score, lead.city, lead.province, lead.postal_code, lead.contact_method, lead.status, lead.claimed_by, lead.raw, source.id).run();
+    run.added++;
+  }
+  if (run.errors.length > 20) run.errors = run.errors.slice(0, 20);
+  if (run.rejected) run.status = run.added || run.duplicates ? 'completed_with_warnings' : 'failed';
+  await writeImportRun(env, run);
+  return run;
+}
+
+async function runApprovedSources(env, createdBy = 'scheduler') {
+  const sources = await env.DB.prepare("SELECT * FROM lead_sources WHERE status = 'active' AND mode IN ('api','rss','owned_feed') AND approval_status = 'approved'").all();
+  const results = [];
+  for (const source of (sources.results || [])) {
+    const readiness = sourceReadiness(source);
+    if (!readiness.ready) { results.push({ source_id: source.id, status: 'skipped', reason: readiness.reason }); continue; }
+    try {
+      const response = await fetch(source.feed_url, { headers: { Accept: 'application/json, application/rss+xml, application/atom+xml, text/xml;q=0.9, text/plain;q=0.5', 'User-Agent': 'LINX-Approved-Source/1.0 (+https://linxservices.ca)' }, redirect: 'error' });
+      const size = Number(response.headers.get('content-length') || 0);
+      if (!response.ok) throw new Error(`Source returned HTTP ${response.status}.`);
+      if (size > 1000000) throw new Error('Source response exceeds the 1 MB intake limit.');
+      const rows = parseApprovedFeed(await response.text(), response.headers.get('content-type') || '');
+      const run = await importLeadRows(env, source, rows, null, 'approved_automated', createdBy);
+      await env.DB.prepare("UPDATE lead_sources SET last_run_at = datetime('now'), last_status = ?, last_error = '', updated_at = datetime('now') WHERE id = ?").bind(run.status, source.id).run();
+      results.push({ source_id: source.id, source: source.name, ...run });
+    } catch (error) {
+      const message = String(error?.message || 'Approved-source intake failed.').slice(0, 500);
+      await env.DB.prepare("UPDATE lead_sources SET last_run_at = datetime('now'), last_status = 'error', last_error = ?, updated_at = datetime('now') WHERE id = ?").bind(message, source.id).run();
+      results.push({ source_id: source.id, source: source.name, status: 'error', error: message });
+    }
+  }
+  return results;
+}
+
 // ─── Route handler ───────────────────────────────────────────────────────────
 
 export default {
@@ -836,6 +907,84 @@ export default {
       return json({ ok: true, user: { id: userId, email: normalizedEmail, display_name: displayName, role: 'subscriber' }, access_code: accessCode, access_code_expires_at: expiresAt, automation }, 201, origin);
     }
 
+    // ── Phase 1 Lead Pipeline — administrator-only operational controls ─────
+    if (path === '/api/admin/lead-sources' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const rows = await env.DB.prepare('SELECT * FROM lead_sources ORDER BY updated_at DESC LIMIT 100').all();
+      return json({ sources: (rows.results || []).map(sourceView) }, 200, origin);
+    }
+
+    if (path === '/api/admin/lead-sources' && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const source = normalizeLeadSourceInput(await readBody(request));
+      if (source.error) return json({ error: source.error }, 400, origin);
+      const id = requestId();
+      const readiness = sourceReadiness(source);
+      await env.DB.prepare(`
+        INSERT INTO lead_sources (id,name,source_type,vertical,mode,approval_status,has_owner_permission,robots_allows_crawl,feed_url,field_mapping,max_requests_per_minute,max_concurrent,crawl_window,owner_contact,status,last_status,created_by)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      `).bind(id, source.name, source.sourceType, source.vertical, source.mode, source.approvalStatus, source.hasOwnerPermission ? 1 : 0, source.robotsAllowsCrawl ? 1 : 0, source.feedUrl, JSON.stringify(source.fieldMapping), source.maxRequestsPerMinute, source.maxConcurrent, source.crawlWindow, source.ownerContact, readiness.ready && source.mode !== 'html_crawl' ? 'active' : 'inactive', readiness.ready ? 'ready' : 'not_configured', admin.sub).run();
+      const created = await env.DB.prepare('SELECT * FROM lead_sources WHERE id = ?').bind(id).first();
+      return json({ ok: true, source: sourceView(created) }, 201, origin);
+    }
+
+    const leadSourcePatch = path.match(/^\/api\/admin\/lead-sources\/([^/]+)$/);
+    if (leadSourcePatch && method === 'PATCH') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const existing = await env.DB.prepare('SELECT * FROM lead_sources WHERE id = ?').bind(leadSourcePatch[1]).first();
+      if (!existing) return json({ error: 'Lead source not found.' }, 404, origin);
+      const source = normalizeLeadSourceInput({ ...existing, ...(await readBody(request)) });
+      if (source.error) return json({ error: source.error }, 400, origin);
+      const readiness = sourceReadiness(source);
+      await env.DB.prepare(`
+        UPDATE lead_sources SET name=?,source_type=?,vertical=?,mode=?,approval_status=?,has_owner_permission=?,robots_allows_crawl=?,feed_url=?,field_mapping=?,max_requests_per_minute=?,max_concurrent=?,crawl_window=?,owner_contact=?,status=?,last_status=?,updated_at=datetime('now') WHERE id=?
+      `).bind(source.name, source.sourceType, source.vertical, source.mode, source.approvalStatus, source.hasOwnerPermission ? 1 : 0, source.robotsAllowsCrawl ? 1 : 0, source.feedUrl, JSON.stringify(source.fieldMapping), source.maxRequestsPerMinute, source.maxConcurrent, source.crawlWindow, source.ownerContact, readiness.ready && source.mode !== 'html_crawl' ? 'active' : 'inactive', readiness.ready ? 'ready' : 'not_configured', existing.id).run();
+      const updated = await env.DB.prepare('SELECT * FROM lead_sources WHERE id = ?').bind(existing.id).first();
+      return json({ ok: true, source: sourceView(updated) }, 200, origin);
+    }
+
+    if (path === '/api/admin/lead-imports' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const imports = await env.DB.prepare('SELECT r.*, s.name AS source_name FROM lead_import_runs r JOIN lead_sources s ON s.id = r.source_id ORDER BY r.created_at DESC LIMIT 30').all();
+      return json({ imports: (imports.results || []).map(row => ({ ...row, errors: (() => { try { return JSON.parse(row.errors || '[]'); } catch (_) { return []; } })() })) }, 200, origin);
+    }
+
+    if (path === '/api/admin/leads/import' && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const { source_id, rows, field_mapping } = await readBody(request);
+      if (!Array.isArray(rows) || !rows.length) return json({ error: 'Provide at least one lead row to import.' }, 400, origin);
+      if (rows.length > 100) return json({ error: 'Imports are limited to 100 rows at a time.' }, 400, origin);
+      const source = await env.DB.prepare('SELECT * FROM lead_sources WHERE id = ?').bind(String(source_id || '')).first();
+      if (!source) return json({ error: 'Select a configured source before importing.' }, 400, origin);
+      if (source.mode !== 'manual') return json({ error: 'Manual and CSV imports require a source configured for manual intake.' }, 400, origin);
+      if (field_mapping && (typeof field_mapping !== 'object' || Array.isArray(field_mapping))) return json({ error: 'Field mapping must be an object.' }, 400, origin);
+      if (field_mapping) await env.DB.prepare("UPDATE lead_sources SET field_mapping = ?, updated_at = datetime('now') WHERE id = ?").bind(JSON.stringify(field_mapping), source.id).run();
+      const run = await importLeadRows(env, source, rows, field_mapping, 'manual_csv', admin.sub);
+      return json({ ok: true, run }, 201, origin);
+    }
+
+    if (path === '/api/admin/lead-sources/run' && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const results = await runApprovedSources(env, admin.sub);
+      return json({ ok: true, results, message: results.length ? 'Approved-source intake completed.' : 'No active approved API, RSS, or owned-feed sources are configured yet.' }, 200, origin);
+    }
+
+    if (path === '/api/admin/lead-pipeline/status' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const [sources, imports, lastCrawler] = await Promise.all([
+        env.DB.prepare('SELECT * FROM lead_sources ORDER BY updated_at DESC LIMIT 100').all(),
+        env.DB.prepare('SELECT r.*, s.name AS source_name FROM lead_import_runs r JOIN lead_sources s ON s.id = r.source_id ORDER BY r.created_at DESC LIMIT 10').all(),
+        env.DB.prepare('SELECT * FROM crawler_runs ORDER BY id DESC LIMIT 1').first(),
+      ]);
+      return json({
+        phase: 'phase_1_manual_and_approved_sources',
+        sources: (sources.results || []).map(sourceView),
+        imports: imports.results || [],
+        dedicated_crawler: { enabled: false, message: 'Dedicated crawling is not active. HTML crawl sources remain gated on approved status, owner permission, robots authorization, and deployment of the dedicated service.' },
+        legacy_crawler: lastCrawler || null,
+      }, 200, origin);
+    }
+
     // ── PATCH /api/admin/users/:id — account and entitlement control ────────
     const adminUserPatch = path.match(/^\/api\/admin\/users\/([^/]+)$/);
     if (adminUserPatch && method === 'PATCH') {
@@ -861,6 +1010,7 @@ export default {
 
     // ── GET /api/leads/stats ───────────────────────────────────────────────
     if (path === '/api/leads/stats' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
       const total   = (await DB(env).prepare("SELECT COUNT(*) AS n FROM leads").first()).n;
       const active  = (await DB(env).prepare("SELECT COUNT(*) AS n FROM leads WHERE status='active'").first()).n;
       const expired = (await DB(env).prepare("SELECT COUNT(*) AS n FROM leads WHERE status='expired'").first()).n;
@@ -871,6 +1021,7 @@ export default {
 
     // ── GET /api/leads/categories ──────────────────────────────────────────
     if (path === '/api/leads/categories' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
       const rows = await DB(env).prepare(
         "SELECT category, COUNT(*) AS count FROM leads GROUP BY category ORDER BY count DESC"
       ).all();
@@ -882,6 +1033,7 @@ export default {
 
     // ── GET /api/leads/sources ─────────────────────────────────────────────
     if (path === '/api/leads/sources' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
       const rows = await DB(env).prepare(
         "SELECT source_platform AS source, COUNT(*) AS count FROM leads GROUP BY source_platform ORDER BY count DESC"
       ).all();
@@ -890,6 +1042,7 @@ export default {
 
     // ── GET /api/crawler/status ────────────────────────────────────────────
     if (path === '/api/crawler/status' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
       const last = await DB(env).prepare(
         "SELECT * FROM crawler_runs ORDER BY id DESC LIMIT 1"
       ).first();
@@ -900,20 +1053,23 @@ export default {
         last_stats: last ? { added: last.added, duplicates: last.duplicates, notified: last.notified } : null,
         errors    : last ? JSON.parse(last.errors || '[]') : [],
         interval  : null,
-        note      : 'Crawler runs on the Express server. This shows last recorded cycle.',
+        note      : 'Legacy crawler controls are retired. Use the Lead Pipeline workspace for manual imports and approved sources.',
       }, 200, origin);
     }
 
     // Crawler start/stop — stub (not operable from here; signal Express server)
     if (path === '/api/crawler/start' && method === 'POST') {
-      return json({ success: false, message: 'Crawler is managed by the Express server. Use the legacy dashboard to control it.' }, 200, origin);
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      return json({ success: false, message: 'Legacy crawler scheduling is retired. Configure approved sources in the Lead Pipeline workspace.' }, 410, origin);
     }
     if (path === '/api/crawler/stop' && method === 'POST') {
-      return json({ success: false, message: 'Crawler is managed by the Express server. Use the legacy dashboard to control it.' }, 200, origin);
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      return json({ success: false, message: 'Legacy crawler scheduling is retired. Configure approved sources in the Lead Pipeline workspace.' }, 410, origin);
     }
 
     // ── GET /api/leads ─────────────────────────────────────────────────────
     if (path === '/api/leads' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
       const params   = url.searchParams;
       const status   = params.get('status')   || 'active';
       const category = params.get('category') || null;
@@ -924,7 +1080,7 @@ export default {
       const freshHrs = parseInt(params.get('freshness_hours') || '72', 10);
       const cutoff   = new Date(Date.now() - freshHrs * 3600000).toISOString();
 
-      let q = "SELECT * FROM leads WHERE status = ? AND posted_at >= ?";
+      let q = "SELECT id,title,description,source_url,source_platform,posted_at,scraped_at,category,category_score,city,province,postal_code,status,claimed_by,source_id FROM leads WHERE status = ? AND posted_at >= ?";
       const binds = [status, cutoff];
       if (category) { q += " AND category = ?"; binds.push(category); }
       if (city)     { q += " AND city LIKE ?";   binds.push(`%${city}%`); }
@@ -1066,6 +1222,9 @@ export default {
     }
 
     return json({ error: 'Not found' }, 404, origin);
+  },
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runApprovedSources(env, 'scheduler'));
   },
 };
 
