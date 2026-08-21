@@ -53,3 +53,5 @@
 - [x] Replace the public pricing page with the provided Free Until First Job, Starter, Growth, Unlimited, and Unlimited Trial tier structure.
 - [x] Realign Stripe products, recurring prices, checkout mappings, and entitlement handling to the revised LINX pricing tiers.
 - [x] Configure a supported Stripe Checkout payment method and reverify the live subscription-session flow.
+- [x] Create the LinX Amplify public subpage with scoped growth-operations content and a clear inquiry call to action.
+- [x] Reorganize the shared public navigation around the requested destinations with a compact accessible Explore menu.
