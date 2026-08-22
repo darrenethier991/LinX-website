@@ -68,3 +68,4 @@
 - [ ] Require an explicit administrator confirmation for every push, deployment, or other external engineering action initiated from Clam Code.
 - [x] Implement the bounded passive public-domain observation workflow and report view for the LINX OSINT subpage without retaining scan history by default.
 - [x] Diagnose and repair the URL shortener redirect defect that currently sends all generated links to https://www.401.ca/.
+- [ ] Keep Twilio signup automation disabled until the user is ready to fund and configure a valid Messaging Service.
