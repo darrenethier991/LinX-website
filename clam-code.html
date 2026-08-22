@@ -143,8 +143,14 @@
   </main>
   <script>
     const API_BASE = window.LINX_API_BASE || "https://api.linxservices.ca";
-    const storageKeys = ["linx_token", "linx_admin_token"];
-    const token = storageKeys.map(key => localStorage.getItem(key) || sessionStorage.getItem(key)).find(Boolean) || "";
+    let token = "";
+    function tokenCandidates() {
+      const values = [
+        sessionStorage.getItem("linx_admin_token"), localStorage.getItem("linx_admin_token"),
+        sessionStorage.getItem("linx_token"), localStorage.getItem("linx_token"),
+      ].filter(Boolean);
+      return [...new Set(values)];
+    }
     const history = [];
     const log = document.getElementById("chat-log");
     const input = document.getElementById("chat-input");
@@ -172,16 +178,20 @@
       const admin = role === "admin";
       avatar.dataset.role = admin ? "admin" : "public";
       document.getElementById("admin-prompts").hidden = !admin;
+      document.getElementById("engineering-link").hidden = !admin;
       if (admin) {
         document.getElementById("mode-label").textContent = "Administrator mode";
         document.getElementById("mode-copy").textContent = "Claude-capable administrator assistance for operational analysis, analytics interpretation, structured reporting, and guarded technical planning. It does not claim access to systems or data that were not supplied.";
         document.getElementById("mode-badge").textContent = "Administrator";
         avatarCaption.textContent = "Administrator shell online. Ask for an operational or technical plan.";
-        document.getElementById("engineering-link").hidden = false;
       } else if (role === "subscriber") {
         document.getElementById("mode-label").textContent = "Subscriber mode";
         document.getElementById("mode-copy").textContent = "Your approved LINX Services session gives you a dedicated workspace while Clam Code continues to use the fast public text model for everyday questions.";
         document.getElementById("mode-badge").textContent = "Subscriber";
+      } else {
+        document.getElementById("mode-label").textContent = "Public mode";
+        document.getElementById("mode-copy").textContent = "Get practical text-based help for LINX Services, contractor workflows, and your next project.";
+        document.getElementById("mode-badge").textContent = "Public";
       }
     }
 
@@ -196,10 +206,24 @@
 
     async function refreshMode() {
       try {
-        const response = await fetch(`${API_BASE}/api/clam-code/health`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
-        const status = await response.json();
-        setMode(status.role);
-      } catch (_) { /* The chat endpoint provides the actionable error if the API is unavailable. */ }
+        for (const candidate of tokenCandidates()) {
+          const response = await fetch(`${API_BASE}/api/clam-code/health`, { headers: { Authorization: `Bearer ${candidate}` } });
+          const status = await response.json().catch(() => ({}));
+          if (!response.ok || !status.authenticated) continue;
+          token = candidate;
+          if (status.role === "admin") {
+            sessionStorage.setItem("linx_admin_token", candidate);
+            localStorage.setItem("linx_admin_token", candidate);
+          }
+          setMode(status.role);
+          return;
+        }
+        token = "";
+        setMode("public");
+      } catch (_) {
+        token = "";
+        setMode("public");
+      }
     }
 
     async function trackPageView() {

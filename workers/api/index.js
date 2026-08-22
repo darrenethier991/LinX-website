@@ -862,6 +862,7 @@ export default {
         ok: true,
         interface: 'clam-code',
         role,
+        authenticated: Boolean(identity),
         public_model_available: Boolean(env.AI),
         admin_model_available: role === 'admin' && Boolean(env.CLAUDE_API_KEY || env.OPENROUTER_API_KEY),
         admin_capabilities: role === 'admin' ? ['operations', 'analytics', 'report_drafting', 'technical_planning'] : [],

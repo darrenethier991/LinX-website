@@ -63,6 +63,7 @@ test("administrator login token selects the administrator Clam Code mode", async
     ok: true,
     interface: "clam-code",
     role: "admin",
+    authenticated: true,
     public_model_available: true,
     admin_model_available: true,
     admin_capabilities: ["operations", "analytics", "report_drafting", "technical_planning"],
