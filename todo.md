@@ -83,3 +83,4 @@
 - [ ] Phase A: verify the live administrator-signed Ecosystem Hub setup flow after the browser session is available.
 - [x] Diagnose and repair the reported OSINT page administrator sign-in failure without changing passive public-observation safeguards or unrelated site behavior; confirmed LINX Recon has no separate login and the central admin sign-in works.
 - [x] Confirm and clearly communicate that LINX Recon is a public passive-observation page with no separate admin login, while preserving the working central administrator sign-in link.
+- [x] Diagnose and repair the broken Clam Code avatar rendering without changing the approved Clam Code chat, role-routing, or page design outside the avatar presentation.
