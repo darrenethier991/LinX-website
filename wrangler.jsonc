@@ -50,6 +50,8 @@
     "STRIPE_PRICE_UNLIMITED": "price_1U6zFBI1snstTqUkKyFSrDmb",
     "STRIPE_SUCCESS_URL": "https://linxservices.ca/checkout-success.html?session_id={CHECKOUT_SESSION_ID}",
     "STRIPE_CANCEL_URL": "https://linxservices.ca/checkout-cancel.html",
-    "SHORT_LINK_BASE_URL": "https://linxservices.ca/r"
+    "SHORT_LINK_BASE_URL": "https://linxservices.ca/r",
+    "GITHUB_REPOSITORY": "darrenethier991/LinX-website",
+    "GITHUB_DEFAULT_BRANCH": "main"
   }
 }

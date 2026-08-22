@@ -121,7 +121,7 @@
           <span class="clam-avatar__portrait" aria-hidden="true"><img src="/manus-storage/linx-clam-premium_ab162179.png" alt="" /></span>
           <span class="clam-avatar__caption" id="clam-avatar-caption">Tap Clam Code to wake the shell.</span>
         </button>
-        <div class="mode-card"><div class="mode-label" id="mode-label">Public mode</div><p class="mode-copy" id="mode-copy">Get practical text-based help for LINX Services, contractor workflows, and your next project. Administrator sessions automatically receive their authorized operational assistant.</p></div>
+        <div class="mode-card"><div class="mode-label" id="mode-label">Public mode</div><p class="mode-copy" id="mode-copy">Get practical text-based help for LINX Services, contractor workflows, and your next project. Administrator sessions automatically receive their authorized operational assistant.</p><a id="engineering-link" class="btn btn--outline btn--sm" href="admin/engineering.html" hidden style="margin-top:10px">Open Engineering Workspace</a></div>
         <div class="quick-prompts" aria-label="Suggested questions">
           <button type="button" data-prompt="How does LINX Services help contractors follow up with leads?">Contractor workflow</button>
           <button type="button" data-prompt="What should I include when posting a home project?">Post a project</button>
@@ -177,6 +177,7 @@
         document.getElementById("mode-copy").textContent = "Claude-capable administrator assistance for operational analysis, analytics interpretation, structured reporting, and guarded technical planning. It does not claim access to systems or data that were not supplied.";
         document.getElementById("mode-badge").textContent = "Administrator";
         avatarCaption.textContent = "Administrator shell online. Ask for an operational or technical plan.";
+        document.getElementById("engineering-link").hidden = false;
       } else if (role === "subscriber") {
         document.getElementById("mode-label").textContent = "Subscriber mode";
         document.getElementById("mode-copy").textContent = "Your approved LINX Services session gives you a dedicated workspace while Clam Code continues to use the fast public text model for everyday questions.";

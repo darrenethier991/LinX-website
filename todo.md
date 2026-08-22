@@ -69,3 +69,4 @@
 - [x] Implement the bounded passive public-domain observation workflow and report view for the LINX OSINT subpage without retaining scan history by default.
 - [x] Diagnose and repair the URL shortener redirect defect that currently sends all generated links to https://www.401.ca/.
 - [ ] Keep Twilio signup automation disabled until the user is ready to fund and configure a valid Messaging Service.
+- [ ] Verify the restricted GitHub Worker token and connect it only to the administrator Clam Code engineering workflow.

@@ -7,6 +7,7 @@ import {
 import { normalizeImportedLead, normalizeLeadSourceInput, parseApprovedFeed, sourceReadiness } from "./lead-pipeline.js";
 import { runPassiveDomainObservation } from "./passive-osint.js";
 import { enhancePrompt, normalizePromptEnhancementInput } from "./prompt-enhancer.js";
+import { base64ToUtf8, isPushConfirmation, normalizeEngineeringPath, normalizeEngineeringProposal, reviewBranchFor, utf8ToBase64 } from "./engineering-workspace.js";
 import { deviceCategory, generatedSlug, normalizeShortLinkInput, refererHost } from "./short-links.js";
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 
@@ -592,6 +593,59 @@ async function shortLinkOverview(env) {
   return { summary: { total_links: Number(summary?.total_links || 0), total_clicks: Number(summary?.total_clicks || 0), clicks_today: Number(summary?.clicks_today || 0), top_country: country?.country || '—' }, links: (links.results || []).map(link => ({ ...link, clicks: Number(link.clicks || 0), short_url: `${base}/${link.slug}` })) };
 }
 
+function engineeringConfig(env) {
+  const repository = String(env.GITHUB_REPOSITORY || '').trim();
+  const defaultBranch = String(env.GITHUB_DEFAULT_BRANCH || 'main').trim();
+  if (!env.GITHUB_REPO_TOKEN || !repository || !/^[\w.-]+\/[\w.-]+$/.test(repository)) throw new Error('The restricted GitHub repository connection is not configured.');
+  return { repository, defaultBranch };
+}
+
+async function githubRequest(env, path, options = {}) {
+  const { repository } = engineeringConfig(env);
+  const response = await fetch(`https://api.github.com/repos/${repository}${path}`, {
+    ...options,
+    headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${env.GITHUB_REPO_TOKEN}`, 'X-GitHub-Api-Version': '2022-11-28', ...(options.headers || {}) },
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload?.message || `GitHub rejected the repository request (${response.status}).`);
+  return payload;
+}
+
+async function engineeringStatus(env) {
+  const { repository, defaultBranch } = engineeringConfig(env);
+  const details = await githubRequest(env, '');
+  return { repository, default_branch: details.default_branch || defaultBranch, private: Boolean(details.private), workspace: 'review-branch-only', required_test_command: 'npm run test:worker' };
+}
+
+async function getEngineeringFile(env, path) {
+  const normalized = normalizeEngineeringPath(path);
+  if (normalized.error) throw new Error(normalized.error);
+  const { defaultBranch } = engineeringConfig(env);
+  const payload = await githubRequest(env, `/contents/${normalized.path.split('/').map(encodeURIComponent).join('/')}?ref=${encodeURIComponent(defaultBranch)}`);
+  if (payload.type !== 'file' || Number(payload.size || 0) > 120000) throw new Error('Only reviewed text files up to 120 KB can be loaded in this workspace.');
+  return { path: normalized.path, sha: payload.sha, content: base64ToUtf8(payload.content || '') };
+}
+
+async function pushEngineeringProposal(env, proposal) {
+  const { defaultBranch } = engineeringConfig(env);
+  const baseRef = await githubRequest(env, `/git/ref/heads/${encodeURIComponent(defaultBranch)}`);
+  const baseCommit = baseRef?.object?.sha;
+  if (!baseCommit) throw new Error('GitHub did not return the default branch commit.');
+  const baseCommitInfo = await githubRequest(env, `/git/commits/${baseCommit}`);
+  const blobs = [];
+  for (const change of proposal.changes) {
+    const current = await githubRequest(env, `/contents/${change.path.split('/').map(encodeURIComponent).join('/')}?ref=${encodeURIComponent(defaultBranch)}`);
+    if (change.expected_sha && change.expected_sha !== current.sha) throw new Error(`The reviewed file changed after it was loaded: ${change.path}`);
+    const blob = await githubRequest(env, '/git/blobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: utf8ToBase64(change.content), encoding: 'base64' }) });
+    blobs.push({ path: change.path, mode: '100644', type: 'blob', sha: blob.sha });
+  }
+  const tree = await githubRequest(env, '/git/trees', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ base_tree: baseCommitInfo.tree.sha, tree: blobs }) });
+  const commit = await githubRequest(env, '/git/commits', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: `Clam Code review: ${proposal.title}`, tree: tree.sha, parents: [baseCommit] }) });
+  const branch = reviewBranchFor(proposal.id);
+  await githubRequest(env, '/git/refs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ref: `refs/heads/${branch}`, sha: commit.sha }) });
+  return { review_branch: branch, github_commit: commit.sha };
+}
+
 // ─── Route handler ───────────────────────────────────────────────────────────
 
 export default {
@@ -660,6 +714,54 @@ export default {
       if (!env.DB) return json({ error: 'Short-link storage is not configured.' }, 503, origin);
       try { return json({ ok: true, link: await createShortLink(env, await readBody(request), identity.sub || identity.username || 'admin') }, 201, origin); }
       catch (error) { return json({ error: String(error?.message || 'Short link could not be created.').slice(0, 240) }, 400, origin); }
+    }
+
+    // ── Administrator-only engineering workspace — review branches only ─────
+    if (path === '/api/admin/engineering/status' && method === 'GET') {
+      const identity = await requireAuth(request, env);
+      if (!identity || identity.role !== 'admin') return json({ error: 'Administrator authentication is required.' }, 401, origin);
+      try { return json({ ok: true, ...(await engineeringStatus(env)) }, 200, origin); }
+      catch (error) { return json({ error: String(error?.message || 'Repository connection is unavailable.').slice(0, 240) }, 503, origin); }
+    }
+    if (path === '/api/admin/engineering/file' && method === 'GET') {
+      const identity = await requireAuth(request, env);
+      if (!identity || identity.role !== 'admin') return json({ error: 'Administrator authentication is required.' }, 401, origin);
+      try { return json({ ok: true, ...(await getEngineeringFile(env, url.searchParams.get('path'))) }, 200, origin); }
+      catch (error) { return json({ error: String(error?.message || 'File could not be loaded.').slice(0, 240) }, 400, origin); }
+    }
+    if (path === '/api/admin/engineering/proposals' && method === 'GET') {
+      const identity = await requireAuth(request, env);
+      if (!identity || identity.role !== 'admin') return json({ error: 'Administrator authentication is required.' }, 401, origin);
+      const proposals = await env.DB.prepare("SELECT id, title, summary, test_command, status, review_branch, github_commit, requested_by, confirmed_at, pushed_at, last_error, created_at FROM engineering_change_proposals ORDER BY created_at DESC LIMIT 50").all();
+      return json({ ok: true, proposals: proposals.results || [] }, 200, origin);
+    }
+    if (path === '/api/admin/engineering/proposals' && method === 'POST') {
+      const identity = await requireAuth(request, env);
+      if (!identity || identity.role !== 'admin') return json({ error: 'Administrator authentication is required.' }, 401, origin);
+      const proposal = normalizeEngineeringProposal(await readBody(request));
+      if (proposal.error) return json({ error: proposal.error }, 400, origin);
+      const id = requestId();
+      await env.DB.prepare('INSERT INTO engineering_change_proposals (id, title, summary, changes_json, test_command, requested_by) VALUES (?, ?, ?, ?, ?, ?)').bind(id, proposal.title, proposal.summary, JSON.stringify(proposal.changes), proposal.test_command, identity.sub || identity.username || 'admin').run();
+      return json({ ok: true, proposal: { id, title: proposal.title, status: 'queued', test_command: proposal.test_command } }, 201, origin);
+    }
+    const proposalConfirmMatch = path.match(/^\/api\/admin\/engineering\/proposals\/([a-z0-9-]+)\/confirm$/i);
+    if (proposalConfirmMatch && method === 'POST') {
+      const identity = await requireAuth(request, env);
+      if (!identity || identity.role !== 'admin') return json({ error: 'Administrator authentication is required.' }, 401, origin);
+      const proposal = await env.DB.prepare('SELECT * FROM engineering_change_proposals WHERE id = ?').bind(proposalConfirmMatch[1]).first();
+      if (!proposal) return json({ error: 'The engineering proposal was not found.' }, 404, origin);
+      if (proposal.status !== 'queued') return json({ error: 'Only queued proposals can be pushed to a review branch.' }, 409, origin);
+      const body = await readBody(request);
+      if (!isPushConfirmation(body.confirmation, proposal.id)) return json({ error: `Type PUSH ${proposal.id} to confirm the review-branch push.` }, 400, origin);
+      try {
+        const push = await pushEngineeringProposal(env, { ...proposal, changes: JSON.parse(proposal.changes_json) });
+        await env.DB.prepare("UPDATE engineering_change_proposals SET status = 'pushed', review_branch = ?, github_commit = ?, confirmed_at = datetime('now'), pushed_at = datetime('now'), last_error = '' WHERE id = ?").bind(push.review_branch, push.github_commit, proposal.id).run();
+        return json({ ok: true, ...push, message: 'Review branch created. Tests must be verified before any merge.' }, 201, origin);
+      } catch (error) {
+        const message = String(error?.message || 'The review branch could not be created.').slice(0, 500);
+        await env.DB.prepare("UPDATE engineering_change_proposals SET status = 'failed', last_error = ? WHERE id = ?").bind(message, proposal.id).run();
+        return json({ error: message }, 400, origin);
+      }
     }
 
     // ── POST /api/events/pageview — privacy-safe public telemetry ──────────
