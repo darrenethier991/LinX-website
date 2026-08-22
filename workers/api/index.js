@@ -8,6 +8,7 @@ import { normalizeImportedLead, normalizeLeadSourceInput, parseApprovedFeed, sou
 import { runPassiveDomainObservation } from "./passive-osint.js";
 import { enhancePrompt, normalizePromptEnhancementInput } from "./prompt-enhancer.js";
 import { base64ToUtf8, isPushConfirmation, normalizeEngineeringPath, normalizeEngineeringProposal, reviewBranchFor, utf8ToBase64 } from "./engineering-workspace.js";
+import { canAdministerEcosystem, canManageOwnConsent, consentView, ECOSYSTEM_MODULES, normalizeConsentPreferences, normalizeMembershipInput, normalizeModuleConfiguration, normalizeOrganizationInput, normalizePolicyInput } from "./ecosystem-foundation.js";
 import { deviceCategory, generatedSlug, normalizeShortLinkInput, refererHost } from "./short-links.js";
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 
@@ -646,6 +647,30 @@ async function pushEngineeringProposal(env, proposal) {
   return { review_branch: branch, github_commit: commit.sha };
 }
 
+async function recordEcosystemAudit(env, { actorRef, organizationId = null, eventType, summary, metadata = {} }) {
+  await env.DB.prepare('INSERT INTO ecosystem_audit_events (id, actor_ref, organization_id, event_type, summary, metadata_json) VALUES (?, ?, ?, ?, ?, ?)')
+    .bind(requestId(), String(actorRef || 'system').slice(0, 160), organizationId || null, String(eventType || '').slice(0, 80), String(summary || '').slice(0, 500), JSON.stringify(metadata || {})).run();
+}
+
+async function ecosystemOrganization(env, organizationId) {
+  return env.DB.prepare('SELECT * FROM organizations WHERE id = ?').bind(organizationId).first();
+}
+
+async function ecosystemOrganizationDetail(env, organization) {
+  const [members, configuredModules, policies] = await Promise.all([
+    env.DB.prepare(`SELECT m.id, m.user_id, m.role, m.status, m.created_at, u.email, u.display_name FROM organization_memberships m JOIN platform_users u ON u.id = m.user_id WHERE m.organization_id = ? ORDER BY CASE m.role WHEN 'owner' THEN 0 WHEN 'administrator' THEN 1 ELSE 2 END, u.email ASC`).bind(organization.id).all(),
+    env.DB.prepare('SELECT module_key, lifecycle, updated_at FROM organization_modules WHERE organization_id = ?').bind(organization.id).all(),
+    env.DB.prepare('SELECT id, policy_type, title, policy_text, state, revision, created_at, updated_at FROM organization_policy_templates WHERE organization_id = ? ORDER BY updated_at DESC LIMIT 100').bind(organization.id).all(),
+  ]);
+  const moduleMap = new Map((configuredModules.results || []).map(row => [row.module_key, row]));
+  return {
+    organization,
+    members: members.results || [],
+    modules: ECOSYSTEM_MODULES.map(moduleKey => ({ module_key: moduleKey, lifecycle: moduleMap.get(moduleKey)?.lifecycle || 'planned', updated_at: moduleMap.get(moduleKey)?.updated_at || null })),
+    policies: policies.results || [],
+  };
+}
+
 // ─── Route handler ───────────────────────────────────────────────────────────
 
 export default {
@@ -987,6 +1012,154 @@ export default {
     // All routes below require auth
     const admin = await requireAuth(request, env);
     if (!admin) return json({ error: 'Unauthorized' }, 401, origin);
+    const ecosystemAdmin = canAdministerEcosystem(admin);
+    const ecosystemSubscriber = canManageOwnConsent(admin);
+
+    // ── Phase A: self-service consent preferences — signed subscriber only ───
+    if (path === '/api/ecosystem/consents' && ['GET', 'PUT'].includes(method)) {
+      if (!env.DB) return json({ error: 'Ecosystem storage is not configured.' }, 503, origin);
+      if (!ecosystemSubscriber) return json({ error: 'Subscriber access is required for personal consent preferences.' }, 403, origin);
+      const user = await env.DB.prepare("SELECT id FROM platform_users WHERE id = ? AND status = 'active' LIMIT 1").bind(admin.sub).first();
+      if (!user) return json({ error: 'Active subscriber account not found.' }, 403, origin);
+      const current = await env.DB.prepare('SELECT * FROM user_consent_preferences WHERE user_id = ?').bind(user.id).first();
+      if (method === 'GET') return json({ ok: true, preferences: consentView(current) }, 200, origin);
+      const preferences = normalizeConsentPreferences(await readBody(request), current);
+      if (preferences.error) return json({ error: preferences.error }, 400, origin);
+      await env.DB.prepare(`INSERT INTO user_consent_preferences (user_id, consent_analytics, consent_personalization, consent_product_updates, updated_at)
+        VALUES (?, ?, ?, ?, datetime('now'))
+        ON CONFLICT(user_id) DO UPDATE SET consent_analytics=excluded.consent_analytics, consent_personalization=excluded.consent_personalization, consent_product_updates=excluded.consent_product_updates, updated_at=datetime('now')`)
+        .bind(user.id, preferences.consent_analytics ? 1 : 0, preferences.consent_personalization ? 1 : 0, preferences.consent_product_updates ? 1 : 0).run();
+      await recordEcosystemAudit(env, { actorRef: user.id, eventType: 'consent_preferences.updated', summary: 'Subscriber recorded Phase A consent preferences.', metadata: { preferences_recorded: true } });
+      const updated = await env.DB.prepare('SELECT * FROM user_consent_preferences WHERE user_id = ?').bind(user.id).first();
+      return json({ ok: true, preferences: consentView(updated), note: 'Preferences are recorded for future modules only; Phase A does not activate messages, external automation, or new data processing.' }, 200, origin);
+    }
+
+    // ── Phase A: administrator-controlled Ecosystem Hub ─────────────────────
+    if (path === '/api/admin/ecosystem/overview' && method === 'GET') {
+      if (!ecosystemAdmin) return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Ecosystem storage is not configured.' }, 503, origin);
+      const [organizations, memberships, policies, auditEvents, moduleRows] = await Promise.all([
+        env.DB.prepare("SELECT COUNT(*) AS count FROM organizations WHERE status = 'active'").first(),
+        env.DB.prepare("SELECT COUNT(*) AS count FROM organization_memberships WHERE status = 'active'").first(),
+        env.DB.prepare("SELECT COUNT(*) AS count FROM organization_policy_templates WHERE state = 'published'").first(),
+        env.DB.prepare('SELECT COUNT(*) AS count FROM ecosystem_audit_events').first(),
+        env.DB.prepare('SELECT module_key, lifecycle, COUNT(*) AS count FROM organization_modules GROUP BY module_key, lifecycle').all(),
+      ]);
+      const moduleCounts = new Map((moduleRows.results || []).map(row => [`${row.module_key}:${row.lifecycle}`, Number(row.count || 0)]));
+      return json({ ok: true, phase: 'ecosystem_foundation', summary: { active_organizations: Number(organizations?.count || 0), active_memberships: Number(memberships?.count || 0), published_policies: Number(policies?.count || 0), audit_events: Number(auditEvents?.count || 0) }, modules: ECOSYSTEM_MODULES.map(module_key => ({ module_key, planned: moduleCounts.get(`${module_key}:planned`) || 0, configured: moduleCounts.get(`${module_key}:configured`) || 0, paused: moduleCounts.get(`${module_key}:paused`) || 0 })), safety: 'Module lifecycle states are planning records only. They do not activate unavailable product modules, external automation, messaging, billing, or agent tools.' }, 200, origin);
+    }
+
+    if (path === '/api/admin/ecosystem/organizations' && method === 'GET') {
+      if (!ecosystemAdmin) return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Ecosystem storage is not configured.' }, 503, origin);
+      const rows = await env.DB.prepare(`SELECT o.*, (SELECT COUNT(*) FROM organization_memberships m WHERE m.organization_id=o.id AND m.status='active') AS member_count, (SELECT COUNT(*) FROM organization_modules om WHERE om.organization_id=o.id AND om.lifecycle='configured') AS configured_module_count FROM organizations o ORDER BY o.updated_at DESC LIMIT 100`).all();
+      return json({ ok: true, organizations: rows.results || [] }, 200, origin);
+    }
+
+    if (path === '/api/admin/ecosystem/organizations' && method === 'POST') {
+      if (!ecosystemAdmin) return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Ecosystem storage is not configured.' }, 503, origin);
+      const input = normalizeOrganizationInput(await readBody(request));
+      if (input.error) return json({ error: input.error }, 400, origin);
+      if (input.ownerUserId) {
+        const owner = await env.DB.prepare('SELECT id FROM platform_users WHERE id = ? LIMIT 1').bind(input.ownerUserId).first();
+        if (!owner) return json({ error: 'The selected organization owner was not found among existing platform users.' }, 400, origin);
+      }
+      const id = requestId();
+      const statements = [env.DB.prepare('INSERT INTO organizations (id, name, plan, created_by) VALUES (?, ?, ?, ?)').bind(id, input.name, input.plan, admin.sub)];
+      for (const moduleKey of ECOSYSTEM_MODULES) statements.push(env.DB.prepare('INSERT INTO organization_modules (id, organization_id, module_key, lifecycle, configured_by) VALUES (?, ?, ?, ?, ?)').bind(requestId(), id, moduleKey, 'planned', admin.sub));
+      if (input.ownerUserId) statements.push(env.DB.prepare('INSERT INTO organization_memberships (id, organization_id, user_id, role, added_by) VALUES (?, ?, ?, ?, ?)').bind(requestId(), id, input.ownerUserId, 'owner', admin.sub));
+      await env.DB.batch(statements);
+      await recordEcosystemAudit(env, { actorRef: admin.sub, organizationId: id, eventType: 'organization.created', summary: 'Created an Ecosystem Foundation organization.', metadata: { plan: input.plan, owner_assigned: Boolean(input.ownerUserId) } });
+      return json({ ok: true, ...(await ecosystemOrganizationDetail(env, await ecosystemOrganization(env, id))) }, 201, origin);
+    }
+
+    const ecosystemOrganizationRoute = path.match(/^\/api\/admin\/ecosystem\/organizations\/([^/]+)$/);
+    if (ecosystemOrganizationRoute && method === 'GET') {
+      if (!ecosystemAdmin) return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Ecosystem storage is not configured.' }, 503, origin);
+      const organization = await ecosystemOrganization(env, ecosystemOrganizationRoute[1]);
+      if (!organization) return json({ error: 'Organization not found.' }, 404, origin);
+      return json({ ok: true, ...(await ecosystemOrganizationDetail(env, organization)) }, 200, origin);
+    }
+
+    const ecosystemMemberRoute = path.match(/^\/api\/admin\/ecosystem\/organizations\/([^/]+)\/members$/);
+    if (ecosystemMemberRoute && method === 'POST') {
+      if (!ecosystemAdmin) return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Ecosystem storage is not configured.' }, 503, origin);
+      const organization = await ecosystemOrganization(env, ecosystemMemberRoute[1]);
+      if (!organization) return json({ error: 'Organization not found.' }, 404, origin);
+      const input = normalizeMembershipInput(await readBody(request));
+      if (input.error) return json({ error: input.error }, 400, origin);
+      const user = await env.DB.prepare('SELECT id FROM platform_users WHERE id = ? LIMIT 1').bind(input.userId).first();
+      if (!user) return json({ error: 'The selected platform user was not found.' }, 400, origin);
+      await env.DB.prepare(`INSERT INTO organization_memberships (id, organization_id, user_id, role, status, added_by) VALUES (?, ?, ?, ?, 'active', ?)
+        ON CONFLICT(organization_id, user_id) DO UPDATE SET role=excluded.role, status='active', added_by=excluded.added_by, updated_at=datetime('now')`).bind(requestId(), organization.id, input.userId, input.role, admin.sub).run();
+      await recordEcosystemAudit(env, { actorRef: admin.sub, organizationId: organization.id, eventType: 'membership.upserted', summary: 'Added or updated an organization membership.', metadata: { role: input.role } });
+      return json({ ok: true, ...(await ecosystemOrganizationDetail(env, organization)) }, 200, origin);
+    }
+
+    const ecosystemModuleRoute = path.match(/^\/api\/admin\/ecosystem\/organizations\/([^/]+)\/modules\/([a-z-]+)$/);
+    if (ecosystemModuleRoute && method === 'PATCH') {
+      if (!ecosystemAdmin) return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Ecosystem storage is not configured.' }, 503, origin);
+      const organization = await ecosystemOrganization(env, ecosystemModuleRoute[1]);
+      if (!organization) return json({ error: 'Organization not found.' }, 404, origin);
+      const input = normalizeModuleConfiguration(ecosystemModuleRoute[2], await readBody(request));
+      if (input.error) return json({ error: input.error }, 400, origin);
+      await env.DB.prepare(`INSERT INTO organization_modules (id, organization_id, module_key, lifecycle, configured_by) VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(organization_id, module_key) DO UPDATE SET lifecycle=excluded.lifecycle, configured_by=excluded.configured_by, updated_at=datetime('now')`).bind(requestId(), organization.id, input.moduleKey, input.lifecycle, admin.sub).run();
+      await recordEcosystemAudit(env, { actorRef: admin.sub, organizationId: organization.id, eventType: 'module.lifecycle_updated', summary: 'Updated a future-module planning state.', metadata: { module_key: input.moduleKey, lifecycle: input.lifecycle } });
+      return json({ ok: true, module: input, note: 'This is a planning state only. No product module or external action was activated.' }, 200, origin);
+    }
+
+    if (path === '/api/admin/ecosystem/policies' && method === 'GET') {
+      if (!ecosystemAdmin) return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Ecosystem storage is not configured.' }, 503, origin);
+      const organizationId = String(url.searchParams.get('organization_id') || '').trim();
+      const statement = organizationId
+        ? env.DB.prepare('SELECT p.*, o.name AS organization_name FROM organization_policy_templates p JOIN organizations o ON o.id=p.organization_id WHERE p.organization_id=? ORDER BY p.updated_at DESC LIMIT 100').bind(organizationId)
+        : env.DB.prepare('SELECT p.*, o.name AS organization_name FROM organization_policy_templates p JOIN organizations o ON o.id=p.organization_id ORDER BY p.updated_at DESC LIMIT 100');
+      const rows = await statement.all();
+      return json({ ok: true, policies: rows.results || [] }, 200, origin);
+    }
+
+    if (path === '/api/admin/ecosystem/policies' && method === 'POST') {
+      if (!ecosystemAdmin) return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Ecosystem storage is not configured.' }, 503, origin);
+      const input = normalizePolicyInput(await readBody(request));
+      if (input.error) return json({ error: input.error }, 400, origin);
+      const organization = await ecosystemOrganization(env, input.organizationId);
+      if (!organization) return json({ error: 'Organization not found.' }, 404, origin);
+      const id = requestId();
+      await env.DB.prepare('INSERT INTO organization_policy_templates (id, organization_id, policy_type, title, policy_text, state, created_by) VALUES (?, ?, ?, ?, ?, ?, ?)').bind(id, input.organizationId, input.type, input.title, input.policyText, input.state, admin.sub).run();
+      await recordEcosystemAudit(env, { actorRef: admin.sub, organizationId: input.organizationId, eventType: 'policy.created', summary: 'Created an organization policy template.', metadata: { policy_type: input.type, state: input.state } });
+      const policy = await env.DB.prepare('SELECT id, organization_id, policy_type, title, policy_text, state, revision, created_at, updated_at FROM organization_policy_templates WHERE id = ?').bind(id).first();
+      return json({ ok: true, policy }, 201, origin);
+    }
+
+    const ecosystemPolicyRoute = path.match(/^\/api\/admin\/ecosystem\/policies\/([^/]+)$/);
+    if (ecosystemPolicyRoute && method === 'PATCH') {
+      if (!ecosystemAdmin) return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Ecosystem storage is not configured.' }, 503, origin);
+      const existing = await env.DB.prepare('SELECT * FROM organization_policy_templates WHERE id = ?').bind(ecosystemPolicyRoute[1]).first();
+      if (!existing) return json({ error: 'Policy not found.' }, 404, origin);
+      const input = normalizePolicyInput({ ...existing, ...(await readBody(request)), organization_id: existing.organization_id });
+      if (input.error) return json({ error: input.error }, 400, origin);
+      await env.DB.prepare('UPDATE organization_policy_templates SET policy_type=?, title=?, policy_text=?, state=?, revision=revision+1, updated_at=datetime(\'now\') WHERE id=?').bind(input.type, input.title, input.policyText, input.state, existing.id).run();
+      await recordEcosystemAudit(env, { actorRef: admin.sub, organizationId: existing.organization_id, eventType: 'policy.updated', summary: 'Updated an organization policy template.', metadata: { policy_type: input.type, state: input.state } });
+      const policy = await env.DB.prepare('SELECT id, organization_id, policy_type, title, policy_text, state, revision, created_at, updated_at FROM organization_policy_templates WHERE id = ?').bind(existing.id).first();
+      return json({ ok: true, policy }, 200, origin);
+    }
+
+    if (path === '/api/admin/ecosystem/audit' && method === 'GET') {
+      if (!ecosystemAdmin) return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Ecosystem storage is not configured.' }, 503, origin);
+      const requested = Number(url.searchParams.get('limit') || 50);
+      const limit = Math.max(1, Math.min(100, Number.isFinite(requested) ? Math.floor(requested) : 50));
+      const rows = await env.DB.prepare('SELECT e.id, e.organization_id, e.event_type, e.summary, e.metadata_json, e.created_at, o.name AS organization_name FROM ecosystem_audit_events e LEFT JOIN organizations o ON o.id=e.organization_id ORDER BY e.created_at DESC LIMIT ?').bind(limit).all();
+      return json({ ok: true, events: (rows.results || []).map(row => ({ ...row, metadata: (() => { try { return JSON.parse(row.metadata_json || '{}'); } catch (_) { return {}; } })(), metadata_json: undefined })) }, 200, origin);
+    }
 
     if (path === '/api/admin/analytics' && method === 'GET') {
       if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);

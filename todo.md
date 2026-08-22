@@ -70,3 +70,14 @@
 - [x] Diagnose and repair the URL shortener redirect defect that currently sends all generated links to https://www.401.ca/.
 - [ ] Keep Twilio signup automation disabled until the user is ready to fund and configure a valid Messaging Service.
 - [ ] Verify the restricted GitHub Worker token and connect it only to the administrator Clam Code engineering workflow.
+- [x] Review the supplied LINX Ecosystem Blueprint and map each proposed capability to the deployed LINX Services implementation.
+- [x] Classify blueprint items as already delivered, safe to implement next, deferred pending credentials or authorization, or excluded by operational and safety boundaries.
+- [x] Convert the remaining approved blueprint capabilities into a phased implementation backlog for the existing LINX Services repository.
+- [ ] Implement, test, and release the user-approved next blueprint phase without enabling Twilio automation, invasive OSINT, unauthorized crawling, or unrestricted administrator repository actions.
+- [ ] Preserve all approved public design, pages, navigation, pricing, subscriptions, Clam Code behavior, lead-intake safeguards, and existing integrations while adding missing blueprint capabilities only as isolated additions.
+- [x] Treat the LINX Ecosystem Blueprint as the phased future-state architecture and avoid presenting its planned modules, infrastructure, compliance posture, or scale targets as current production capabilities until independently delivered and verified.
+- [x] Phase A: add additive organization, membership, module-access, consent-preference, policy-template, and audit-event data foundations without replacing current platform-user records.
+- [x] Phase A: add administrator-protected Worker APIs for organization setup, membership oversight, policy templates, module controls, consent records, and audit-history inspection.
+- [x] Phase A: add an authenticated Ecosystem Hub workspace that surfaces the new foundation without changing the current public homepage, marketplace, pricing, subscriptions, navigation, or existing administrator dashboard.
+- [x] Phase A: add regression tests for role boundaries, validation, and the continued behavior of existing Worker APIs before release.
+- [ ] Phase A: verify the live administrator-signed Ecosystem Hub setup flow after the browser session is available.
