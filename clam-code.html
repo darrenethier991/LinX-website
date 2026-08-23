@@ -66,14 +66,32 @@
     .mode-copy { font-size:12px; line-height:1.65; color:var(--text-muted); }
     .chat-card { min-height:620px; padding:0; overflow:hidden; display:flex; flex-direction:column; }
     .chat-head { padding:20px 24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:16px; }
+    .chat-head-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+    .session-status { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border:1px solid var(--border); border-radius:999px; color:var(--text-muted); font-size:10px; white-space:nowrap; }
+    .session-status::before { content:""; width:6px; height:6px; border-radius:50%; background:var(--text-dim); box-shadow:0 0 0 3px rgba(255,255,255,.03); }
+    .session-status[data-state="ready"]::before { background:var(--neon-cyan); box-shadow:0 0 12px rgba(6,230,255,.72); }
+    .session-status[data-state="thinking"]::before { background:var(--gold); animation:status-pulse 1s ease-in-out infinite; }
+    .session-status[data-state="alert"]::before { background:#fb7185; }
     .chat-head h1 { font-size:18px; font-weight:800; }
     .chat-head p { font-size:12px; color:var(--text-muted); margin-top:4px; }
     .chat-log { flex:1; min-height:390px; padding:24px; display:flex; flex-direction:column; gap:16px; overflow-y:auto; }
-    .chat-message { max-width:82%; border:1px solid var(--border); border-radius:14px; padding:13px 15px; white-space:pre-wrap; font-size:13px; line-height:1.65; }
-    .chat-message.user { align-self:flex-end; border-color:var(--border-gold); background:rgba(212,168,83,.09); }
-    .chat-message.assistant { align-self:flex-start; background:var(--bg-surface); }
-    .chat-message.error { align-self:flex-start; border-color:rgba(239,68,68,.55); color:#fecaca; }
+    .message-row { max-width:82%; display:flex; flex-direction:column; gap:5px; }
+    .message-row.user { align-self:flex-end; align-items:flex-end; }
+    .message-row.assistant,.message-row.error { align-self:flex-start; align-items:flex-start; }
+    .chat-message { width:100%; border:1px solid var(--border); border-radius:14px; padding:13px 15px; white-space:pre-wrap; font-size:13px; line-height:1.65; }
+    .chat-message.user { border-color:var(--border-gold); background:rgba(212,168,83,.09); }
+    .chat-message.assistant { background:var(--bg-surface); }
+    .chat-message.error { border-color:rgba(239,68,68,.55); color:#fecaca; }
+    .message-copy { border:0; padding:3px 6px; border-radius:6px; background:transparent; color:var(--text-dim); font-size:10px; cursor:pointer; opacity:.75; transition:color 140ms cubic-bezier(.23,1,.32,1),background 140ms cubic-bezier(.23,1,.32,1),opacity 140ms cubic-bezier(.23,1,.32,1); }
+    .message-copy:hover,.message-copy:focus-visible { color:var(--cyan); background:rgba(6,230,255,.08); opacity:1; outline:none; }
     .chat-compose { padding:16px; border-top:1px solid var(--border); background:var(--bg-surface); }
+    .compose-utility { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:11px; }
+    .utility-actions { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+    .utility-button { padding:6px 8px; border:1px solid var(--border); border-radius:8px; background:rgba(255,255,255,.02); color:var(--text-muted); font:600 10px var(--font-sans); cursor:pointer; transition:border-color 140ms cubic-bezier(.23,1,.32,1),color 140ms cubic-bezier(.23,1,.32,1),transform 140ms cubic-bezier(.23,1,.32,1); }
+    .utility-button:hover,.utility-button:focus-visible { border-color:rgba(6,230,255,.62); color:var(--cyan); outline:none; }
+    .utility-button:active { transform:scale(.97); }
+    .utility-button[disabled] { cursor:not-allowed; opacity:.45; }
+    .compose-meta { color:var(--text-dim); font-size:10px; white-space:nowrap; }
     .chat-compose textarea { min-height:96px; }
     .compose-actions { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; }
     .compose-note { color:var(--text-dim); font-size:11px; line-height:1.45; }
@@ -83,6 +101,7 @@
     .admin-prompts { border-top:1px solid rgba(212,168,83,.18); padding-top:14px; }
     .admin-prompts .admin-prompts__title { width:100%; margin:0 0 2px; color:var(--gold); font-size:10px; font-weight:800; letter-spacing:.13em; text-transform:uppercase; }
     @keyframes clam-orbit { to { transform:rotate(360deg); } }
+    @keyframes status-pulse { 50% { opacity:.38; transform:scale(.78); } }
     @keyframes clam-core-pulse { 50% { transform:scale(1.13); filter:url(#glow-cyan); } }
     @media (prefers-reduced-motion: no-preference) { .clam-avatar__frame { animation:clam-float 4.2s ease-in-out infinite; } .clam-avatar[data-state="happy"] .clam-avatar__frame { animation:clam-celebrate 620ms cubic-bezier(.23,1,.32,1) 2; } }
     @keyframes clam-float { 50% { transform:translateY(-4px); } }
@@ -104,7 +123,7 @@
     .clam-avatar[data-role="admin"] .clam-avatar__portrait { border-color:rgba(212,168,83,.78); box-shadow:inset 0 0 30px rgba(212,168,83,.08),0 0 22px rgba(212,168,83,.14); }
     @keyframes portrait-scan { to { background-position:170px 0; } }
     @media (prefers-reduced-motion: reduce) { .clam-avatar__portrait::after { animation:none !important; } }
-    @media (max-width:800px) { .clam-grid { grid-template-columns:1fr; } .clam-side { position:static; } .clam-avatar { max-width:420px; } .chat-card { min-height:calc(100vh - 160px); } }
+    @media (max-width:800px) { .clam-grid { grid-template-columns:1fr; } .clam-side { position:static; } .clam-avatar { max-width:420px; } .chat-card { min-height:calc(100vh - 160px); } .chat-head { align-items:flex-start; flex-direction:column; } .chat-head-actions { justify-content:flex-start; } .message-row { max-width:92%; } }
   </style>
 </head>
 <body>
@@ -135,9 +154,9 @@
         </div>
       </aside>
       <section class="card chat-card" aria-label="Clam Code conversation">
-        <header class="chat-head"><div><h1>Ask Clam Code</h1><p>One familiar interface. The right model is selected securely by the Worker.</p></div><span class="badge badge--violet" id="mode-badge">Public</span></header>
-        <div class="chat-log" id="chat-log" role="log" aria-live="polite"><div class="chat-message assistant">Hello. I’m Clam Code. How can I help with LINX Services today?</div></div>
-        <form class="chat-compose" id="chat-form"><label class="form-label" for="chat-input">Your message</label><textarea class="form-input form-textarea" id="chat-input" maxlength="4000" placeholder="Ask about a project, contractor workflow, or LINX Services…" required></textarea><div class="compose-actions"><span class="compose-note">Please do not include passwords, payment details, or private client information.</span><button class="btn btn--primary" id="send-button" type="submit">Send</button></div></form>
+        <header class="chat-head"><div><h1>Ask Clam Code</h1><p>One familiar interface. The right model is selected securely by the Worker.</p></div><div class="chat-head-actions"><span class="session-status" id="session-status" data-state="checking" aria-live="polite">Checking session</span><span class="badge badge--violet" id="mode-badge">Public</span></div></header>
+        <div class="chat-log" id="chat-log" role="log" aria-live="polite"><div class="message-row assistant"><div class="chat-message assistant">Hello. I’m Clam Code. How can I help with LINX Services today?</div><button class="message-copy" id="copy-greeting" type="button">Copy response</button></div></div>
+        <form class="chat-compose" id="chat-form"><div class="compose-utility"><div class="utility-actions"><button class="utility-button" id="new-chat" type="button">New conversation</button><button class="utility-button" id="copy-latest" type="button" disabled>Copy latest</button></div><span class="compose-meta" id="message-count">0 messages</span></div><label class="form-label" for="chat-input">Your message</label><textarea class="form-input form-textarea" id="chat-input" maxlength="4000" placeholder="Ask about a project, contractor workflow, or LINX Services…" aria-describedby="compose-help input-count" required></textarea><div class="compose-actions"><span class="compose-note" id="compose-help">Press Ctrl/⌘ + Enter to send. Please do not include passwords, payment details, or private client information.</span><span class="compose-meta" id="input-count">0 / 4,000</span><button class="btn btn--primary" id="send-button" type="submit">Send</button></div></form>
       </section>
     </div>
   </main>
@@ -158,7 +177,44 @@
     const button = document.getElementById("send-button");
     const avatar = document.getElementById("clam-avatar");
     const avatarCaption = document.getElementById("clam-avatar-caption");
+    const sessionStatus = document.getElementById("session-status");
+    const messageCount = document.getElementById("message-count");
+    const inputCount = document.getElementById("input-count");
+    const copyLatestButton = document.getElementById("copy-latest");
+    const copyGreetingButton = document.getElementById("copy-greeting");
+    const newChatButton = document.getElementById("new-chat");
+    const greeting = "Hello. I’m Clam Code. How can I help with LINX Services today?";
+    let latestAssistantText = "";
     let avatarResetTimer;
+
+    function setSessionStatus(state, text) {
+      sessionStatus.dataset.state = state;
+      sessionStatus.textContent = text;
+    }
+
+    function updateInteractionMeta() {
+      messageCount.textContent = `${history.length} ${history.length === 1 ? "message" : "messages"}`;
+      inputCount.textContent = `${input.value.length.toLocaleString()} / 4,000`;
+      copyLatestButton.disabled = !latestAssistantText;
+    }
+
+    async function copyText(text) {
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (_) {
+        const fallback = document.createElement("textarea");
+        fallback.value = text;
+        fallback.style.position = "fixed";
+        fallback.style.opacity = "0";
+        document.body.appendChild(fallback);
+        fallback.select();
+        document.execCommand("copy");
+        fallback.remove();
+      }
+      setSessionStatus("ready", "Copied to clipboard");
+      setTimeout(() => setSessionStatus("ready", token ? "Session ready" : "Public mode ready"), 1200);
+    }
 
     function setAvatarState(state, caption) {
       clearTimeout(avatarResetTimer);
@@ -184,24 +240,40 @@
         document.getElementById("mode-copy").textContent = "Claude-capable administrator assistance for operational analysis, analytics interpretation, structured reporting, and guarded technical planning. It does not claim access to systems or data that were not supplied.";
         document.getElementById("mode-badge").textContent = "Administrator";
         avatarCaption.textContent = "Administrator shell online. Ask for an operational or technical plan.";
+        setSessionStatus("ready", "Administrator session ready");
       } else if (role === "subscriber") {
         document.getElementById("mode-label").textContent = "Subscriber mode";
         document.getElementById("mode-copy").textContent = "Your approved LINX Services session gives you a dedicated workspace while Clam Code continues to use the fast public text model for everyday questions.";
         document.getElementById("mode-badge").textContent = "Subscriber";
+        setSessionStatus("ready", "Subscriber session ready");
       } else {
         document.getElementById("mode-label").textContent = "Public mode";
         document.getElementById("mode-copy").textContent = "Get practical text-based help for LINX Services, contractor workflows, and your next project.";
         document.getElementById("mode-badge").textContent = "Public";
+        setSessionStatus("ready", "Public mode ready");
       }
     }
 
-    function addMessage(role, content) {
+    function addMessage(role, content, options = {}) {
+      const row = document.createElement("div");
+      row.className = `message-row ${role}`;
       const node = document.createElement("div");
       node.className = `chat-message ${role}`;
       node.textContent = content;
-      log.appendChild(node);
+      row.appendChild(node);
+      if (role === "assistant" && !options.provisional) {
+        latestAssistantText = content;
+        const copyButton = document.createElement("button");
+        copyButton.type = "button";
+        copyButton.className = "message-copy";
+        copyButton.textContent = "Copy response";
+        copyButton.addEventListener("click", () => copyText(content));
+        row.appendChild(copyButton);
+      }
+      log.appendChild(row);
       log.scrollTop = log.scrollHeight;
-      return node;
+      updateInteractionMeta();
+      return row;
     }
 
     async function refreshMode() {
@@ -254,10 +326,12 @@
       history.push({ role: "user", content });
       addMessage("user", content);
       input.value = "";
+      updateInteractionMeta();
       button.disabled = true;
       button.textContent = "Thinking…";
+      setSessionStatus("thinking", "Clam Code is thinking");
       setAvatarState("thinking", "Clam Code is mapping the best response…");
-      const pending = addMessage("assistant", "Clam Code is preparing a response…");
+      const pending = addMessage("assistant", "Clam Code is preparing a response…", { provisional: true });
       try {
         const response = await fetch(`${API_BASE}/api/clam-code/chat`, {
           method: "POST",
@@ -270,11 +344,13 @@
         history.push(payload.message);
         addMessage("assistant", payload.message.content);
         setMode(payload.role);
+        setSessionStatus("ready", "Response ready");
         setAvatarState("happy", "Response ready. Clam Code is listening.");
         settleAvatar();
       } catch (error) {
         pending.remove();
         addMessage("error", error.message || "Unable to connect to Clam Code.");
+        setSessionStatus("alert", "Connection needs attention");
         setAvatarState("alert", "Connection needs attention. Please try again.");
         settleAvatar("Clam Code is ready to try again.");
       } finally {
@@ -284,7 +360,28 @@
       }
     });
 
-    document.querySelectorAll("[data-prompt]").forEach(prompt => prompt.addEventListener("click", () => { input.value = prompt.dataset.prompt; setAvatarState("happy", "Good prompt. Add any details, then send it through."); settleAvatar(); input.focus(); }));
+    input.addEventListener("input", updateInteractionMeta);
+    input.addEventListener("keydown", event => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        form.requestSubmit();
+      }
+    });
+    copyLatestButton.addEventListener("click", () => copyText(latestAssistantText));
+    newChatButton.addEventListener("click", () => {
+      history.length = 0;
+      latestAssistantText = "";
+      log.replaceChildren();
+      addMessage("assistant", greeting);
+      setAvatarState("happy", "Fresh conversation ready. What should Clam Code help with?");
+      settleAvatar();
+      setSessionStatus("ready", token ? "Fresh session ready" : "Fresh public conversation ready");
+      input.focus();
+    });
+    document.querySelectorAll("[data-prompt]").forEach(prompt => prompt.addEventListener("click", () => { input.value = prompt.dataset.prompt; updateInteractionMeta(); setAvatarState("happy", "Good prompt. Add any details, then send it through."); settleAvatar(); input.focus(); }));
+    latestAssistantText = greeting;
+    copyGreetingButton.addEventListener("click", () => copyText(greeting));
+    updateInteractionMeta();
     refreshMode();
     trackPageView();
   </script>

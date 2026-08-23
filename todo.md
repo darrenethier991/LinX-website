@@ -85,3 +85,4 @@
 - [x] Confirm and clearly communicate that LINX Recon is a public passive-observation page with no separate admin login, while preserving the working central administrator sign-in link.
 - [x] Diagnose and repair the broken Clam Code avatar rendering without changing the approved Clam Code chat, role-routing, or page design outside the avatar presentation.
 - [ ] Diagnose and repair administrator Clam Code mode detection so signed-in administrators receive the guarded administrator workspace while public users remain text-only.
+- [x] Add accessible interactive Clam Code controls, status feedback, and message-level utilities without changing the approved role-aware AI access model or broader page design.
