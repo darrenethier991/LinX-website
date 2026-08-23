@@ -90,3 +90,4 @@
 - [x] Replace the public contractor-facing hero copy with a credible early-adopter position centered on being among the first contractors in a local market to use LINX Services.
 - [x] Add a limited first-six-contractor early-access offer with clearly stated free access duration or criteria, feedback expectations, and explicit testimonial permission rather than fabricated reviews.
 - [x] Implement and test the early-access sign-up handling with an auditable Stripe capacity limit and no automatic testimonial publication.
+- [x] Verify whether the deployed LINX Google Sheets CRM and signup-data connection is operational, while keeping automation disabled unless separately authorized; service-account credentials and destination are configured, but production syncing remains intentionally disabled.
