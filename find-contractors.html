@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Find Contractors — LinX</title>
-  <meta name="description" content="Browse verified contractors across Simcoe County — rated, reviewed, and ready to work."/>
+  <meta name="description" content="LINX publishes contractor profiles only after real information is supplied and publication is authorized."/>
   <link rel="stylesheet" href="css/app.css"/>
 </head>
 <body>
@@ -32,7 +32,7 @@
     <div class="section-head">
       <p class="eyebrow">Directory</p>
       <h1 class="section-title">Find Contractors</h1>
-      <p class="section-sub">Browse verified contractors across Simcoe County — rated, reviewed, and ready to work.</p>
+      <p class="section-sub">The public directory is opening carefully. LINX will publish contractor profiles only after accurate details are supplied and publication is authorized.</p>
     </div>
 
     <!-- Search & filter bar -->
@@ -47,16 +47,6 @@
       <select class="form-select" id="filter-city" style="max-width:170px;" onchange="filterContractors()">
         <option value="">All of Simcoe Co.</option>
       </select>
-      <select class="form-select" id="filter-rating" style="max-width:150px;" onchange="filterContractors()">
-        <option value="">Any Rating</option>
-        <option value="4.5">4.5+ stars</option>
-        <option value="4">4.0+ stars</option>
-        <option value="3">3.0+ stars</option>
-      </select>
-      <label style="display:flex;align-items:center;gap:.4rem;font-size:.83rem;color:var(--white-35);cursor:pointer;">
-        <input type="checkbox" id="filter-online" style="accent-color:var(--gold);" onchange="filterContractors()"/>
-        Online now
-      </label>
     </div>
 
     <div style="font-size:.83rem;color:var(--white-35);margin-bottom:1rem;" id="results-count"></div>
@@ -66,8 +56,8 @@
     <!-- Empty state -->
     <div id="empty-state" style="display:none;text-align:center;padding:3rem;color:var(--white-35);">
       <div style="font-size:3rem;margin-bottom:.8rem;">🔍</div>
-      <div style="font-family:var(--font-head);font-size:1rem;color:var(--white-60);margin-bottom:.4rem;">No contractors found</div>
-      <div style="font-size:.85rem;">Try adjusting your filters or <a href="post-job.html">post a job</a> to get quotes.</div>
+      <div style="font-family:var(--font-head);font-size:1rem;color:var(--white-60);margin-bottom:.4rem;">The public directory is not populated yet</div>
+      <div style="font-size:.85rem;">LINX does not display demo contractors, ratings, or reviews. Contractors can <a href="early-access.html">apply for Launch Six</a> or homeowners can <a href="post-job.html">post a project</a>.</div>
     </div>
 
   </div>
@@ -120,14 +110,10 @@
     const q     = document.getElementById('search-input').value.toLowerCase();
     const trade = tradeSel.value;
     const city  = citySel.value;
-    const minR  = parseFloat(document.getElementById('filter-rating').value) || 0;
-    const onlineOnly = document.getElementById('filter-online').checked;
     renderContractors(CONTRACTORS.filter(c =>
       (!q || c.name.toLowerCase().includes(q) || c.trade.toLowerCase().includes(q)) &&
       (!trade || c.trade === trade) &&
-      (!city || c.city === city) &&
-      (c.rating >= minR) &&
-      (!onlineOnly || c.online)
+      (!city || c.city === city)
     ));
   }
 

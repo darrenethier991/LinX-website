@@ -209,7 +209,7 @@
     <div class="mkt-stats">
       <div class="mkt-stat">
         <div class="mkt-stat__num">12</div>
-        <div class="mkt-stat__lbl">Starter Templates</div>
+        <div class="mkt-stat__lbl">Template previews</div>
       </div>
       <div class="mkt-stat">
         <div class="mkt-stat__num">6</div>
@@ -220,8 +220,8 @@
         <div class="mkt-stat__lbl">Unified Ecosystem</div>
       </div>
       <div class="mkt-stat">
-        <div class="mkt-stat__num">24/7</div>
-        <div class="mkt-stat__lbl">Operational Focus</div>
+        <div class="mkt-stat__num">1</div>
+        <div class="mkt-stat__lbl">Request path</div>
       </div>
     </div>
   </div>
@@ -252,7 +252,7 @@
       <div class="value-card">
         <div class="value-card__icon">⭐</div>
         <div class="value-card__title">Review Machines</div>
-        <div class="value-card__desc">Post-job review requests sent automatically to Google, Facebook, and Houzz. More 5-stars, less effort.</div>
+        <div class="value-card__desc">A respectful post-job feedback-request pattern that can be adapted for channels you are authorized to use.</div>
       </div>
       <div class="value-card">
         <div class="value-card__icon">🔄</div>
@@ -492,7 +492,7 @@
     }
     grid.innerHTML = items.map((a, i) => `
       <div class="mkt-card${a.featured ? ' featured' : ''}" data-idx="${i}" onclick="openModal(${automations.indexOf(a)})">
-        ${a.featured ? '<span class="badge badge--gold mkt-card__badge">⭐ Popular</span>' : ''}
+        ${a.featured ? '<span class="badge badge--gold mkt-card__badge">Template preview</span>' : ''}
         <div class="mkt-card__icon">${a.icon}</div>
         <div class="mkt-card__name">${a.name}</div>
         <div class="mkt-card__desc">${a.desc}</div>

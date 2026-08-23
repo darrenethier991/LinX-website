@@ -9,6 +9,7 @@ import { runPassiveDomainObservation } from "./passive-osint.js";
 import { enhancePrompt, normalizePromptEnhancementInput } from "./prompt-enhancer.js";
 import { base64ToUtf8, isPushConfirmation, normalizeEngineeringPath, normalizeEngineeringProposal, reviewBranchFor, utf8ToBase64 } from "./engineering-workspace.js";
 import { canAdministerEcosystem, canManageOwnConsent, consentView, ECOSYSTEM_MODULES, normalizeConsentPreferences, normalizeMembershipInput, normalizeModuleConfiguration, normalizeOrganizationInput, normalizePolicyInput } from "./ecosystem-foundation.js";
+import { launchOfferView, normalizeLaunchEarlyAccessApplication } from "./early-access.js";
 import { deviceCategory, generatedSlug, normalizeShortLinkInput, refererHost } from "./short-links.js";
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 
@@ -854,6 +855,32 @@ export default {
       }
     }
 
+    // ── Launch Six — truthful public early-access application ───────────────
+    if (path === '/api/launch/early-access' && method === 'GET') {
+      return json({ ok: true, offer: launchOfferView() }, 200, origin);
+    }
+    if (path === '/api/launch/early-access' && method === 'POST') {
+      if (!env.DB) return json({ error: 'Early access is temporarily unavailable.' }, 503, origin);
+      const application = normalizeLaunchEarlyAccessApplication(await readBody(request));
+      if (application.error) return json({ error: application.error }, 400, origin);
+      const existing = await env.DB.prepare('SELECT id FROM launch_early_access_applications WHERE email = ?').bind(application.email).first();
+      if (existing) return json({ error: 'An early-access application for this email already exists.' }, 409, origin);
+      const existingUser = await env.DB.prepare('SELECT id FROM platform_users WHERE email = ?').bind(application.email).first();
+      if (existingUser) return json({ error: 'This email already has a LINX account. Use your existing subscriber access instead.' }, 409, origin);
+      const id = requestId();
+      const offer = launchOfferView();
+      await env.DB.prepare(`
+        INSERT INTO launch_early_access_applications (id,email,display_name,business_name,trade,city,feedback_commitment,testimonial_permission,promotion_code,status)
+        VALUES (?,?,?,?,?,?,?,?,?, 'applied')
+      `).bind(id, application.email, application.display_name, application.business_name, application.trade, application.city, 1, application.testimonial_permission ? 1 : 0, offer.code).run();
+      return json({
+        ok: true,
+        application_id: id,
+        offer,
+        message: 'Your early-access application is recorded. If a Launch Six Stripe redemption remains, use the code at secure checkout before the stated deadline.',
+      }, 201, origin);
+    }
+
     // ── GET /api/clam-code/health — role-aware UI capability check ─────────
     if (path === '/api/clam-code/health' && method === 'GET') {
       const identity = await requireAuth(request, env);
@@ -1015,6 +1042,16 @@ export default {
     if (!admin) return json({ error: 'Unauthorized' }, 401, origin);
     const ecosystemAdmin = canAdministerEcosystem(admin);
     const ecosystemSubscriber = canManageOwnConsent(admin);
+
+    if (path === '/api/admin/launch/early-access' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Early-access storage is not configured.' }, 503, origin);
+      const applications = await env.DB.prepare(`
+        SELECT id,email,display_name,business_name,trade,city,feedback_commitment,testimonial_permission,promotion_code,status,created_at,updated_at
+        FROM launch_early_access_applications ORDER BY created_at DESC LIMIT 100
+      `).all();
+      return json({ ok: true, offer: launchOfferView(), applications: applications.results || [] }, 200, origin);
+    }
 
     // ── Phase A: self-service consent preferences — signed subscriber only ───
     if (path === '/api/ecosystem/consents' && ['GET', 'PUT'].includes(method)) {

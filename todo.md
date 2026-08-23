@@ -86,3 +86,7 @@
 - [x] Diagnose and repair the broken Clam Code avatar rendering without changing the approved Clam Code chat, role-routing, or page design outside the avatar presentation.
 - [ ] Diagnose and repair administrator Clam Code mode detection so signed-in administrators receive the guarded administrator workspace while public users remain text-only.
 - [x] Add accessible interactive Clam Code controls, status feedback, and message-level utilities without changing the approved role-aware AI access model or broader page design.
+- [x] Audit every public LINX page for placeholder reviews, ratings, testimonials, customer counts, contractor counts, and other unsupported social-proof claims; remove or replace every unverified item.
+- [x] Replace the public contractor-facing hero copy with a credible early-adopter position centered on being among the first contractors in a local market to use LINX Services.
+- [x] Add a limited first-six-contractor early-access offer with clearly stated free access duration or criteria, feedback expectations, and explicit testimonial permission rather than fabricated reviews.
+- [x] Implement and test the early-access sign-up handling with an auditable Stripe capacity limit and no automatic testimonial publication.
