@@ -91,3 +91,10 @@
 - [x] Add a limited first-six-contractor early-access offer with clearly stated free access duration or criteria, feedback expectations, and explicit testimonial permission rather than fabricated reviews.
 - [x] Implement and test the early-access sign-up handling with an auditable Stripe capacity limit and no automatic testimonial publication.
 - [x] Verify whether the deployed LINX Google Sheets CRM and signup-data connection is operational, while keeping automation disabled unless separately authorized; service-account credentials and destination are configured, but production syncing remains intentionally disabled.
+- [ ] Separate the approved-subscriber Google Sheets logging and owner-notification controls from the Twilio SMS control.
+- [ ] Enable and verify Google Sheets logging plus owner visibility for approved signups while retaining an explicit hard-disabled Twilio safeguard.
+- [ ] Add a secure owner-email alert channel for approved signups, using a verified sender identity and dedicated email credential while keeping all Twilio sends disabled.
+- [ ] Configure the approved owner-alert recipient as darren-ethier@linxservices.ca after the selected email provider verifies the sending identity.
+- [ ] Configure Resend as the selected owner-email delivery provider for approved LINX signup alerts.
+- [ ] Review the LINX GitHub repository for Cloudflare deployment workflows, secret references, and required post-rotation configuration actions without changing repository settings.
+- [x] Review the LINX GitHub repository for Cloudflare deployment workflows, secret references, and required post-rotation configuration actions without changing repository settings.
