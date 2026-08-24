@@ -108,7 +108,8 @@
 - [x] With explicit release approval, deploy the committed public health-probe repair after replacing the invalid local Cloudflare deployment credential; then verify the live endpoint and scheduled monitor.
 - [x] Inspect the authoritative DNS and Cloudflare certificate status for `hub.linxservices.ca` and identify the safe renewal-validation path.
 - [x] With explicit approval, add the required DNS validation record for the `hub.linxservices.ca` SSL renewal.
-- [ ] Verify Cloudflare’s renewed `hub.linxservices.ca` certificate is served at the edge after validation propagation completes.
+- [x] Verify Cloudflare’s renewed `hub.linxservices.ca` certificate is served at the edge after validation propagation completes.
 - [ ] Verify the rotated `GITHUB_REPO_TOKEN` secret can read the approved repository through the constrained admin engineering workspace without exposing its value.
 - [x] With explicit approval, verify the rotated GitHub Actions `CLOUDFLARE_API_TOKEN` through the manual-only Pages workflow; do not dispatch it automatically.
 - [x] Execute the approved manual Pages workflow and the committed Worker health-route release, then verify their live outcomes.
+- [x] Run a read-only diagnostic of active LINX services, authoritative DNS records, recent GitHub Actions deployment status, and the `hub.linxservices.ca` live TLS certificate.
