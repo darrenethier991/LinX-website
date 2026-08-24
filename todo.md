@@ -99,3 +99,9 @@
 - [ ] Review the LINX GitHub repository for Cloudflare deployment workflows, secret references, and required post-rotation configuration actions without changing repository settings.
 - [x] Review the LINX GitHub repository for Cloudflare deployment workflows, secret references, and required post-rotation configuration actions without changing repository settings.
 - [x] Restore the Cloudflare Pages deployment workflow on the current main branch with manual dispatch only until the rotated GitHub Cloudflare secret is updated and verified.
+- [ ] Inventory all LINX-related GitHub repositories, live services, deployment paths, and external dependencies for the system-wide review.
+- [ ] Run non-invasive health, workflow, repository, migration, configuration, and regression checks across the active LINX system.
+- [ ] Classify findings by impact and fix only low-risk verified defects without altering approved design, commercial terms, safety boundaries, or credentials.
+- [ ] Request explicit confirmation before any change to secrets, Cloudflare or GitHub settings, billing, Stripe, Resend, Google Sheets, Twilio, customer data, destructive operations, or externally visible high-impact behavior.
+- [ ] Publish a final LINX system health report showing verified fixes, deferred risks, and approval-required actions.
+- [ ] Repair the verified public LINX API health-monitor failure: the monitor expects `GET /health` to return 200, but the current Worker returns 401.

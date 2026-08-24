@@ -700,6 +700,13 @@ export default {
 
     const method = request.method.toUpperCase();
 
+    // ── GET /health — public liveness probe for the LINX API ────────────────
+    // Keep this response intentionally small: it confirms the routed Worker is
+    // reachable without disclosing credentials, configuration, or customer data.
+    if (path === '/health' && method === 'GET') {
+      return json({ ok: true, service: 'linx-api' }, 200, origin);
+    }
+
     // ── GET /r/:slug — branded short-link redirect with minimized analytics ──
     const shortLinkMatch = path.match(/^\/r\/([a-z0-9_-]{3,64})$/i);
     if (shortLinkMatch && method === 'GET') {

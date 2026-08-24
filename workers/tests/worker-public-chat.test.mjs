@@ -13,6 +13,13 @@ const publicEnv = {
   },
 };
 
+test("public API health probe is available without authentication", async () => {
+  const response = await worker.fetch(new Request("https://api.linxservices.ca/health"), publicEnv);
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ok: true, service: "linx-api" });
+});
+
 test("public Clam Code chat uses the Worker model and returns the unified envelope", async () => {
   const response = await worker.fetch(new Request("https://api.linxservices.ca/api/clam-code/chat", {
     method: "POST",
