@@ -114,5 +114,7 @@
 - [x] Execute the approved manual Pages workflow and the committed Worker health-route release, then verify their live outcomes.
 - [x] Run a read-only diagnostic of active LINX services, authoritative DNS records, recent GitHub Actions deployment status, and the `hub.linxservices.ca` live TLS certificate.
 - [x] Diagnose the `tunnel.linxservices.ca` 530 error, recon subdomain routing, and remaining Worker-facing subdomain endpoints without changing infrastructure.
-- [ ] With explicit approval and confirmed service ownership, restore the intended external connector for `linx-tunnel-prod` or remove the unused `tunnel.linxservices.ca` DNS record.
-- [ ] With explicit approval and a validated passive-only design, bind `recon.linxservices.ca` to the intended Worker or remove its unused DNS record.
+- [x] With explicit approval and confirmed service ownership, restore the intended external connector for `linx-tunnel-prod` or remove the unused `tunnel.linxservices.ca` DNS record.
+- [x] With explicit approval and a validated passive-only design, bind `recon.linxservices.ca` to the intended Worker or remove its unused DNS record.
+- [x] Remove only the approved `tunnel.linxservices.ca` and `recon.linxservices.ca` DNS records; preserve the inactive tunnel object and Recon Worker for later review.
+- [x] Complete removal of the managed `recon.linxservices.ca` DNS exposure without activating, routing, configuring, or deleting `linx-recon-proxy`.
