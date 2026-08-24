@@ -113,3 +113,6 @@
 - [x] With explicit approval, verify the rotated GitHub Actions `CLOUDFLARE_API_TOKEN` through the manual-only Pages workflow; do not dispatch it automatically.
 - [x] Execute the approved manual Pages workflow and the committed Worker health-route release, then verify their live outcomes.
 - [x] Run a read-only diagnostic of active LINX services, authoritative DNS records, recent GitHub Actions deployment status, and the `hub.linxservices.ca` live TLS certificate.
+- [x] Diagnose the `tunnel.linxservices.ca` 530 error, recon subdomain routing, and remaining Worker-facing subdomain endpoints without changing infrastructure.
+- [ ] With explicit approval and confirmed service ownership, restore the intended external connector for `linx-tunnel-prod` or remove the unused `tunnel.linxservices.ca` DNS record.
+- [ ] With explicit approval and a validated passive-only design, bind `recon.linxservices.ca` to the intended Worker or remove its unused DNS record.
