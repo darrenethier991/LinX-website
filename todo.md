@@ -104,5 +104,11 @@
 - [x] Classify findings by impact and fix only low-risk verified defects without altering approved design, commercial terms, safety boundaries, or credentials.
 - [ ] Request explicit confirmation before any change to secrets, Cloudflare or GitHub settings, billing, Stripe, Resend, Google Sheets, Twilio, customer data, destructive operations, or externally visible high-impact behavior.
 - [ ] Publish a final LINX system health report showing verified fixes, deferred risks, and approval-required actions.
-- [ ] Repair the verified public LINX API health-monitor failure: the monitor expects `GET /health` to return 200, but the current Worker returns 401.
-- [ ] With explicit release approval, deploy the committed public health-probe repair after replacing the invalid local Cloudflare deployment credential; then verify the live endpoint and scheduled monitor.
+- [x] Repair the verified public LINX API health-monitor failure: the monitor expects `GET /health` to return 200, but the current Worker returns 401.
+- [x] With explicit release approval, deploy the committed public health-probe repair after replacing the invalid local Cloudflare deployment credential; then verify the live endpoint and scheduled monitor.
+- [x] Inspect the authoritative DNS and Cloudflare certificate status for `hub.linxservices.ca` and identify the safe renewal-validation path.
+- [x] With explicit approval, add the required DNS validation record for the `hub.linxservices.ca` SSL renewal.
+- [ ] Verify Cloudflare’s renewed `hub.linxservices.ca` certificate is served at the edge after validation propagation completes.
+- [ ] Verify the rotated `GITHUB_REPO_TOKEN` secret can read the approved repository through the constrained admin engineering workspace without exposing its value.
+- [x] With explicit approval, verify the rotated GitHub Actions `CLOUDFLARE_API_TOKEN` through the manual-only Pages workflow; do not dispatch it automatically.
+- [x] Execute the approved manual Pages workflow and the committed Worker health-route release, then verify their live outcomes.
