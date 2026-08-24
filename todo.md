@@ -98,3 +98,4 @@
 - [ ] Configure Resend as the selected owner-email delivery provider for approved LINX signup alerts.
 - [ ] Review the LINX GitHub repository for Cloudflare deployment workflows, secret references, and required post-rotation configuration actions without changing repository settings.
 - [x] Review the LINX GitHub repository for Cloudflare deployment workflows, secret references, and required post-rotation configuration actions without changing repository settings.
+- [x] Restore the Cloudflare Pages deployment workflow on the current main branch with manual dispatch only until the rotated GitHub Cloudflare secret is updated and verified.
