@@ -876,7 +876,33 @@
 <script>
   // ── SIMPLE AUTH ──────────────────────────────────────────────────────────────
   const API_BASE = window.LINX_API_BASE || 'https://api.linxservices.ca';
-  let _token = sessionStorage.getItem('linx_token') || '';
+  let _token = '';
+  function clearAdminSession() {
+    sessionStorage.removeItem('linx_token');
+    localStorage.removeItem('linx_token');
+    sessionStorage.removeItem('linx_admin_token');
+    localStorage.removeItem('linx_admin_token');
+    sessionStorage.removeItem('linx_admin_user');
+  }
+  async function restoreAdminSession() {
+    const storedToken = sessionStorage.getItem('linx_admin_token') || localStorage.getItem('linx_admin_token') || '';
+    if (!storedToken) {
+      document.getElementById('login-screen').style.display = 'flex';
+      return;
+    }
+    try {
+      const response = await fetch(`${API_BASE}/api/clam-code/health`, { headers: { Authorization: `Bearer ${storedToken}` } });
+      const status = await response.json().catch(() => ({}));
+      if (!response.ok || !status.authenticated || status.role !== 'admin') throw new Error('Administrator session expired.');
+      _token = storedToken;
+      sessionStorage.setItem('linx_token', _token);
+      sessionStorage.setItem('linx_admin_token', _token);
+      showApp(sessionStorage.getItem('linx_admin_user'));
+    } catch (_) {
+      clearAdminSession();
+      document.getElementById('login-screen').style.display = 'flex';
+    }
+  }
 
   function showToast(msg, type = '') {
     const t = document.getElementById('toast');
@@ -885,11 +911,7 @@
     setTimeout(() => { t.style.display = 'none'; }, 4000);
   }
 
-  if (_token) {
-    showApp(sessionStorage.getItem('linx_admin_user'));
-  } else {
-    document.getElementById('login-screen').style.display = 'flex';
-  }
+  restoreAdminSession();
 
   document.getElementById('login-btn').addEventListener('click', async () => {
     const u = document.getElementById('login-user').value.trim();
@@ -915,11 +937,7 @@
     if (e.key === 'Enter') document.getElementById('login-btn').click();
   });
   document.getElementById('logout-btn').addEventListener('click', () => {
-      sessionStorage.removeItem('linx_token');
-      localStorage.removeItem('linx_token');
-      sessionStorage.removeItem('linx_admin_token');
-      localStorage.removeItem('linx_admin_token');
-      sessionStorage.removeItem('linx_admin_user');
+    clearAdminSession();
     location.reload();
   });
 
