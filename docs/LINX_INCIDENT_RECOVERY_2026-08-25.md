@@ -31,6 +31,9 @@ The manual Pages workflow was redesigned from a denylist copy to a strict **allo
 | Restore public site while preserving source-path blocks | Cloudflare emergency ruleset | Public routes returned `200`; all eight confirmed sensitive paths returned `403`. |
 | Close subscriber access to operational lead records | `d61643c` — `Restrict lead operations to administrators` | New test proves subscribers are rejected before database access; direct authenticated Worker release succeeded. |
 | Separate Pages and Worker deployment credentials | `ce504f4` — `Separate Worker deployment credential` | Manual Worker workflow now references a dedicated `CLOUDFLARE_WORKER_API_TOKEN` secret rather than the working Pages token. |
+| Remove tracked generated dependency trees | `ea238d7` — `Remove tracked dependency trees` | 9,831 `node_modules` files were removed from the Git index while local installs and lockfiles were retained. |
+| Block unsafe approved-source fetch targets | `4dea033` — `Harden approved source URL validation` | Newly submitted and previously stored private, loopback, link-local, reserved, credentialed, and IP-encoded feed URLs are not eligible for scheduled intake. |
+| Limit public abuse-prone Worker endpoints | `00918e0` — `Rate limit public Worker endpoints` | KV-backed, privacy-preserving limits now protect public AI, passive observation, checkout, sign-in, and early-access requests. |
 
 ## Security audit findings
 
@@ -40,10 +43,11 @@ The active Worker router, reviewed privileged endpoints, static deployment workf
 |---|---:|---|---|
 | Pages Git integration deployed repository root automatically | Critical | **Fixed** | Production and preview Git deployment switches are disabled; releases are now manual and artifact-only. |
 | Sensitive source/configuration artifacts had been publicly reachable | Critical | **Contained** | Safe artifact excludes them and Cloudflare retains explicit edge blocks. Credential rotation remains required. |
-| Authenticated subscriber tokens could access individual lead routes | High | **Fixed and released** | Single-lead read/update/delete and legacy ingest/crawler-run routes now require the administrator role. Regression suite: **39 passing tests**. |
+| Authenticated subscriber tokens could access individual lead routes | High | **Fixed and released** | Single-lead read/update/delete and legacy ingest/crawler-run routes now require the administrator role. Regression suite: **41 passing tests**. |
 | GitHub Worker deployment credential lacks Worker-script authorization | High operational | **Open** | The new workflow is manual-only, but its previous generic token failed Cloudflare authentication for Worker script deployment. A direct authenticated recovery release was used instead. |
-| Legacy administrator server and tracked dependency trees remain in repository | Medium | **Open** | The legacy server is not included in the public Pages artifact. Its `admin/node_modules` tree contains 8,235 tracked files and the root tree contains 1,596. The legacy dependency audit previously found seven advisories. |
-| Public AI and passive-observation endpoints have no application-level abuse rate limiter in the reviewed Worker | Medium | **Open** | Existing validation and scope restrictions remain, but an edge rate-limit policy should be designed before higher traffic or adversarial use. |
+| Legacy administrator server and dependency advisories | Medium | **Open** | The legacy server is not included in the public Pages artifact. Its generated dependency trees are no longer tracked, but the legacy dependency audit still requires a controlled upgrade/removal plan. |
+| Public AI and passive-observation endpoint abuse | Medium | **Mitigated** | KV-backed counters use a hash of the client address and a server secret; public AI, passive observation, checkout, sign-in, and early-access routes now return `429` with `Retry-After` after their bounded limits. |
+| Scheduled approved-source fetches could accept some private or reserved literal targets | Medium | **Fixed and released** | Submission and readiness validation now rejects private, loopback, link-local, reserved, credentialed, and IP-encoded endpoint forms before scheduled fetches run. |
 | Maintained Worker/admin/workflow source scan | Informational | **No active backdoor found in reviewed scope** | No dynamic execution primitive was found in maintained source outside dependency/build output; no hardcoded credential-assignment finding was identified outside tests/dependencies. This is not a claim that the entire historical repository is free of risk. |
 
 ## Credential remediation required
@@ -73,8 +77,8 @@ After the secret is saved, manually run **Deploy LINX API Worker** from the Acti
 1. Rotate the legacy credentials through secure provider dashboards and confirm only that rotation is complete.
 2. Add `CLOUDFLARE_WORKER_API_TOKEN` as a repository Actions secret, then run the manual Worker workflow once to validate the durable release path.
 3. Remove the tracked legacy environment file and retire or sanitize the legacy example file after rotation.
-4. On a dedicated review branch, remove tracked `node_modules` trees, retain lockfiles, and address the legacy administrator dependency advisories. Do not merge Dependabot updates automatically.
-5. Design Cloudflare edge rate limits for public AI, prompt-enhancement, passive-observation, early-access, and public lead-submission endpoints without weakening intended public access.
+4. Address the legacy administrator dependency advisories with a controlled upgrade/removal plan. Do not merge Dependabot updates automatically.
+5. Monitor the deployed application-level rate limits and add edge policies only if observed traffic warrants stricter protection.
 6. Continue the bounded audit of legacy code and account controls before claiming a complete security certification.
 
 ## References
