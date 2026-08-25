@@ -139,4 +139,5 @@
 - [x] Restrict all single-lead and legacy lead-ingestion endpoints to administrators so authenticated subscribers cannot read, modify, delete, or bulk-ingest operational lead records.
 - [ ] Add and verify a manual-only GitHub Actions release workflow for the existing `linx-api` Worker so tested security fixes can be deployed without local credential handling.
 - [ ] Replace the GitHub Actions Cloudflare token with one authorized for `Workers Scripts:Edit`, then re-run the manual Worker release workflow successfully.
+- [x] Publish a written LINX incident-recovery status report covering containment, verified restoration, released fixes, and secure follow-up requirements without exposing credential values.
 - [x] Verify the committed Dependabot configuration covers the root and legacy admin manifests without triggering an unintended production deployment.
