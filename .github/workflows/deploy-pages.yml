@@ -17,33 +17,29 @@ jobs:
         with:
           ref: main
 
-      - name: Build safe static Pages artifact
+      - name: Build allowlisted static Pages artifact
         run: |
           rm -rf .pages-artifact
-          mkdir .pages-artifact
-          tar \
-            --exclude-vcs \
-            --exclude='./.pages-artifact' \
-            --exclude='./node_modules' \
-            --exclude='./admin/node_modules' \
-            --exclude='./workers' \
-            --exclude='./scripts' \
-            --exclude='./docs' \
-            --exclude='./.env*' \
-            --exclude='*/.env*' \
-            --exclude='./wrangler.jsonc' \
-            --exclude='./package.json' \
-            --exclude='./package-lock.json' \
-            --exclude='./admin/package.json' \
-            --exclude='./admin/package-lock.json' \
-            --exclude='./admin/server.js' \
-            --exclude='./admin/leads' \
-            --exclude='./admin/src' \
-            --exclude='./DEPLOY.md' \
-            --exclude='./todo.md' \
-            -cf - . | tar -xf - -C .pages-artifact
+          mkdir -p .pages-artifact/admin
+
+          # Copy only pages and client assets that are intentionally public.
+          find . -maxdepth 1 -type f \( -name '*.html' -o -name '_headers' -o -name '_redirects' -o -name 'robots.txt' \) -exec cp {} .pages-artifact/ \;
+          for directory in assets css js status status-assets white-label linxservices.ca; do
+            if [ -d "$directory" ]; then
+              cp -R "$directory" .pages-artifact/
+            fi
+          done
+          find admin -maxdepth 1 -type f \( -name '*.html' -o -name '*.css' -o -name '_headers' -o -name '_redirects' \) -exec cp {} .pages-artifact/admin/ \;
+
+          test -f .pages-artifact/index.html
+          test -f .pages-artifact/admin/index.html
           test ! -e .pages-artifact/admin/.env
           test ! -e .pages-artifact/wrangler.jsonc
+          test ! -e .pages-artifact/workers
+          test ! -e .pages-artifact/package.json
+          test ! -e .pages-artifact/admin/package.json
+          test ! -e .pages-artifact/admin/server.js
+          test ! -e .pages-artifact/.github
 
       - name: Deploy current static source to Cloudflare Pages
         run: npx --yes wrangler@4.124.0 pages deploy .pages-artifact --project-name=linx-website --branch=main
