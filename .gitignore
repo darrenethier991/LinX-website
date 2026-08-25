@@ -6,3 +6,7 @@
 
 # The Pages deployment workflow builds this temporary static artifact.
 .pages-artifact/
+
+# Installed dependency trees are reproducible from lockfiles and must not be tracked.
+node_modules/
+**/node_modules/

@@ -19,4 +19,6 @@ test('Pages deployment builds an allowlisted static artifact that excludes sensi
   assert.match(ignore, /^\.env$/m);
   assert.match(ignore, /^\*\*\/\.env\.\*$/m);
   assert.match(ignore, /^\.pages-artifact\/$/m);
+  assert.match(ignore, /^node_modules\/$/m);
+  assert.match(ignore, /^\*\*\/node_modules\/$/m);
 });
