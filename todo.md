@@ -120,4 +120,6 @@
 - [x] Complete removal of the managed `recon.linxservices.ca` DNS exposure without activating, routing, configuring, or deleting `linx-recon-proxy`.
 - [x] Diagnose the reported Clam Code administrator login failure without changing credentials, secrets, or user data.
 - [x] Repair the verified stale or non-admin browser-token handling on the administrator sign-in page so invalid sessions return to the login form instead of masking it.
-- [ ] With explicit approval, publish the tested administrator stale-session recovery change to Cloudflare Pages and verify the live login form reappears for expired or non-admin tokens.
+- [x] With explicit approval, publish the tested administrator stale-session recovery change to Cloudflare Pages and verify the live login form reappears for expired or non-admin tokens.
+- [ ] Conduct a read-only review of active LINX production code, Worker routes, workflows, dependencies, and privileged integrations for defects or potential backdoors.
+- [ ] Contain the confirmed public exposure of `admin/.env` and `wrangler.jsonc`, verify their removal from the Pages artifact, and identify affected credential names for secure rotation without reading values.
