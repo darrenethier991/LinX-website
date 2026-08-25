@@ -119,15 +119,49 @@ function corsHeaders(origin) {
   };
 }
 
-function json(obj, status = 200, origin = '') {
+function json(obj, status = 200, origin = '', extraHeaders = {}) {
   return new Response(JSON.stringify(obj), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+    headers: { 'Content-Type': 'application/json', ...corsHeaders(origin), ...extraHeaders },
   });
 }
 
 function requestId() {
   return crypto.randomUUID();
+}
+
+async function enforceAnonymousRateLimit(request, env, bucket, limit, windowSeconds) {
+  if (!env.LINX_KV) return null;
+  const now = Math.floor(Date.now() / 1000);
+  const window = Math.floor(now / windowSeconds);
+  const address = String(request.headers.get('CF-Connecting-IP') || 'unknown').trim();
+  const fingerprint = await sha256hex(`${env.JWT_SECRET || 'linx-rate-limit'}:${address}`);
+  const key = `rate-limit:v1:${bucket}:${window}:${fingerprint}`;
+  let current = 0;
+  try {
+    const stored = await env.LINX_KV.get(key);
+    current = Number(JSON.parse(stored || '{}').count || 0);
+  } catch (_) {
+    current = 0;
+  }
+  if (current >= limit) {
+    return { retryAfter: Math.max(1, (window + 1) * windowSeconds - now) };
+  }
+  try {
+    await env.LINX_KV.put(key, JSON.stringify({ count: current + 1 }), { expirationTtl: windowSeconds + 60 });
+  } catch (error) {
+    console.warn('[Rate limit] KV counter was not recorded', error?.message || error);
+  }
+  return null;
+}
+
+function rateLimitResponse(origin, result) {
+  return json(
+    { error: 'Too many requests. Please try again later.' },
+    429,
+    origin,
+    { 'Retry-After': String(result.retryAfter) },
+  );
 }
 
 function createAccessCode() {
@@ -725,6 +759,8 @@ export default {
 
     // ── POST /api/osint/passive-scan — bounded public domain observations ───
     if (path === '/api/osint/passive-scan' && method === 'POST') {
+      const limit = await enforceAnonymousRateLimit(request, env, 'passive-osint', 12, 3600);
+      if (limit) return rateLimitResponse(origin, limit);
       const { target } = await readBody(request);
       try {
         const report = await runPassiveDomainObservation(target);
@@ -822,6 +858,8 @@ export default {
 
     // ── POST /api/billing/checkout — server-created Stripe subscription flow ─
     if (path === '/api/billing/checkout' && method === 'POST') {
+      const limit = await enforceAnonymousRateLimit(request, env, 'billing-checkout', 10, 3600);
+      if (limit) return rateLimitResponse(origin, limit);
       if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe checkout is not configured.' }, 503, origin);
       const { plan } = await readBody(request);
       try {
@@ -867,6 +905,8 @@ export default {
       return json({ ok: true, offer: launchOfferView() }, 200, origin);
     }
     if (path === '/api/launch/early-access' && method === 'POST') {
+      const limit = await enforceAnonymousRateLimit(request, env, 'launch-early-access', 5, 86400);
+      if (limit) return rateLimitResponse(origin, limit);
       if (!env.DB) return json({ error: 'Early access is temporarily unavailable.' }, 503, origin);
       const application = normalizeLaunchEarlyAccessApplication(await readBody(request));
       if (application.error) return json({ error: application.error }, 400, origin);
@@ -907,6 +947,10 @@ export default {
     if (path === '/api/clam-code/chat' && method === 'POST') {
       const identity = await requireAuth(request, env);
       const role = identity?.role === 'admin' ? 'admin' : identity?.role === 'subscriber' ? 'subscriber' : 'public';
+      if (role !== 'admin') {
+        const limit = await enforceAnonymousRateLimit(request, env, `clam-code-${role}`, role === 'subscriber' ? 60 : 30, 3600);
+        if (limit) return rateLimitResponse(origin, limit);
+      }
       const body = await readBody(request);
       const messages = normalizeMessages(body.messages);
       if (!messages.length || !messages.some(message => message.role === 'user')) {
@@ -952,6 +996,8 @@ export default {
 
     // ── POST /api/linx-amplify/enhance — public text prompt enhancement ─────
     if (path === '/api/linx-amplify/enhance' && method === 'POST') {
+      const limit = await enforceAnonymousRateLimit(request, env, 'linx-amplify', 30, 3600);
+      if (limit) return rateLimitResponse(origin, limit);
       const input = normalizePromptEnhancementInput(await readBody(request));
       if (input.error) return json({ ok: false, error: input.error }, 400, origin);
       const id = requestId();
@@ -990,6 +1036,8 @@ export default {
 
     // ── POST /api/auth/login ───────────────────────────────────────────────
     if (path === '/api/auth/login' && method === 'POST') {
+      const limit = await enforceAnonymousRateLimit(request, env, 'admin-login', 8, 900);
+      if (limit) return rateLimitResponse(origin, limit);
       const { username, password } = await readBody(request);
       if (!username || !password)
         return json({ error: 'username and password are required' }, 400, origin);
@@ -1010,6 +1058,8 @@ export default {
 
     // ── POST /api/auth/access — approved subscriber access code sign-in ────
     if (path === '/api/auth/access' && method === 'POST') {
+      const limit = await enforceAnonymousRateLimit(request, env, 'subscriber-access', 8, 900);
+      if (limit) return rateLimitResponse(origin, limit);
       const { email, code } = await readBody(request);
       const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
       const normalizedCode = typeof code === 'string' ? code.trim().toUpperCase() : '';

@@ -143,4 +143,5 @@
 - [x] Add ignore coverage for root and nested dependency directories so generated `node_modules` trees cannot be re-tracked after controlled cleanup.
 - [x] Remove currently tracked root and legacy-admin `node_modules` trees from version control while retaining local installs and package lockfiles.
 - [x] Harden approved-source feed URL validation so stored or newly submitted sources cannot target private, loopback, link-local, or reserved IP ranges through scheduled Worker fetches.
+- [x] Add bounded, privacy-preserving rate limits to public cost, authentication, and data-submission endpoints using the existing KV binding.
 - [x] Verify the committed Dependabot configuration covers the root and legacy admin manifests without triggering an unintended production deployment.
