@@ -122,6 +122,9 @@
 - [x] Repair the verified stale or non-admin browser-token handling on the administrator sign-in page so invalid sessions return to the login form instead of masking it.
 - [x] With explicit approval, publish the tested administrator stale-session recovery change to Cloudflare Pages and verify the live login form reappears for expired or non-admin tokens.
 - [ ] Conduct a read-only review of active LINX production code, Worker routes, workflows, dependencies, and privileged integrations for defects or potential backdoors.
-- [ ] Contain the confirmed public exposure of `admin/.env` and `wrangler.jsonc`, verify their removal from the Pages artifact, and identify affected credential names for secure rotation without reading values.
-- [ ] Apply and verify a narrow Cloudflare edge block for the confirmed exposed configuration paths while durable artifact containment is completed.
-- [ ] Add source-control ignore coverage so newly created environment files and generated Pages artifacts cannot be committed or redeployed accidentally.
+- [x] Contain the confirmed public exposure of `admin/.env` and `wrangler.jsonc`, verify their removal from the Pages artifact, and identify affected credential names for secure rotation without reading values.
+- [x] Apply and verify a narrow Cloudflare edge block for the confirmed exposed configuration paths while durable artifact containment is completed.
+- [x] Add source-control ignore coverage so newly created environment files and generated Pages artifacts cannot be committed or redeployed accidentally.
+- [ ] Securely rotate any credentials that may have been present in the exposed legacy environment file, then remove the legacy tracked environment file from repository source and history planning.
+- [x] Extend the approved emergency edge block to the newly confirmed public source, package, workflow, and environment-example paths; then purge and verify each path is denied.
+- [ ] Review any separate Phone Intelligence / Ethical Probe Worker proposal only after its repository, Worker target, asset ownership, and defensive authorization scope are explicitly identified.
