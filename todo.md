@@ -123,3 +123,5 @@
 - [x] With explicit approval, publish the tested administrator stale-session recovery change to Cloudflare Pages and verify the live login form reappears for expired or non-admin tokens.
 - [ ] Conduct a read-only review of active LINX production code, Worker routes, workflows, dependencies, and privileged integrations for defects or potential backdoors.
 - [ ] Contain the confirmed public exposure of `admin/.env` and `wrangler.jsonc`, verify their removal from the Pages artifact, and identify affected credential names for secure rotation without reading values.
+- [ ] Apply and verify a narrow Cloudflare edge block for the confirmed exposed configuration paths while durable artifact containment is completed.
+- [ ] Add source-control ignore coverage so newly created environment files and generated Pages artifacts cannot be committed or redeployed accidentally.

@@ -1,0 +1,8 @@
+# Local or environment-specific configuration must never be committed or deployed.
+.env
+.env.*
+**/.env
+**/.env.*
+
+# The Pages deployment workflow builds this temporary static artifact.
+.pages-artifact/
