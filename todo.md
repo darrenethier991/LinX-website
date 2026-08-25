@@ -128,12 +128,14 @@
 - [ ] Securely rotate any credentials that may have been present in the exposed legacy environment file, then remove the legacy tracked environment file from repository source and history planning.
 - [x] Extend the approved emergency edge block to the newly confirmed public source, package, workflow, and environment-example paths; then purge and verify each path is denied.
 - [ ] Review any separate Phone Intelligence / Ethical Probe Worker proposal only after its repository, Worker target, asset ownership, and defensive authorization scope are explicitly identified.
-- [ ] Inspect only the names of variables in the exposed legacy environment file to determine whether GitHub OAuth credentials were present, without reading values.
-- [ ] Inventory deployed LINX Worker secret binding names and types without reading values, then continue the active repository security audit.
+- [x] Inspect only the names of variables in the exposed legacy environment file to determine whether GitHub OAuth credentials were present, without reading values.
+- [x] Inventory deployed LINX Worker secret binding names and types without reading values, then continue the active repository security audit.
 - [x] Temporarily take `linxservices.ca` and `www.linxservices.ca` offline at the Cloudflare edge to stop public exposure while preserving recovery infrastructure.
-- [ ] Map and remove systemic public source-artifact exposure before any public restoration.
-- [ ] Reopen the LINX public site only after controlled deployment, route, dependency, and exposure checks pass.
+- [x] Map and remove systemic public source-artifact exposure before any public restoration.
+- [x] Reopen the LINX public site only after controlled deployment, route, dependency, and exposure checks pass.
 - [x] Disable the unsafe automatic Pages Git deployment that publishes repository-root artifacts, then restore only through a verified controlled static artifact.
 - [x] Replace the Pages artifact denylist with an explicit allowlist of required static pages, assets, and client resources so repository source cannot be published by omission.
-- [ ] Run a manual controlled Pages artifact release and verify the Pages default domain serves required public assets while source and configuration routes remain unavailable before lifting the temporary host-wide block.
+- [x] Run a manual controlled Pages artifact release and verify the Pages default domain serves required public assets while source and configuration routes remain unavailable before lifting the temporary host-wide block.
+- [ ] Restrict all single-lead and legacy lead-ingestion endpoints to administrators so authenticated subscribers cannot read, modify, delete, or bulk-ingest operational lead records.
+- [ ] Add and verify a manual-only GitHub Actions release workflow for the existing `linx-api` Worker so tested security fixes can be deployed without local credential handling.
 - [x] Verify the committed Dependabot configuration covers the root and legacy admin manifests without triggering an unintended production deployment.

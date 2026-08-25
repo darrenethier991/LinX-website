@@ -1524,6 +1524,7 @@ export default {
 
     // ── POST /api/leads/ingest — bulk ingest from the Express crawler ──────
     if (path === '/api/leads/ingest' && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
       const { leads: rawLeads } = await readBody(request);
       if (!Array.isArray(rawLeads) || rawLeads.length === 0)
         return json({ error: 'leads array is required' }, 400, origin);
@@ -1572,6 +1573,7 @@ export default {
 
     // ── POST /api/leads/crawler-run — record a crawler cycle result ────────
     if (path === '/api/leads/crawler-run' && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
       const { started_at, ended_at, added = 0, duplicates = 0, notified = 0, errors = [] } = await readBody(request);
       await DB(env).prepare(
         "INSERT INTO crawler_runs (started_at,ended_at,added,duplicates,notified,errors) VALUES (?,?,?,?,?,?)"
@@ -1582,6 +1584,7 @@ export default {
     // ── GET /api/leads/:id ─────────────────────────────────────────────────
     const singleLeadGet = path.match(/^\/api\/leads\/([^/]+)$/);
     if (singleLeadGet && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
       const lead = await DB(env).prepare("SELECT * FROM leads WHERE id = ?").bind(singleLeadGet[1]).first();
       if (!lead) return json({ error: 'Lead not found' }, 404, origin);
       return json(lead, 200, origin);
@@ -1590,6 +1593,7 @@ export default {
     // ── PATCH /api/leads/:id — update status or claimedBy ─────────────────
     const singleLeadPatch = path.match(/^\/api\/leads\/([^/]+)$/);
     if (singleLeadPatch && method === 'PATCH') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
       const { status, claimedBy } = await readBody(request);
       const allowed = ['active', 'archived', 'expired', 'claimed'];
       if (status && !allowed.includes(status))
@@ -1608,6 +1612,7 @@ export default {
     // ── DELETE /api/leads/:id ──────────────────────────────────────────────
     const singleLeadDelete = path.match(/^\/api\/leads\/([^/]+)$/);
     if (singleLeadDelete && method === 'DELETE') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
       const info = await DB(env).prepare("DELETE FROM leads WHERE id = ?").bind(singleLeadDelete[1]).run();
       if (!info.meta.changes) return json({ error: 'Lead not found' }, 404, origin);
       return json({ success: true }, 200, origin);
