@@ -10,6 +10,53 @@ function cleanBoolean(value) {
   return value === true || value === 1 || value === '1' || value === 'true';
 }
 
+function isBlockedIpv4(hostname) {
+  const octets = hostname.split('.').map(Number);
+  if (octets.length !== 4 || octets.some((octet) => !Number.isInteger(octet) || octet < 0 || octet > 255)) return false;
+  const [first, second, third] = octets;
+  return first === 0
+    || first === 10
+    || first === 127
+    || (first === 100 && second >= 64 && second <= 127)
+    || (first === 169 && second === 254)
+    || (first === 172 && second >= 16 && second <= 31)
+    || (first === 192 && (second === 0 || second === 168))
+    || (first === 198 && (second === 18 || second === 19 || second === 51))
+    || (first === 203 && second === 0 && third === 113)
+    || first >= 224;
+}
+
+function isBlockedIpv6(hostname) {
+  const host = hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  return host === '::'
+    || host === '::1'
+    || host.startsWith('fc')
+    || host.startsWith('fd')
+    || /^fe[89ab]/.test(host)
+    || /^::ffff:(?:127|10|0)\./.test(host)
+    || /^::ffff:192\.168\./.test(host)
+    || /^::ffff:172\.(?:1[6-9]|2\d|3[01])\./.test(host)
+    || /^::ffff:169\.254\./.test(host);
+}
+
+function publicHttpsFeedUrl(value) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
+    const blockedHostname = host === 'localhost'
+      || host.endsWith('.localhost')
+      || host.endsWith('.local')
+      || host.endsWith('.internal')
+      || host.endsWith('.nip.io')
+      || host.endsWith('.sslip.io')
+      || host.endsWith('.xip.io');
+    if (url.protocol !== 'https:' || url.username || url.password || blockedHostname || isBlockedIpv4(host) || isBlockedIpv6(host)) return null;
+    return url.toString();
+  } catch (_) {
+    return null;
+  }
+}
+
 export function normalizeLeadSourceInput(body = {}) {
   const name = cleanText(body.name, 120);
   const mode = cleanText(body.mode, 30).toLowerCase();
@@ -21,16 +68,7 @@ export function normalizeLeadSourceInput(body = {}) {
   if (!APPROVAL_STATUSES.includes(approvalStatus)) return { error: 'Select a valid approval status.' };
 
   const feedUrl = cleanText(body.feed_url || body.feedUrl, 1000);
-  if (feedUrl) {
-    try {
-      const url = new URL(feedUrl);
-      if (url.protocol !== 'https:' || ['localhost', '127.0.0.1', '::1'].includes(url.hostname) || url.hostname.endsWith('.local') || url.hostname.endsWith('.internal')) {
-        return { error: 'Feed URLs must use public HTTPS endpoints.' };
-      }
-    } catch (_) {
-      return { error: 'Enter a valid HTTPS feed URL.' };
-    }
-  }
+  if (feedUrl && !publicHttpsFeedUrl(feedUrl)) return { error: 'Feed URLs must use public HTTPS endpoints without embedded credentials.' };
 
   const fieldMapping = body.field_mapping || body.fieldMapping || {};
   if (typeof fieldMapping !== 'object' || Array.isArray(fieldMapping)) return { error: 'Field mapping must be an object.' };
@@ -61,6 +99,7 @@ export function sourceReadiness(source = {}) {
   if (['api', 'rss', 'owned_feed'].includes(mode)) {
     if (!approved) return { pipeline: 'manual_csv', ready: false, reason: 'Approval is required before automated intake.' };
     if (!feedUrl) return { pipeline: 'approved_automated', ready: false, reason: 'A documented HTTPS feed or API URL is required.' };
+    if (!publicHttpsFeedUrl(feedUrl)) return { pipeline: 'approved_automated', ready: false, reason: 'The feed URL must be a public HTTPS endpoint without embedded credentials.' };
     return { pipeline: 'approved_automated', ready: true, reason: 'Approved source is ready for rate-limited intake.' };
   }
   if (mode === 'html_crawl') {

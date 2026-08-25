@@ -142,4 +142,5 @@
 - [x] Publish a written LINX incident-recovery status report covering containment, verified restoration, released fixes, and secure follow-up requirements without exposing credential values.
 - [x] Add ignore coverage for root and nested dependency directories so generated `node_modules` trees cannot be re-tracked after controlled cleanup.
 - [x] Remove currently tracked root and legacy-admin `node_modules` trees from version control while retaining local installs and package lockfiles.
+- [x] Harden approved-source feed URL validation so stored or newly submitted sources cannot target private, loopback, link-local, or reserved IP ranges through scheduled Worker fetches.
 - [x] Verify the committed Dependabot configuration covers the root and legacy admin manifests without triggering an unintended production deployment.

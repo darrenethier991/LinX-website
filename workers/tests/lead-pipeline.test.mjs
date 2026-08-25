@@ -22,3 +22,23 @@ test('approved feeds accept bounded JSON and RSS item shapes without executing f
   assert.equal(parseApprovedFeed('<rss><channel><item><title>Fence repair</title><link>https://example.com/a</link></item></channel></rss>', 'application/rss+xml')[0].title, 'Fence repair');
   assert.match(normalizeLeadSourceInput({ name: 'Local feed', source_type: 'rss', mode: 'rss', approval_status: 'approved', feed_url: 'http://localhost/x' }).error, /public HTTPS/i);
 });
+
+test('approved-source intake rejects private, reserved, credentialed, and IP-encoded fetch targets', () => {
+  const base = { name: 'Approved feed', source_type: 'rss', mode: 'rss', approval_status: 'approved' };
+  const blockedUrls = [
+    'https://127.0.0.1/feed.xml',
+    'https://10.10.10.10/feed.xml',
+    'https://169.254.169.254/latest',
+    'https://172.16.0.10/feed.xml',
+    'https://192.168.1.10/feed.xml',
+    'https://[::1]/feed.xml',
+    'https://[fd00::1]/feed.xml',
+    'https://127.0.0.1.nip.io/feed.xml',
+    'https://user:pass@example.com/feed.xml',
+  ];
+  for (const feedUrl of blockedUrls) {
+    assert.match(normalizeLeadSourceInput({ ...base, feed_url: feedUrl }).error, /public HTTPS/i, feedUrl);
+    assert.equal(sourceReadiness({ ...base, feed_url: feedUrl }).ready, false, feedUrl);
+  }
+  assert.equal(sourceReadiness({ ...base, feed_url: 'https://feeds.example.com/approved.xml' }).ready, true);
+});
