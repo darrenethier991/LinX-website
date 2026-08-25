@@ -11,6 +11,7 @@ test("Worker deployment remains manual-only and targets the existing LINX API co
   assert.match(workflow, /ref: main/);
   assert.match(workflow, /wrangler@4\.124\.0 deploy --config wrangler\.jsonc/);
   assert.doesNotMatch(workflow, /pages deploy/);
-  assert.match(workflow, /secrets\.CLOUDFLARE_API_TOKEN/);
+  assert.match(workflow, /secrets\.CLOUDFLARE_WORKER_API_TOKEN/);
+  assert.doesNotMatch(workflow, /secrets\.CLOUDFLARE_API_TOKEN/);
   assert.match(workflow, /secrets\.CLOUDFLARE_ACCOUNT_ID/);
 });
