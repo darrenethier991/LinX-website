@@ -144,4 +144,10 @@
 - [x] Remove currently tracked root and legacy-admin `node_modules` trees from version control while retaining local installs and package lockfiles.
 - [x] Harden approved-source feed URL validation so stored or newly submitted sources cannot target private, loopback, link-local, or reserved IP ranges through scheduled Worker fetches.
 - [x] Add bounded, privacy-preserving rate limits to public cost, authentication, and data-submission endpoints using the existing KV binding.
+- [x] Verify whether the reported contractor application was recorded without exposing applicant personal data, and identify why no owner notification was delivered.
+- [ ] Configure and validate an approved event-triggered owner-notification path for new contractor applications without enabling SMS or emailing applicants unless separately authorized.
+- [x] Prepare a contractor lead-intake workflow using only real manual entries or approved, authorized sources; do not create fabricated lead records.
+- [x] Identify compliant alternatives to Facebook scraping, including authorized platform lead-form intake and permitted public or partner data sources.
+- [ ] Implement the approved owner-only email alert for new contractor applications and preserve application records when delivery is unavailable.
+- [x] Prepare a clearly labelled authorized manual/partner lead source for real contractor leads without creating any placeholder lead records.
 - [x] Verify the committed Dependabot configuration covers the root and legacy admin manifests without triggering an unintended production deployment.

@@ -12,6 +12,7 @@ import { canAdministerEcosystem, canManageOwnConsent, consentView, ECOSYSTEM_MOD
 import { launchOfferView, normalizeLaunchEarlyAccessApplication } from "./early-access.js";
 import { deviceCategory, generatedSlug, normalizeShortLinkInput, refererHost } from "./short-links.js";
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
+import { notifyOwnerOfApplication, reconcileOwnerApplicationNotifications } from "./application-notifications.js";
 
 /**
  * LinX API — Cloudflare Worker
@@ -920,12 +921,28 @@ export default {
         INSERT INTO launch_early_access_applications (id,email,display_name,business_name,trade,city,feedback_commitment,testimonial_permission,promotion_code,status)
         VALUES (?,?,?,?,?,?,?,?,?, 'applied')
       `).bind(id, application.email, application.display_name, application.business_name, application.trade, application.city, 1, application.testimonial_permission ? 1 : 0, offer.code).run();
+      try {
+        await notifyOwnerOfApplication(env, { id, email: application.email, display_name: application.display_name, business_name: application.business_name, trade: application.trade, city: application.city });
+      } catch (error) {
+        console.warn('[Applications] Owner notification could not be recorded', error?.message || error);
+      }
       return json({
         ok: true,
         application_id: id,
         offer,
         message: 'Your early-access application is recorded. If a Launch Six Stripe redemption remains, use the code at secure checkout before the stated deadline.',
       }, 201, origin);
+    }
+
+    const applicationNotifyMatch = path.match(/^\/api\/admin\/launch-applications\/([a-z0-9-]+)\/notify-owner$/i);
+    if (applicationNotifyMatch && method === 'POST') {
+      const identity = await requireAuth(request, env);
+      if (!identity || identity.role !== 'admin') return json({ error: 'Administrator authentication is required.' }, 401, origin);
+      if (!env.DB) return json({ error: 'Application storage is not configured.' }, 503, origin);
+      const application = await env.DB.prepare('SELECT id, email, display_name, business_name, trade, city FROM launch_early_access_applications WHERE id = ?').bind(applicationNotifyMatch[1]).first();
+      if (!application) return json({ error: 'Application not found.' }, 404, origin);
+      const notification = await notifyOwnerOfApplication(env, application);
+      return json({ ok: notification.status === 'sent', notification: notification.status }, notification.status === 'failed' ? 502 : 200, origin);
     }
 
     // ── GET /api/clam-code/health — role-aware UI capability check ─────────
@@ -1671,7 +1688,10 @@ export default {
     return json({ error: 'Not found' }, 404, origin);
   },
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(runApprovedSources(env, 'scheduler'));
+    ctx.waitUntil(Promise.all([
+      runApprovedSources(env, 'scheduler'),
+      reconcileOwnerApplicationNotifications(env),
+    ]));
   },
 };
 
