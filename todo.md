@@ -148,6 +148,7 @@
 - [ ] Configure and validate an approved event-triggered owner-notification path for new contractor applications without enabling SMS or emailing applicants unless separately authorized.
 - [x] Prepare a contractor lead-intake workflow using only real manual entries or approved, authorized sources; do not create fabricated lead records.
 - [x] Identify compliant alternatives to Facebook scraping, including authorized platform lead-form intake and permitted public or partner data sources.
+- [x] Verify the recon.linxservices.ca HTTPS security insight and resolve it only through non-reactivating DNS or zone-security settings if needed.
 - [ ] Implement the approved owner-only email alert for new contractor applications and preserve application records when delivery is unavailable.
 - [x] Prepare a clearly labelled authorized manual/partner lead source for real contractor leads without creating any placeholder lead records.
 - [x] Verify the committed Dependabot configuration covers the root and legacy admin manifests without triggering an unintended production deployment.
