@@ -313,7 +313,7 @@
 /* ═══════════════════════════════════════════════════════════════
    CONSTANTS & HELPERS
 ═══════════════════════════════════════════════════════════════ */
-const API = 'http://localhost:3000'; // backend base URL — change if hosting elsewhere
+const API = 'https://api.linxservices.ca'; // production API base URL
 
 // Returns the stored JWT token
 const token = () => localStorage.getItem('linx_admin_token');
@@ -1153,7 +1153,7 @@ async function renderSettings(c) {
         <tr><td style="color:var(--text-muted)">Platform</td><td>LinX Ecosystem</td></tr>
         <tr><td style="color:var(--text-muted)">Owner</td><td>Darren Ethier</td></tr>
         <tr><td style="color:var(--text-muted)">Version</td><td>1.0.0</td></tr>
-        <tr><td style="color:var(--text-muted)">Backend</td><td><code style="color:var(--gold)">http://localhost:3000</code></td></tr>
+        <tr><td style="color:var(--text-muted)">Backend</td><td><code style="color:var(--gold)">https://api.linxservices.ca</code></td></tr>
         <tr><td style="color:var(--text-muted)">Database</td><td>Google Sheets (via API v4)</td></tr>
       </tbody></table>
     </div>`;

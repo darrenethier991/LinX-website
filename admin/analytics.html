@@ -20,7 +20,7 @@
     async function loadAnalytics() {
       const response = await fetch(`${API_BASE}/api/admin/analytics`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await response.json();
-      if (!response.ok) { grid.innerHTML = `<div class="card">${escapeHtml(data.error || "Administrator access is required.")}</div>`; return; }
+      if (response.status === 401) { localStorage.removeItem("linx_token"); sessionStorage.removeItem("linx_token"); location.href = "index.html?session=expired"; return; } if (!response.ok) { grid.innerHTML = `<div class="card">${escapeHtml(data.error || "Administrator access is required.")}</div>`; return; }
       const metrics = [["Users",data.summary.users],["Active subscriptions",data.summary.active_subscriptions],["Page visits · 30 days",data.summary.page_visits_30d],["AI requests · 30 days",data.summary.ai_requests_30d]];
       grid.innerHTML = metrics.map(([label,value]) => `<div class="card"><div class="metric-label">${escapeHtml(label)}</div><div class="metric-value">${escapeHtml(value)}</div></div>`).join("");
       rows.innerHTML = data.ai_usage.length ? data.ai_usage.map(row => `<tr><td>${escapeHtml(row.day)}</td><td>${escapeHtml(row.public_requests)}</td><td>${escapeHtml(row.admin_requests)}</td></tr>`).join("") : "<tr><td colspan=\"3\">No AI requests have been recorded.</td></tr>";

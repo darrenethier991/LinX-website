@@ -344,7 +344,7 @@
     };
     if (body) opts.body = JSON.stringify(body);
     const r = await fetch(API + path, opts);
-    if (r.status === 401) { showLogin(); return null; }
+    if (r.status === 401) { _token=''; localStorage.removeItem('linx_token'); sessionStorage.removeItem('linx_token'); showLogin(); return null; }
     return r.json();
   }
 
