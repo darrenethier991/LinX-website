@@ -9,6 +9,6 @@
     "test:worker": "node --test workers/tests/*.test.mjs"
   },
   "devDependencies": {
-    "wrangler": "^4.105.0"
+    "wrangler": "^4.129.0"
   }
 }
