@@ -47,7 +47,7 @@
     <!-- Post type -->
     <div class="card" style="margin-bottom:1.2rem;">
       <h3 style="font-family:var(--font-head);font-size:1.02rem;margin:0 0 1.1rem;">📝 What are you posting?</h3>
-      <div class="urgency-grid posttype-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="urgency-grid posttype-grid" style="grid-template-columns:1fr 1fr 1fr;">
         <label>
           <input type="radio" name="post-type" value="project" checked style="display:none;"/>
           <div class="urgency-card selected">
@@ -62,6 +62,14 @@
             <div class="u-emoji">💼</div>
             <div class="u-title">Hiring</div>
             <div class="u-sub">Find employees &amp; apprentices</div>
+          </div>
+        </label>
+        <label>
+          <input type="radio" name="post-type" value="seeking" style="display:none;"/>
+          <div class="urgency-card">
+            <div class="u-emoji">🔍</div>
+            <div class="u-title">Looking for Work</div>
+            <div class="u-sub">Post your availability</div>
           </div>
         </label>
       </div>
@@ -145,6 +153,18 @@
             <option>Part-time</option>
             <option>Apprenticeship</option>
             <option>Contract</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="availability-group" style="display:none;">
+          <label class="form-label" for="job-availability">Availability</label>
+          <select class="form-select" id="job-availability">
+            <option value="">— Select —</option>
+            <option>Immediately</option>
+            <option>Within a week</option>
+            <option>Weekends only</option>
+            <option>Evenings</option>
+            <option>Part-time hours</option>
           </select>
         </div>
 
@@ -268,7 +288,7 @@
     });
   });
 
-  /* ── Post type: project vs hiring ── */
+  /* ── Post type: project vs hiring vs seeking ── */
   const COPY = {
     project: {
       eyebrow: 'Free for homeowners',
@@ -297,6 +317,20 @@
       minLabel: 'Pay From (CAD)', maxLabel: 'Pay To (CAD)',
       budgetHint: 'Optional — hourly or salary range helps attract applicants.',
       submit: '🚀 Post Hiring Ad'
+    },
+    seeking: {
+      eyebrow: 'Free to post',
+      heading: 'Post Your Availability',
+      sub: 'Let Simcoe County homeowners and contractors know you are available for work.',
+      what: '📋 What is your headline?',
+      titleLabel: 'Headline', titlePh: 'e.g. Licensed electrician available weekends…',
+      titleHint: 'Keep it short and clear — this is what people hiring see first.',
+      descPh: 'Describe your experience — trade, years on the tools, tickets or licences, tools you carry, availability…',
+      descHint: 'More detail means better offers.',
+      loc: '📍 Location & Expected Pay',
+      minLabel: 'Expected Pay From (CAD)', maxLabel: 'Expected Pay To (CAD)',
+      budgetHint: 'Optional — hourly or salary range helps you get matched.',
+      submit: '🚀 Post My Availability'
     }
   };
 
@@ -317,6 +351,7 @@
     document.getElementById('budget-hint').textContent = c.budgetHint;
     document.getElementById('submit-btn').textContent = c.submit;
     document.getElementById('employment-group').style.display = type === 'hiring' ? 'block' : 'none';
+    document.getElementById('availability-group').style.display = type === 'seeking' ? 'block' : 'none';
   }
 
   document.querySelectorAll('.posttype-grid label').forEach(opt => {
@@ -328,10 +363,11 @@
     });
   });
 
-  // Preselect from ?type=hiring (links from the job board)
-  if (new URLSearchParams(window.location.search).get('type') === 'hiring') {
-    const hiringOpt = document.querySelector('.posttype-grid input[value="hiring"]');
-    if (hiringOpt) hiringOpt.closest('label').click();
+  // Preselect from ?type=hiring or ?type=seeking (links from the job board)
+  const preType = new URLSearchParams(window.location.search).get('type');
+  if (preType === 'hiring' || preType === 'seeking') {
+    const preOpt = document.querySelector(`.posttype-grid input[value="${preType}"]`);
+    if (preOpt) preOpt.closest('label').click();
   }
 
   /* ── Submit ── */
@@ -340,10 +376,13 @@
 
   function showSuccess() {
     form.style.display = 'none';
-    const isHiring = document.querySelector('input[name="post-type"]:checked').value === 'hiring';
-    if (isHiring) {
+    const postType = document.querySelector('input[name="post-type"]:checked').value;
+    if (postType === 'hiring') {
       document.getElementById('success-heading').textContent = 'Hiring Ad Posted!';
       document.getElementById('success-text').textContent = 'Your ad is in the pipeline. Job seekers across Simcoe County will see it on the job board — watch your email and phone for applicants.';
+    } else if (postType === 'seeking') {
+      document.getElementById('success-heading').textContent = 'Availability Posted!';
+      document.getElementById('success-text').textContent = 'Your availability is in the pipeline. Homeowners and contractors across Simcoe County will see it on the job board — watch your email and phone for offers.';
     }
     document.getElementById('job-posted-success').style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -363,6 +402,7 @@
       urgency: document.querySelector('input[name="urgency"]:checked').value,
       city: citySel.value,
       employment: document.getElementById('job-employment').value || null,
+      availability: document.getElementById('job-availability').value || null,
       budgetMin: document.getElementById('budget-min').value || null,
       budgetMax: document.getElementById('budget-max').value || null,
       name: document.getElementById('c-name').value.trim(),

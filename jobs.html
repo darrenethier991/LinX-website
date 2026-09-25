@@ -7,12 +7,12 @@
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="LinX"/>
   <meta property="og:title" content="Job Board — LinX"/>
-  <meta property="og:description" content="Browse real home projects posted by Simcoe County homeowners. No accounts, no spam — just work."/>
+  <meta property="og:description" content="Browse home projects, hiring ads, and workers available in Simcoe County. No accounts, no spam — just work."/>
   <meta property="og:url" content="https://linxservices.ca/jobs.html"/>
   <meta property="og:image" content="https://linxservices.ca/og-image.jpg"/>
   <meta name="twitter:card" content="summary_large_image"/>
   <title>Job Board — LinX</title>
-  <meta name="description" content="Browse real home projects posted by Simcoe County homeowners. No accounts, no spam — just work."/>
+  <meta name="description" content="Browse home projects, hiring ads, and workers available in Simcoe County. No accounts, no spam — just work."/>
   <link rel="stylesheet" href="css/app.css"/>
 </head>
 <body>
@@ -40,8 +40,8 @@
 
     <div class="section-head">
       <p class="eyebrow">Job board</p>
-      <h1 class="section-title">Real projects, ready for quotes</h1>
-      <p class="section-sub">Posted by Simcoe County homeowners. No accounts, no spam — just work. Posting is always free.</p>
+      <h1 class="section-title">Real projects. Real workers.</h1>
+      <p class="section-sub">Home projects, hiring ads, and workers available — posted across Simcoe County. No accounts, no spam — just work. Posting is always free.</p>
     </div>
 
     <!-- Search & filter bar -->
@@ -57,9 +57,10 @@
         <option value="">All of Simcoe Co.</option>
       </select>
       <select class="form-select" id="job-filter-type" style="max-width:170px;" onchange="renderJobs()">
-        <option value="">Projects + Hiring</option>
+        <option value="">All postings</option>
         <option value="project">Home projects</option>
         <option value="hiring">Hiring ads</option>
+        <option value="seeking">Looking for Work</option>
       </select>
     </div>
 
@@ -87,11 +88,12 @@
     </div>
 
     <div class="cta-band" style="margin-top:2.5rem;">
-      <h2 class="section-title" style="font-size:1.3rem;margin-bottom:.5rem;">Have a project — or a position to fill?</h2>
+      <h2 class="section-title" style="font-size:1.3rem;margin-bottom:.5rem;">Have a project, a position — or skills to offer?</h2>
       <p class="section-sub" style="margin:0 auto 1.4rem;">Posting is free, and matched people get notified automatically.</p>
       <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;">
         <a href="post-job.html" class="btn btn--gold btn--lg">Post a Job — Free</a>
         <a href="post-job.html?type=hiring" class="btn btn--outline btn--lg">Post a Hiring Ad</a>
+        <a href="post-job.html?type=seeking" class="btn btn--outline btn--lg">Post Your Availability</a>
       </div>
     </div>
 
@@ -113,8 +115,8 @@
      GET https://api.linxservices.ca/api/jobs (public, rate-limited)
      returns only public-safe fields:
        [{ id, post_type, title, trade, city, budget_min, budget_max,
-          employment_type, urgency, description, posted_at }]
-     post_type is 'project' or 'hiring' (defaults to 'project').
+          employment_type, availability, urgency, description, posted_at }]
+     post_type is 'project', 'hiring', or 'seeking' (defaults to 'project').
      Posters' names, emails, and phones are NEVER exposed here.
      Until the endpoint is live, the board shows the honest
      empty state below — no placeholder jobs, ever. */
@@ -132,7 +134,8 @@
   const URGENCY_LABEL = { flexible: '🗓 Flexible', soon: '⚡ Soon', asap: '🚨 ASAP' };
 
   function fmtBudget(job) {
-    const label = (job.post_type || 'project') === 'hiring' ? 'Pay' : 'Budget';
+    const pt = job.post_type || 'project';
+    const label = pt === 'hiring' ? 'Pay' : pt === 'seeking' ? 'Expected pay' : 'Budget';
     if (job.budget_min || job.budget_max) {
       const lo = job.budget_min ? `$${Number(job.budget_min).toLocaleString()}` : '?';
       const hi = job.budget_max ? `$${Number(job.budget_max).toLocaleString()}` : '?';
@@ -152,13 +155,18 @@
   }
 
   function jobCard(job) {
-    const isHiring = (job.post_type || 'project') === 'hiring';
+    const pt = job.post_type || 'project';
+    const isHiring = pt === 'hiring';
+    const isSeeking = pt === 'seeking';
+    const badge = isSeeking ? '👷 Available for work' : isHiring ? '💼 Hiring' : '🏠 Project';
+    const cta = isSeeking ? 'Contact →' : isHiring ? 'Apply →' : "I'm interested →";
     return `
       <div class="card card--hover">
         <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem;">
-          <span class="tag ${isHiring ? '' : 'tag--gold'}">${isHiring ? '💼 Hiring' : '🏠 Project'}</span>
+          <span class="tag ${isHiring ? '' : 'tag--gold'}">${badge}</span>
           <span class="tag tag--gold">${esc(job.trade || 'General')}</span>
           ${job.employment_type ? `<span class="tag">${esc(job.employment_type)}</span>` : ''}
+          ${isSeeking && job.availability ? `<span class="tag">${esc(job.availability)}</span>` : ''}
           ${job.urgency ? `<span class="tag">${esc(URGENCY_LABEL[job.urgency] || job.urgency)}</span>` : ''}
           <span style="margin-left:auto;font-size:.75rem;color:var(--white-35);">${esc(fmtDate(job.posted_at))}</span>
         </div>
@@ -167,7 +175,7 @@
         <p class="c-bio">${esc((job.description || '').slice(0, 220))}${(job.description || '').length > 220 ? '…' : ''}</p>
         <div style="display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin-top:.8rem;flex-wrap:wrap;">
           <span class="c-rate">${esc(fmtBudget(job))}</span>
-          <a href="contact.html" class="btn btn--outline btn--sm">${isHiring ? 'Apply →' : "I'm interested →"}</a>
+          <a href="contact.html" class="btn btn--outline btn--sm">${cta}</a>
         </div>
       </div>`;
   }
@@ -198,6 +206,12 @@
     empty.style.display = 'none';
     count.textContent = `Showing ${list.length} job${list.length !== 1 ? 's' : ''}`;
     grid.innerHTML = list.map(jobCard).join('');
+  }
+
+  // Preselect type filter from ?type= (links from post CTAs)
+  const preType = new URLSearchParams(window.location.search).get('type');
+  if (preType && ['project', 'hiring', 'seeking'].includes(preType)) {
+    document.getElementById('job-filter-type').value = preType;
   }
 
   (async function loadJobs() {
