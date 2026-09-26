@@ -272,17 +272,17 @@
           <div class="stat-card">
             <div class="label">Active (72h)</div>
             <div class="value" id="dash-active">—</div>
-            <div class="sub">In pipeline</div>
+            <div class="sub">Last 72h</div>
           </div>
           <div class="stat-card">
             <div class="label">SMS Sent</div>
             <div class="value" id="dash-sms">—</div>
-            <div class="sub">Last 7 days</div>
+            <div class="sub">No SMS-count backend</div>
           </div>
           <div class="stat-card">
             <div class="label">Automations</div>
-            <div class="value">3</div>
-            <div class="sub">Running</div>
+            <div class="value" id="dash-automations">—</div>
+            <div class="sub">Registered</div>
           </div>
           <div class="stat-card">
             <div class="label">Workers</div>
@@ -292,7 +292,7 @@
           <div class="stat-card">
             <div class="label">Wallet Balance</div>
             <div class="value" id="dash-balance">—</div>
-            <div class="sub">Platform credits</div>
+            <div class="sub">No wallet backend</div>
           </div>
         </div>
         <div class="two-col">
@@ -341,83 +341,36 @@
       <div class="panel" id="panel-crawler">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
           <div>
-            <h1 style="font-size:20px;font-weight:800;margin-bottom:4px">OSINT Crawler</h1>
-            <p style="color:var(--text-muted);font-size:12px">Monitors Kijiji, Craigslist, Reddit for homeowner service requests</p>
+            <h1 style="font-size:20px;font-weight:800;margin-bottom:4px">Lead Pipeline</h1>
+            <p style="color:var(--text-muted);font-size:12px">CRM contacts and AI lead scores from the live API</p>
           </div>
           <div style="display:flex;gap:8px">
-            <button class="btn btn--outline btn--sm" id="run-crawler">▶ Run Now</button>
             <button class="btn btn--ghost btn--sm" id="refresh-crawler">Refresh</button>
           </div>
         </div>
 
         <div class="stat-grid" id="crawler-stats">
-          <div class="stat-card"><div class="label">Total Leads</div><div class="value" id="stat-total">—</div></div>
-          <div class="stat-card"><div class="label">Active (72h)</div><div class="value" id="stat-active">—</div></div>
-          <div class="stat-card"><div class="label">New Last 72h</div><div class="value" id="stat-new">—</div></div>
-          <div class="stat-card"><div class="label">Expired</div><div class="value" id="stat-expired">—</div></div>
-          <div class="stat-card"><div class="label">Last Cycle Added</div><div class="value" id="stat-cycle-added">—</div></div>
-          <div class="stat-card"><div class="label">Last Cycle Dupes</div><div class="value" id="stat-cycle-dupes">—</div></div>
-        </div>
-
-        <div class="card" style="margin-bottom:18px">
-          <div class="card-header">
-            <div class="card-title">Crawler Status</div>
-            <div style="display:flex;gap:16px;font-size:12px;flex-wrap:wrap">
-              <span>Status: <span id="craw-running" class="badge badge--green">Running</span></span>
-              <span>Last run: <span id="craw-lastrun" class="td-mono">—</span></span>
-              <span>Interval: <span id="craw-interval" class="td-mono">4h</span></span>
-            </div>
-          </div>
-          <div class="log-area" id="crawler-log">
-            <span class="log-ok">No errors in last cycle.</span>
-          </div>
-        </div>
-
-        <div class="two-col">
-          <div class="card">
-            <div class="card-title" style="margin-bottom:14px">Leads by Category</div>
-            <div id="cat-bars"></div>
-          </div>
-          <div class="card">
-            <div class="card-title" style="margin-bottom:14px">Leads by Source</div>
-            <div id="src-bars"></div>
-          </div>
+          <div class="stat-card"><div class="label">Total Leads</div><div class="value" id="pl-total">—</div><div class="sub">All time</div></div>
+          <div class="stat-card"><div class="label">New (72h)</div><div class="value" id="pl-new">—</div><div class="sub">Last 72h</div></div>
+          <div class="stat-card"><div class="label">AI Scored</div><div class="value" id="pl-scored">—</div><div class="sub">With lead_score</div></div>
+          <div class="stat-card"><div class="label">Avg AI Score</div><div class="value" id="pl-avg">—</div><div class="sub">1–10 scale</div></div>
         </div>
 
         <div class="card">
           <div class="card-header">
             <div class="card-title">Recent Leads</div>
-            <div style="display:flex;gap:8px">
-              <select class="form-select" id="filter-cat" style="width:140px;padding:5px 8px">
-                <option value="">All Categories</option>
-              </select>
-              <select class="form-select" id="filter-src" style="width:130px;padding:5px 8px">
-                <option value="">All Sources</option>
-                <option value="kijiji">Kijiji</option>
-                <option value="craigslist">Craigslist</option>
-                <option value="reddit">Reddit</option>
-                <option value="organic">Organic</option>
-              </select>
-            </div>
           </div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Title</th><th>Category</th><th>City</th><th>Source</th><th>Posted</th><th>Status</th><th></th>
+                  <th>Name</th><th>Contact</th><th>Source</th><th>AI Score</th><th>Created</th>
                 </tr>
               </thead>
-              <tbody id="crawler-leads-tbody">
-                <tr><td colspan="7" style="text-align:center;padding:24px">Connect API to load leads</td></tr>
+              <tbody id="pipeline-leads-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:24px">Sign in to load leads</td></tr>
               </tbody>
             </table>
-          </div>
-          <div class="pagination">
-            <span id="crawler-count"></span>
-            <div style="display:flex;gap:6px">
-              <button class="btn btn--ghost btn--sm" id="cprev-btn">← Prev</button>
-              <button class="btn btn--ghost btn--sm" id="cnext-btn">Next →</button>
-            </div>
           </div>
         </div>
       </div>
@@ -524,118 +477,47 @@
 
       <!-- ── ECHOFORGE AGENTS ── -->
       <div class="panel" id="panel-echoforge">
-        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">EchoForge Agent Controls</h1>
-        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Enable or disable individual AI agents and automation triggers</p>
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">AI Agents</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Live registry from the LinX AI gateway (ai.linxservices.ca)</p>
 
         <div class="stat-grid" style="margin-bottom:24px">
           <div class="stat-card">
-            <div class="label">Active Agents</div>
-            <div class="value">4</div>
-            <div class="sub">Of 6 total</div>
+            <div class="label">Agents</div>
+            <div class="value" id="agents-count">—</div>
+            <div class="sub">Registered tasks</div>
           </div>
           <div class="stat-card">
-            <div class="label">Runs Today</div>
-            <div class="value" id="agent-runs-today">—</div>
-            <div class="sub">All agents</div>
+            <div class="label">Chains</div>
+            <div class="value" id="chains-count">—</div>
+            <div class="sub">Multi-step flows</div>
           </div>
           <div class="stat-card">
-            <div class="label">Success Rate</div>
-            <div class="value">98.2%</div>
-            <div class="sub">Last 24h</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Echo Credits</div>
-            <div class="value" id="echo-credits">—</div>
-            <div class="sub">Remaining</div>
+            <div class="label">Gateway Mode</div>
+            <div class="value" id="agents-mode" style="font-size:18px">—</div>
+            <div class="sub">Inference backend</div>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header">
             <div class="card-title">Agent Registry</div>
-            <span style="font-size:11px;color:var(--text-dim)">Changes take effect immediately</span>
+            <span class="badge badge--blue" id="agents-health">Checking…</span>
           </div>
           <div id="agent-list">
-            <div class="workflow-row">
-              <div style="flex:1">
-                <div class="workflow-name">Intent Classifier</div>
-                <div class="workflow-desc">Classifies inbound SMS intent: inquiry · schedule · complaint · cancel · opt_out</div>
-              </div>
-              <label class="switch" style="margin-left:16px">
-                <input type="checkbox" checked onchange="toggleAgent(this,'classifier')">
-                <div class="switch-track"></div>
-                <div class="switch-thumb"></div>
-              </label>
-            </div>
-            <div class="workflow-row">
-              <div style="flex:1">
-                <div class="workflow-name">Entity Extractor</div>
-                <div class="workflow-desc">Extracts name, phone, email, trade type from inbound messages</div>
-              </div>
-              <label class="switch" style="margin-left:16px">
-                <input type="checkbox" checked onchange="toggleAgent(this,'entities')">
-                <div class="switch-track"></div>
-                <div class="switch-thumb"></div>
-              </label>
-            </div>
-            <div class="workflow-row">
-              <div style="flex:1">
-                <div class="workflow-name">Lead Qualifier</div>
-                <div class="workflow-desc">Scores leads 1-10, assigns tier (hot/warm/cold) and routes department</div>
-              </div>
-              <label class="switch" style="margin-left:16px">
-                <input type="checkbox" checked onchange="toggleAgent(this,'qualifier')">
-                <div class="switch-track"></div>
-                <div class="switch-thumb"></div>
-              </label>
-            </div>
-            <div class="workflow-row">
-              <div style="flex:1">
-                <div class="workflow-name">Reply Drafter</div>
-                <div class="workflow-desc">Generates personalised welcome and follow-up SMS messages</div>
-              </div>
-              <label class="switch" style="margin-left:16px">
-                <input type="checkbox" checked onchange="toggleAgent(this,'drafter')">
-                <div class="switch-track"></div>
-                <div class="switch-thumb"></div>
-              </label>
-            </div>
-            <div class="workflow-row">
-              <div style="flex:1">
-                <div class="workflow-name">Scheduler Agent</div>
-                <div class="workflow-desc">Queues follow-up touchpoints at 1h, 24h, 72h intervals for warm leads</div>
-              </div>
-              <label class="switch" style="margin-left:16px">
-                <input type="checkbox" onchange="toggleAgent(this,'scheduler')">
-                <div class="switch-track"></div>
-                <div class="switch-thumb"></div>
-              </label>
-            </div>
-            <div class="workflow-row">
-              <div style="flex:1">
-                <div class="workflow-name">Department Router</div>
-                <div class="workflow-desc">Routes contacts to correct department: sales · support · billing · escalation</div>
-              </div>
-              <label class="switch" style="margin-left:16px">
-                <input type="checkbox" onchange="toggleAgent(this,'router')">
-                <div class="switch-track"></div>
-                <div class="switch-thumb"></div>
-              </label>
-            </div>
+            <div style="text-align:center;padding:24px;color:var(--text-dim)">Loading agents from the gateway…</div>
           </div>
+          <p style="font-size:11px;color:var(--text-dim);margin-top:12px">Agent enable/disable is managed in the gateway worker config.</p>
         </div>
       </div>
 
       <!-- ── URL SHORTENER ── -->
       <div class="panel" id="panel-shortener">
-        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">URL Shortener Analytics</h1>
-        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Track clicks, geography, devices, and referrers for all shortened links</p>
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">URL Shortener</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Short links and click counts from the live API</p>
 
         <div class="stat-grid" style="margin-bottom:24px">
           <div class="stat-card"><div class="label">Total Links</div><div class="value" id="shn-total">—</div></div>
           <div class="stat-card"><div class="label">Total Clicks</div><div class="value" id="shn-clicks">—</div></div>
-          <div class="stat-card"><div class="label">Clicks Today</div><div class="value" id="shn-today">—</div></div>
-          <div class="stat-card"><div class="label">Top Country</div><div class="value" id="shn-country">CA</div></div>
         </div>
 
         <div class="card" style="margin-bottom:18px">
@@ -657,10 +539,10 @@
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>Short URL</th><th>Destination</th><th>Clicks</th><th>Created</th><th>Top Country</th><th></th></tr>
+                <tr><th>Short URL</th><th>Destination</th><th>Clicks</th><th>Created</th><th></th></tr>
               </thead>
               <tbody id="shn-tbody">
-                <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-dim)">No links yet. Create your first one above.</td></tr>
+                <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-dim)">No links yet. Create your first one above.</td></tr>
               </tbody>
             </table>
           </div>
@@ -681,38 +563,11 @@
 
         <div class="card">
           <div class="card-header">
-            <div class="card-title">Registered Workflows</div>
-            <button class="btn btn--outline btn--sm" id="trigger-test-btn">Test Trigger</button>
+            <div class="card-title">Registered Triggers</div>
+            <button class="btn btn--ghost btn--sm" id="refresh-workflows">Refresh</button>
           </div>
-          <div class="workflow-row">
-            <div style="flex:1">
-              <div class="workflow-name"><span class="status-dot status-dot--green"></span>send_welcome_sms</div>
-              <div class="workflow-desc">Triggered by: crm.contact.created — Sends personalised welcome SMS via Twilio</div>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <span class="badge badge--green">Active</span>
-              <button class="btn btn--ghost btn--sm" onclick="testWorkflow('send_welcome_sms')">Run</button>
-            </div>
-          </div>
-          <div class="workflow-row">
-            <div style="flex:1">
-              <div class="workflow-name"><span class="status-dot status-dot--green"></span>qualify_lead</div>
-              <div class="workflow-desc">Triggered by: sms.received / sms.intent.detected — AI lead scoring 1-10 + department routing</div>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <span class="badge badge--green">Active</span>
-              <button class="btn btn--ghost btn--sm" onclick="testWorkflow('qualify_lead')">Run</button>
-            </div>
-          </div>
-          <div class="workflow-row">
-            <div style="flex:1">
-              <div class="workflow-name"><span class="status-dot status-dot--green"></span>schedule_followup</div>
-              <div class="workflow-desc">Triggered by: score >= 8 — Queues follow-up SMS at 1h, 24h, 72h intervals</div>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <span class="badge badge--green">Active</span>
-              <button class="btn btn--ghost btn--sm" onclick="testWorkflow('schedule_followup')">Run</button>
-            </div>
+          <div id="workflow-list">
+            <div style="text-align:center;padding:28px;color:var(--text-dim)">Loading triggers…</div>
           </div>
         </div>
 
@@ -726,7 +581,7 @@
                 <tr><th>Workflow</th><th>Contact</th><th>Status</th><th>Steps</th><th>Duration</th><th>Ran At</th></tr>
               </thead>
               <tbody id="workflow-runs-tbody">
-                <tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text-dim)">Connect API to load workflow history</td></tr>
+                <tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text-dim)">The API does not record run history — no runs to show.</td></tr>
               </tbody>
             </table>
           </div>
@@ -958,6 +813,11 @@
       url.searchParams.set('panel', panelName);
       window.history.replaceState({}, '', url);
     }
+    // Lazy-load real data per panel when it opens
+    if (panelName === 'crawler') loadLeadPipeline();
+    else if (panelName === 'echoforge') loadAgents();
+    else if (panelName === 'workflows') loadWorkflows();
+    else if (panelName === 'shortener') loadShortLinks();
   }
 
   document.querySelectorAll('.sidebar-link').forEach(link => {
@@ -966,18 +826,46 @@
     });
   });
 
-  // ── DASHBOARD ────────────────────────────────────────────────────────────────
-  function initDashboard() {
-    document.getElementById('dash-time').textContent = new Date().toLocaleString();
-    // Simulate some numbers
-    document.getElementById('dash-total-leads').textContent = '1,847';
-    document.getElementById('dash-active').textContent = '312';
-    document.getElementById('dash-sms').textContent = '892';
-    document.getElementById('dash-balance').textContent = '$45.20';
+  // ── AUTHENTICATED API FETCH (401 → session expired) ──────────────────────────
+  async function apiFetch(path, opts = {}) {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...opts,
+      headers: { ...(opts.headers || {}), Authorization: `Bearer ${getAdminToken()}` },
+    });
+    if (res.status === 401) {
+      clearAdminSession();
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      showToast('Session expired — please sign in again.');
+      throw new Error('Session expired.');
+    }
+    return res;
+  }
 
-    // Crawler bars
-    renderBars('cat-bars', { roofing: 142, electrical: 98, plumbing: 87, landscaping: 74, renovation: 61, hvac: 45 });
-    renderBars('src-bars', { kijiji: 203, craigslist: 118, reddit: 72, organic: 114 });
+  function fmtNum(v) { return (v === null || v === undefined || v === '') ? '—' : Number(v).toLocaleString(); }
+
+  // ── DASHBOARD ────────────────────────────────────────────────────────────────
+  async function initDashboard() {
+    document.getElementById('dash-time').textContent = new Date().toLocaleString();
+    // Honest defaults: no SMS-count or wallet backends exist, so these stay "—".
+    document.getElementById('dash-sms').textContent = '—';
+    document.getElementById('dash-balance').textContent = '—';
+
+    try {
+      const res = await apiFetch('/api/stats');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Unable to load stats.');
+      document.getElementById('dash-total-leads').textContent = fmtNum(data.contacts_total);
+      document.getElementById('dash-active').textContent = fmtNum(data.contacts_72h);
+    } catch (_) { /* keep "—" */ }
+
+    try {
+      const res = await apiFetch('/api/automations/triggers');
+      const data = await res.json().catch(() => []);
+      if (!res.ok) throw new Error(data.error || 'Unable to load triggers.');
+      const triggers = Array.isArray(data) ? data : [];
+      document.getElementById('dash-automations').textContent = String(triggers.length);
+    } catch (_) { /* keep "—" */ }
 
     // Live data
     checkWorkerHealth();
@@ -1083,6 +971,153 @@
       </div>`).join('');
   }
 
+  // ── LEAD PIPELINE (real data from /api/stats + /api/contacts) ────────────────
+  function scoreBadge(score) {
+    if (score === null || score === undefined || score === '') return '<span class="badge">—</span>';
+    const s = Number(score);
+    const cls = s >= 7 ? 'badge--green' : s >= 4 ? 'badge--gold' : 'badge--red';
+    const tier = s >= 7 ? 'hot' : s >= 4 ? 'warm' : 'cold';
+    return `<span class="badge ${cls}">${s} · ${tier}</span>`;
+  }
+
+  async function loadLeadPipeline() {
+    const tbody = document.getElementById('pipeline-leads-tbody');
+    if (!tbody) return;
+    try {
+      const [statsRes, contactsRes] = await Promise.all([
+        apiFetch('/api/stats'),
+        apiFetch('/api/contacts?limit=10'),
+      ]);
+      const stats = await statsRes.json().catch(() => ({}));
+      const contacts = await contactsRes.json().catch(() => []);
+      if (!statsRes.ok) throw new Error(stats.error || 'Unable to load stats.');
+      document.getElementById('pl-total').textContent = fmtNum(stats.contacts_total);
+      document.getElementById('pl-new').textContent = fmtNum(stats.contacts_72h);
+      document.getElementById('pl-scored').textContent = fmtNum(stats.scored_count);
+      document.getElementById('pl-avg').textContent =
+        (stats.avg_score === null || stats.avg_score === undefined || stats.avg_score === '')
+          ? '—' : Number(stats.avg_score).toFixed(1);
+      if (!contactsRes.ok) throw new Error(contacts.error || 'Unable to load contacts.');
+      const rows = Array.isArray(contacts) ? contacts : [];
+      tbody.innerHTML = rows.length ? rows.map(c => {
+        const contact = [c.email, c.phone].filter(Boolean).map(escHtml).join('<br>');
+        const created = c.created_at ? new Date(String(c.created_at).replace(' ', 'T')).toLocaleDateString() : '—';
+        return `<tr><td style="font-weight:600">${escHtml(c.name || '—')}</td>` +
+          `<td class="td-mono">${contact || '—'}</td>` +
+          `<td>${escHtml(c.source || '—')}</td>` +
+          `<td>${scoreBadge(c.lead_score)}</td>` +
+          `<td class="td-mono">${created}</td></tr>`;
+      }).join('') : '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-dim)">No leads yet.</td></tr>';
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;color:#fecaca">${escHtml(err.message || 'Unable to load lead pipeline.')}</td></tr>`;
+    }
+  }
+  document.getElementById('refresh-crawler').addEventListener('click', loadLeadPipeline);
+
+  // ── AI AGENTS (real registry from the AI gateway /health) ───────────────────
+  const AGENT_DESCRIPTIONS = {
+    classify: 'Classifies incoming message intent and topic',
+    extract: 'Extracts names, numbers, and key details',
+    route: 'Routes work to the right department',
+    summarize: 'Summarizes long threads into brief notes',
+    qualify_lead: 'Scores lead intent 1–10 with tier',
+    generate_reply: 'Drafts contextual reply text',
+    detect_intent: 'Detects user intent for routing',
+    enrich: 'Enriches contact with context data',
+    draft_followup: 'Drafts follow-up outreach messages',
+  };
+
+  async function loadAgents() {
+    const list = document.getElementById('agent-list');
+    const healthBadge = document.getElementById('agents-health');
+    if (!list) return;
+    try {
+      const res = await fetch('https://ai.linxservices.ca/health', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      const agents = Array.isArray(data.agents) ? data.agents : [];
+      const chains = Array.isArray(data.chains) ? data.chains : [];
+      document.getElementById('agents-count').textContent = String(agents.length);
+      document.getElementById('chains-count').textContent = String(chains.length);
+      document.getElementById('agents-mode').textContent = data.mode || '—';
+      if (healthBadge) {
+        healthBadge.className = 'badge ' + (data.status === 'ok' ? 'badge--green' : 'badge--gold');
+        healthBadge.textContent = data.status === 'ok' ? 'Online' : (data.status || 'Online');
+      }
+      const agentRows = agents.map(a => `
+        <div class="workflow-row">
+          <div style="flex:1">
+            <div class="workflow-name"><span class="status-dot status-dot--green"></span>${escHtml(a)}</div>
+            <div class="workflow-desc">${escHtml(AGENT_DESCRIPTIONS[a] || 'AI agent task')}</div>
+          </div>
+          <span class="badge badge--blue">Registered</span>
+        </div>`).join('');
+      const chainRows = chains.length ? '<div class="drawer-label" style="margin-top:16px;margin-bottom:8px">Chains</div>' + chains.map(c => {
+        const label = typeof c === 'string' ? c : (c.name || 'chain');
+        const steps = c && Array.isArray(c.steps) && c.steps.length ? ' — ' + c.steps.join(' → ') : '';
+        return `<div class="workflow-row"><div style="flex:1"><div class="workflow-name">${escHtml(label)}</div>` +
+          (steps ? `<div class="workflow-desc">${escHtml(steps.replace(/^ — /, ''))}</div>` : '') + `</div></div>`;
+      }).join('') : '';
+      list.innerHTML = (agentRows || '<div style="text-align:center;padding:24px;color:var(--text-dim)">No agents reported.</div>') + chainRows;
+    } catch (err) {
+      if (healthBadge) { healthBadge.className = 'badge badge--red'; healthBadge.textContent = 'Unreachable'; }
+      document.getElementById('agents-count').textContent = '—';
+      document.getElementById('chains-count').textContent = '—';
+      document.getElementById('agents-mode').textContent = '—';
+      list.innerHTML = `<div style="text-align:center;padding:24px;color:#fecaca">${escHtml(err.message || 'Unable to reach AI gateway.')}</div>`;
+    }
+  }
+
+  // ── WORKFLOWS (real triggers from /api/automations/triggers) ────────────────
+  async function loadWorkflows() {
+    const list = document.getElementById('workflow-list');
+    if (!list) return;
+    try {
+      const res = await apiFetch('/api/automations/triggers');
+      const data = await res.json().catch(() => []);
+      if (!res.ok) throw new Error(data.error || 'Unable to load workflows.');
+      const triggers = Array.isArray(data) ? data : [];
+      list.innerHTML = triggers.length ? triggers.map(t => {
+        const routes = Array.isArray(t.routes_to) && t.routes_to.length
+          ? '→ ' + t.routes_to.map(escHtml).join(', ') : 'no routes';
+        return `<div class="workflow-row">
+          <div style="flex:1">
+            <div class="workflow-name"><span class="status-dot status-dot--green"></span>${escHtml(t.name || 'unnamed')}</div>
+            <div class="workflow-desc">${escHtml(t.description || '')} · Routes: ${routes}</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="badge badge--blue">Registered</span>
+            <button class="btn btn--ghost btn--sm" data-run-trigger="${escHtml(t.name || '')}">Run</button>
+          </div>
+        </div>`;
+      }).join('') : '<div style="text-align:center;padding:28px;color:var(--text-dim)">No automation triggers registered.</div>';
+    } catch (err) {
+      list.innerHTML = `<div style="text-align:center;padding:28px;color:#fecaca">${escHtml(err.message || 'Unable to load workflows.')}</div>`;
+    }
+  }
+
+  async function triggerWorkflow(name) {
+    if (!name) return;
+    try {
+      const res = await apiFetch('/api/automations/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trigger: name }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) throw new Error(data.error || 'Trigger failed.');
+      const wfs = Array.isArray(data.workflows) ? data.workflows : [];
+      showToast(`Triggered ${name} → ${wfs.length} workflow(s)`);
+    } catch (err) {
+      showToast(err.message || 'Trigger failed.');
+    }
+  }
+  document.getElementById('workflow-list').addEventListener('click', e => {
+    const btn = e.target.closest('[data-run-trigger]');
+    if (btn) triggerWorkflow(btn.dataset.runTrigger);
+  });
+  document.getElementById('refresh-workflows').addEventListener('click', loadWorkflows);
+
   // ── DB TABS ──────────────────────────────────────────────────────────────────
   document.querySelectorAll('#db-tabs .tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -1092,19 +1127,23 @@
     });
   });
 
-  // ── SHORTENER ────────────────────────────────────────────────────────────────
+  // ── SHORTENER (real shapes: {links:[...]} / 201 {short_url,...}) ─────────────
   async function loadShortLinks() {
     const tbody = document.getElementById('shn-tbody');
     try {
-      const response = await fetch(`${API_BASE}/api/admin/short-links`, { headers: { Authorization: `Bearer ${_token}` } });
-      const payload = await response.json();
-      if (!response.ok || !payload.ok) throw new Error(payload.error || 'Unable to load short links.');
-      document.getElementById('shn-total').textContent = payload.summary.total_links;
-      document.getElementById('shn-clicks').textContent = payload.summary.total_clicks;
-      document.getElementById('shn-today').textContent = payload.summary.clicks_today;
-      document.getElementById('shn-country').textContent = payload.summary.top_country;
-      tbody.innerHTML = payload.links.length ? payload.links.map(link => `<tr><td><a href="${escHtml(link.short_url)}" target="_blank" rel="noopener" class="td-mono">${escHtml(link.short_url)}</a></td><td class="td-mono" title="${escHtml(link.destination_url)}">${escHtml(link.destination_url)}</td><td>${link.clicks}</td><td>${new Date(link.created_at + 'Z').toLocaleDateString()}</td><td>${escHtml(link.top_country || '—')}</td><td><button class="btn btn--ghost btn--sm" data-copy-link="${escHtml(link.short_url)}">Copy</button></td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-dim)">No links yet. Create your first one above.</td></tr>';
-    } catch (error) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:#fecaca">${escHtml(error.message || 'Unable to load short links.')}</td></tr>`; }
+      const response = await apiFetch('/api/admin/short-links');
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error((payload && payload.error) || 'Unable to load short links.');
+      const links = payload && Array.isArray(payload.links) ? payload.links : [];
+      const totalClicks = links.reduce((sum, l) => sum + (Number(l.clicks) || 0), 0);
+      document.getElementById('shn-total').textContent = String(links.length);
+      document.getElementById('shn-clicks').textContent = totalClicks.toLocaleString();
+      tbody.innerHTML = links.length ? links.map(link => {
+        const raw = String(link.created_at || '');
+        const when = raw ? new Date(raw.endsWith('Z') ? raw : raw.replace(' ', 'T') + 'Z').toLocaleDateString() : '—';
+        return `<tr><td><a href="${escHtml(link.short_url)}" target="_blank" rel="noopener" class="td-mono">${escHtml(link.short_url)}</a></td><td class="td-mono" title="${escHtml(link.destination_url)}">${escHtml(link.destination_url)}</td><td>${Number(link.clicks) || 0}</td><td class="td-mono">${when}</td><td><button class="btn btn--ghost btn--sm" data-copy-link="${escHtml(link.short_url)}">Copy</button></td></tr>`;
+      }).join('') : '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-dim)">No links yet. Create your first one above.</td></tr>';
+    } catch (error) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;color:#fecaca">${escHtml(error.message || 'Unable to load short links.')}</td></tr>`; }
   }
   document.getElementById('shn-create-btn').addEventListener('click', async () => {
     const dest = document.getElementById('shn-dest').value.trim();
@@ -1113,24 +1152,15 @@
     if (!dest) { result.textContent = 'Enter a destination URL.'; return; }
     const create = document.getElementById('shn-create-btn'); create.disabled = true; create.textContent = 'Creating…';
     try {
-      const response = await fetch(`${API_BASE}/api/admin/short-links`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${_token}` }, body: JSON.stringify({ destination_url: dest, slug }) });
-      const payload = await response.json();
-      if (!response.ok || !payload.ok) throw new Error(payload.error || 'Unable to create short link.');
-      result.innerHTML = `✓ Created: <a href="${escHtml(payload.link.short_url)}" target="_blank" rel="noopener" style="color:var(--gold)">${escHtml(payload.link.short_url)}</a>`;
+      const response = await apiFetch('/api/admin/short-links', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ destination_url: dest, slug }) });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error((payload && payload.error) || 'Unable to create short link.');
+      result.innerHTML = `✓ Created: <a href="${escHtml(payload.short_url)}" target="_blank" rel="noopener" style="color:var(--gold)">${escHtml(payload.short_url)}</a>`;
       document.getElementById('shn-dest').value = ''; document.getElementById('shn-slug').value = ''; await loadShortLinks();
     } catch (error) { result.textContent = error.message || 'Unable to create short link.'; }
     finally { create.disabled = false; create.textContent = 'Create'; }
   });
   document.getElementById('shn-tbody').addEventListener('click', event => { const url = event.target?.dataset?.copyLink; if (url && navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('Short link copied.')); });
-
-  // ── WORKFLOW TEST ────────────────────────────────────────────────────────────
-  function testWorkflow(name) {
-    showToast(`Triggered workflow: ${name}`, '');
-  }
-
-  function toggleAgent(checkbox, name) {
-    showToast(`Agent "${name}" ${checkbox.checked ? 'enabled' : 'disabled'}`, '');
-  }
 
   // ── DRAWER ───────────────────────────────────────────────────────────────────
   document.getElementById('drawer-close').addEventListener('click', () => {
