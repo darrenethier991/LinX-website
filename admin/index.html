@@ -286,8 +286,8 @@
           </div>
           <div class="stat-card">
             <div class="label">Workers</div>
-            <div class="value" id="dash-workers">3</div>
-            <div class="sub">Online</div>
+            <div class="value" id="dash-workers">—</div>
+            <div class="sub">Reachable now</div>
           </div>
           <div class="stat-card">
             <div class="label">Wallet Balance</div>
@@ -299,29 +299,29 @@
           <div class="card">
             <div class="card-header">
               <div class="card-title">Worker Health</div>
-              <span class="badge badge--green">All Systems Go</span>
+              <span class="badge badge--blue" id="health-summary">Checking…</span>
             </div>
             <div id="worker-health-list">
               <div class="workflow-row">
                 <div>
-                  <div class="workflow-name"><span class="status-dot status-dot--green"></span>api.js</div>
+                  <div class="workflow-name"><span class="status-dot status-dot--yellow" id="dot-api"></span>api.js</div>
                   <div class="workflow-desc">api.linxservices.ca · CRM + Events + Usage</div>
                 </div>
-                <span class="badge badge--green">Online</span>
+                <span class="badge badge--blue" id="health-api">Checking…</span>
               </div>
               <div class="workflow-row">
                 <div>
-                  <div class="workflow-name"><span class="status-dot status-dot--green"></span>sms.js</div>
+                  <div class="workflow-name"><span class="status-dot status-dot--yellow" id="dot-sms"></span>sms.js</div>
                   <div class="workflow-desc">sms.linxservices.ca · Twilio inbound/outbound</div>
                 </div>
-                <span class="badge badge--green">Online</span>
+                <span class="badge badge--blue" id="health-sms">Checking…</span>
               </div>
               <div class="workflow-row">
                 <div>
-                  <div class="workflow-name"><span class="status-dot status-dot--green"></span>ai-gateway.js</div>
+                  <div class="workflow-name"><span class="status-dot status-dot--yellow" id="dot-ai"></span>ai-gateway.js</div>
                   <div class="workflow-desc">ai.linxservices.ca · Intent + Entity + Route</div>
                 </div>
-                <span class="badge badge--green">Online</span>
+                <span class="badge badge--blue" id="health-ai">Checking…</span>
               </div>
             </div>
           </div>
@@ -331,12 +331,7 @@
               <button class="btn btn--ghost btn--sm" id="refresh-events">Refresh</button>
             </div>
             <div class="log-area" id="event-log">
-              <div class="log-ok">[OK] sms.received — +17055551234 · 12s ago</div>
-              <div class="log-info">[INFO] qualify_lead started — contactId: abc123 · 13s ago</div>
-              <div class="log-ok">[OK] send_welcome_sms completed · 45s ago</div>
-              <div class="log-info">[INFO] crm.contact.created — source: sms · 2m ago</div>
-              <div class="log-ok">[OK] schedule_followup queued · 2m ago</div>
-              <div class="log-warn">[WARN] ai-gateway timeout (retry OK) · 5m ago</div>
+              <div class="log-info">[INFO] Loading live events…</div>
             </div>
           </div>
         </div>
@@ -983,17 +978,97 @@
     // Crawler bars
     renderBars('cat-bars', { roofing: 142, electrical: 98, plumbing: 87, landscaping: 74, renovation: 61, hvac: 45 });
     renderBars('src-bars', { kijiji: 203, craigslist: 118, reddit: 72, organic: 114 });
+
+    // Live data
+    checkWorkerHealth();
+    loadEvents();
+  }
+
+  // ── LIVE WORKER HEALTH ───────────────────────────────────────────────────────
+  const WORKER_HEALTH = [
+    { key: 'api', url: 'https://api.linxservices.ca/health' },
+    { key: 'sms', url: 'https://sms.linxservices.ca/health' },
+    { key: 'ai',  url: 'https://ai.linxservices.ca/health' },
+  ];
+
+  function setWorkerState(key, online, version) {
+    const badge = document.getElementById('health-' + key);
+    const dot = document.getElementById('dot-' + key);
+    if (badge) {
+      badge.className = 'badge ' + (online ? 'badge--green' : 'badge--red');
+      badge.textContent = online ? (version ? `Online · v${version}` : 'Online') : 'Unreachable';
+    }
+    if (dot) dot.className = 'status-dot ' + (online ? 'status-dot--green' : 'status-dot--red');
+  }
+
+  async function checkWorkerHealth() {
+    let up = 0;
+    await Promise.all(WORKER_HEALTH.map(async w => {
+      try {
+        const res = await fetch(w.url, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json().catch(() => ({}));
+        setWorkerState(w.key, true, data && data.version);
+        up++;
+      } catch (_) {
+        setWorkerState(w.key, false);
+      }
+    }));
+    const summary = document.getElementById('health-summary');
+    if (summary) {
+      if (up === WORKER_HEALTH.length)      { summary.className = 'badge badge--green'; summary.textContent = 'All Systems Go'; }
+      else if (up === 0)                   { summary.className = 'badge badge--red';   summary.textContent = 'All Down'; }
+      else                                 { summary.className = 'badge badge--gold';  summary.textContent = `${up} / ${WORKER_HEALTH.length} Online`; }
+    }
+    const dw = document.getElementById('dash-workers');
+    if (dw) dw.textContent = `${up} / ${WORKER_HEALTH.length}`;
+  }
+
+  // ── LIVE EVENT FEED ──────────────────────────────────────────────────────────
+  function getAdminToken() {
+    return (typeof _token !== 'undefined' && _token)
+      || sessionStorage.getItem('linx_admin_token') || localStorage.getItem('linx_admin_token')
+      || sessionStorage.getItem('linx_token') || localStorage.getItem('linx_token') || '';
+  }
+
+  function eventSummary(ev) {
+    const p = (ev && ev.payload) || {};
+    if (p.phone) return String(p.phone);
+    if (p.to) return String(p.to);
+    if (p.contactId) return 'contactId: ' + p.contactId;
+    if (p.message) return String(p.message).slice(0, 80);
+    const keys = Object.keys(p);
+    return keys.length ? keys.slice(0, 3).join(', ') : (ev && ev.source) || '';
+  }
+
+  async function loadEvents() {
+    const log = document.getElementById('event-log');
+    if (!log) return;
+    const token = getAdminToken();
+    if (!token) {
+      log.innerHTML = '<div class="log-warn">[INFO] Live event feed requires admin sign-in.</div>';
+      return;
+    }
+    log.innerHTML = '<div class="log-info">[INFO] Loading live events…</div>';
+    try {
+      const res = await fetch(`${API_BASE}/api/events?limit=20`, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok || !Array.isArray(payload)) throw new Error((payload && payload.error) || 'Unable to load events.');
+      if (!payload.length) {
+        log.innerHTML = '<div class="log-info">[INFO] No events in the last 24h.</div>';
+        return;
+      }
+      log.innerHTML = payload.map(ev => {
+        const when = ev.enqueuedAt ? new Date(ev.enqueuedAt).toLocaleString() : 'unknown time';
+        return `<div class="log-ok">[${escHtml(ev.type || 'event')}] ${escHtml(eventSummary(ev))} · ${escHtml(when)}</div>`;
+      }).join('');
+    } catch (err) {
+      log.innerHTML = `<div class="log-err">[ERROR] ${escHtml(err.message || 'Unable to load events.')}</div>`;
+    }
   }
 
   // ── REFRESH EVENTS ───────────────────────────────────────────────────────────
-  document.getElementById('refresh-events').addEventListener('click', () => {
-    const log = document.getElementById('event-log');
-    const now = new Date().toLocaleTimeString();
-    const entry = document.createElement('div');
-    entry.className = 'log-info';
-    entry.textContent = `[INFO] Manual refresh at ${now}`;
-    log.prepend(entry);
-  });
+  document.getElementById('refresh-events').addEventListener('click', loadEvents);
 
   // ── BAR CHART RENDERER ───────────────────────────────────────────────────────
   function renderBars(containerId, data) {

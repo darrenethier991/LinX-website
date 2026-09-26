@@ -505,11 +505,11 @@
           <div class="ai-status-dot"></div>
           <div>
             <div class="ai-panel-title">LinX AI Agent</div>
-            <div class="ai-panel-sub">Online · Powered by LinX Intelligence</div>
+            <div class="ai-panel-sub">Live AI chat · LinX AI Gateway</div>
           </div>
         </div>
         <div class="ai-messages" id="ai-messages">
-          <div class="ai-msg bot">Hi! I'm your LinX AI Agent. I can help you navigate the platform, understand pricing, explore EchoForge automations, and answer any questions. What would you like to know?</div>
+          <div class="ai-msg bot">Hi! I'm the LinX assistant, powered by the LinX AI Gateway. Ask me anything about LinX — the job board, the contact form, or the URL shortener.</div>
         </div>
         <div class="ai-input-row">
           <textarea class="ai-input" id="ai-input-box" rows="2" placeholder="Ask me anything about LinX…"></textarea>
@@ -637,41 +637,63 @@
       location.reload();
     }
 
-    // ── AI AGENT ────────────────────────────────────────
-    const aiResponses = {
-      default: ["Great question! LinX is Canada's contractor network. How can I assist you further?",
-                "I can help with services, pricing, EchoForge automations, or anything about your account. What do you need?",
-                "LinX connects homeowners with local contractors across Ontario."],
-      pricing: ["Our plans start at $29/mo for Starter, $79/mo for Growth, and $199/mo for Unlimited. All plans include core CRM and link tracking.",
-                "Starter at $29/mo gives you 100 links and 500 CRM leads. Growth at $79/mo unlocks everything including EchoForge selling."],
-      echoforge: ["EchoForge is LinX's automation marketplace. You can buy, remix, and sell workflow automations. Sellers earn on every sale and remix.",
-                  "EchoForge commissions: 15% on Starter, 10% on Growth, 5% on Enterprise. The more you sell, the more you keep."],
-      shortener: ["The LinX URL shortener creates trackable short links at linx.to/your-slug. You get click counts, geo data, device breakdown, and referrer data.",
-                  "Short links integrate directly with your CRM — every click can be attributed to a lead or campaign."],
-    };
+    // ── AI AGENT (live — LinX AI Gateway) ─────────────────────────────
+    const AI_CHAT_URL = 'https://ai.linxservices.ca/ai/chat';
+    const AI_SYSTEM_PROMPT = "You are the LinX website assistant. LinX (linxservices.ca) is a contractor marketplace in Simcoe County, Ontario, Canada. Be helpful and concise. HONESTY RULES: only describe features that are actually live — the public job board (project, hiring, and seeking posts), the lead contact form, the URL shortener, and SMS notifications. Do NOT claim EchoForge, the contractor dashboard, the automations marketplace, or mobile apps are live — they are on the roadmap; say so if asked. Never invent reviews, ratings, contractors, or listings.";
 
-    function sendAIMessage() {
-      const box   = document.getElementById('ai-input-box');
-      const msgs  = document.getElementById('ai-messages');
-      const text  = box.value.trim();
-      if (!text) return;
-      box.value = '';
-      const userDiv = document.createElement('div');
-      userDiv.className = 'ai-msg user'; userDiv.textContent = text;
-      msgs.appendChild(userDiv);
-      setTimeout(() => {
-        const lower = text.toLowerCase();
-        let pool = aiResponses.default;
-        if (lower.includes('price') || lower.includes('plan') || lower.includes('cost')) pool = aiResponses.pricing;
-        else if (lower.includes('echo') || lower.includes('forge') || lower.includes('automat')) pool = aiResponses.echoforge;
-        else if (lower.includes('short') || lower.includes('link') || lower.includes('url')) pool = aiResponses.shortener;
-        const reply = pool[Math.floor(Math.random() * pool.length)];
-        const botDiv = document.createElement('div');
-        botDiv.className = 'ai-msg bot'; botDiv.textContent = reply;
-        msgs.appendChild(botDiv);
-        msgs.scrollTop = msgs.scrollHeight;
-      }, 600);
+    function getAiThreadId() {
+      let id = null;
+      try { id = localStorage.getItem('linx_ai_thread'); } catch (_) {}
+      if (!id) {
+        id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 't-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+        try { localStorage.setItem('linx_ai_thread', id); } catch (_) {}
+      }
+      return id;
+    }
+
+    function aiAddMessage(text, cls) {
+      const msgs = document.getElementById('ai-messages');
+      const div = document.createElement('div');
+      div.className = 'ai-msg ' + cls;
+      div.textContent = text;
+      msgs.appendChild(div);
       msgs.scrollTop = msgs.scrollHeight;
+      return div;
+    }
+
+    async function sendAIMessage() {
+      const box = document.getElementById('ai-input-box');
+      const sendBtn = document.querySelector('.ai-send');
+      const text = box.value.trim();
+      if (!text || (sendBtn && sendBtn.disabled)) return;
+      box.value = '';
+      aiAddMessage(text, 'user');
+      if (sendBtn) sendBtn.disabled = true;
+      const typing = aiAddMessage('typing…', 'bot');
+      try {
+        const res = await fetch(AI_CHAT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: AI_SYSTEM_PROMPT },
+              { role: 'user', content: text }
+            ],
+            threadId: getAiThreadId(),
+            noCache: true
+          })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        typing.remove();
+        aiAddMessage((data && data.response) ? data.response : 'I got an empty reply — try asking again.', 'bot');
+      } catch (e) {
+        typing.remove();
+        aiAddMessage("The AI service isn't reachable right now — try again in a bit.", 'bot');
+      } finally {
+        if (sendBtn) sendBtn.disabled = false;
+        box.focus();
+      }
     }
 
     document.getElementById('ai-input-box').addEventListener('keydown', e => {
