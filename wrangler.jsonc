@@ -38,6 +38,9 @@
   "vars": {
     "PUBLIC_AI_MODEL": "@cf/meta/llama-3.1-8b-instruct-fast",
     "AUTOMATION_ENABLED": "false",
+    "APPLICATION_NOTIFICATION_ENABLED": "true",
+    "OWNER_NOTIFICATION_EMAIL": "Darrenethier991@gmail.com",
+    "RESEND_FROM_EMAIL": "Darren-ethier@linxservices.ca",
             "GOOGLE_SHEETS_SPREADSHEET_ID": "1cXsooFB4t5BRr0ArNDp_nrZi20p9tHMw7OwXTdlpslQ",
     "GOOGLE_SHEETS_SIGNUPS_TAB": "Subscriber Signups",
     "OWNER_NOTIFICATION_PHONE": "+17057160803",
