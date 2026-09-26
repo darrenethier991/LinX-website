@@ -955,7 +955,7 @@ export default {
         role,
         authenticated: Boolean(identity),
         public_model_available: Boolean(env.AI),
-        admin_model_available: role === 'admin' && Boolean(env.CLAUDE_API_KEY || env.OPENROUTER_API_KEY),
+        admin_model_available: role === 'admin' && Boolean(env.AI),
         admin_capabilities: role === 'admin' ? ['operations', 'analytics', 'report_drafting', 'technical_planning'] : [],
       }, 200, origin);
     }
@@ -999,8 +999,8 @@ export default {
         await recordAiUsage(env, {
           requestId: id,
           role,
-          provider: role === 'admin' ? 'openai-compatible-claude' : 'cloudflare-workers-ai',
-          model: role === 'admin' ? (env.CLAUDE_MODEL || 'anthropic/claude-sonnet-4.6') : (env.PUBLIC_AI_MODEL || '@cf/meta/llama-3.1-8b-instruct-fast'),
+          provider: 'cloudflare-workers-ai',
+          model: role === 'admin' ? (env.ADMIN_AI_MODEL || env.PUBLIC_AI_MODEL || '@cf/meta/llama-3.1-8b-instruct-fast') : (env.PUBLIC_AI_MODEL || '@cf/meta/llama-3.1-8b-instruct-fast'),
           inputMessages: messages.length,
           inputCharacters,
           outputCharacters: 0,
