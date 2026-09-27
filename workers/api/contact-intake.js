@@ -188,7 +188,9 @@ export async function handleContactSubmission(env, body) {
   const delivery = { stored: stored.duplicate ? "duplicate" : "stored" };
 
   try {
-    delivery.owner_email = (await notifyOwnerOfContact(env, stored.id, contact)).status;
+    const emailResult = await notifyOwnerOfContact(env, stored.id, contact);
+    delivery.owner_email = emailResult.status;
+    if (emailResult.error) delivery.owner_email_error = emailResult.error;
   } catch (error) {
     delivery.owner_email = "failed";
     delivery.owner_email_error = safeText(error?.message, 300);
