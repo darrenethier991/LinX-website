@@ -13,6 +13,7 @@ import { launchOfferView, normalizeLaunchEarlyAccessApplication } from "./early-
 import { deviceCategory, generatedSlug, normalizeShortLinkInput, refererHost } from "./short-links.js";
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 import { notifyOwnerOfApplication, reconcileOwnerApplicationNotifications } from "./application-notifications.js";
+import { handleContactSubmission } from "./contact-intake.js";
 
 /**
  * LinX API — Cloudflare Worker
@@ -905,6 +906,19 @@ export default {
     if (path === '/api/launch/early-access' && method === 'GET') {
       return json({ ok: true, offer: launchOfferView() }, 200, origin);
     }
+    // ── POST /api/contacts — public website contact-form intake ────────────
+    // Stores the submission as a lead in D1, emails the owner via Resend,
+    // and appends a row to the Google Sheet CRM. Email + Sheets are
+    // best-effort and reported per channel; they never fail the request.
+    if (path === '/api/contacts' && method === 'POST') {
+      const limit = await enforceAnonymousRateLimit(request, env, 'contact-form', 5, 3600);
+      if (limit) return rateLimitResponse(origin, limit);
+      if (!env.DB) return json({ error: 'Contact form is temporarily unavailable.' }, 503, origin);
+      const result = await handleContactSubmission(env, await readBody(request));
+      if (result.error) return json({ error: result.error }, result.status || 400, origin);
+      return json({ ok: true, lead_id: result.leadId, delivery: result.delivery }, 201, origin);
+    }
+
     if (path === '/api/launch/early-access' && method === 'POST') {
       const limit = await enforceAnonymousRateLimit(request, env, 'launch-early-access', 5, 86400);
       if (limit) return rateLimitResponse(origin, limit);

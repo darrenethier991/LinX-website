@@ -210,18 +210,27 @@
     document.getElementById('c-label').style.display   = 'none';
     document.getElementById('c-spinner').style.display = 'inline';
     document.getElementById('c-submitBtn').disabled    = true;
+    let ok = true, errMsg = '';
     try {
-      await fetch('https://api.linxservices.ca/api/contacts', {
+      const res = await fetch('https://api.linxservices.ca/api/contacts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, phone, email, source: 'web',
-          tags: [document.getElementById('c-role').value],
+          role: document.getElementById('c-role').value,
           meta: { role: document.getElementById('c-role').value, submitted_at: Date.now() }
         })
       });
-    } catch (_) {}
-    showToast('Message sent! We\'ll be in touch shortly.', 'success');
-    document.getElementById('contactForm').reset();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { ok = false; errMsg = data.error || 'Something went wrong sending your message.'; }
+    } catch (_) {
+      ok = false; errMsg = 'Could not reach the server. Please try again in a moment.';
+    }
+    if (ok) {
+      showToast('Message sent! We\'ll be in touch shortly.', 'success');
+      document.getElementById('contactForm').reset();
+    } else {
+      showToast(errMsg, 'error');
+    }
     document.getElementById('c-label').style.display   = 'inline';
     document.getElementById('c-spinner').style.display = 'none';
     document.getElementById('c-submitBtn').disabled    = false;

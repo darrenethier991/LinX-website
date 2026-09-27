@@ -858,24 +858,30 @@
     document.getElementById('submitSpinner').style.display = 'inline';
     document.getElementById('submitBtn').disabled = true;
 
+    let ok = true, errMsg = '';
     try {
       const apiUrl = window.VITE_API_URL || 'https://api.linxservices.ca';
-      await fetch(`${apiUrl}/api/contacts`, {
+      const res = await fetch(`${apiUrl}/api/contacts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name, phone, email, source: 'web',
-          tags: [role],
+          name, phone, email, source: 'web', role,
           notes: role === 'contractor' ? trade : message,
           meta: { role, first_message: role === 'contractor' ? trade : message, submitted_at: Date.now() },
         }),
       });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) { ok = false; errMsg = data.error || 'Something went wrong sending your message.'; }
     } catch (_) {
-      // API may not be available — still show success to user
+      ok = false; errMsg = 'Could not reach the server. Please try again in a moment.';
     }
 
-    showToast('Message sent! You\'ll receive a welcome SMS within 60 seconds.', 'success');
-    document.getElementById('leadForm').reset();
+    if (ok) {
+      showToast('Message sent! We\'ll be in touch shortly.', 'success');
+      document.getElementById('leadForm').reset();
+    } else {
+      showToast(errMsg, 'error');
+    }
     document.getElementById('submitLabel').style.display  = 'inline';
     document.getElementById('submitSpinner').style.display = 'none';
     document.getElementById('submitBtn').disabled = false;

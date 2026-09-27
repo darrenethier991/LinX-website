@@ -67,7 +67,7 @@ async function signGoogleJwt(env) {
   return `${signingInput}.${b64url(signature)}`;
 }
 
-async function getGoogleAccessToken(env) {
+export async function getGoogleAccessToken(env) {
   const assertion = await signGoogleJwt(env);
   const response = await fetch(GOOGLE_TOKEN_URL, {
     method: "POST",
