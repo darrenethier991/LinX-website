@@ -853,6 +853,8 @@
     const role    = document.getElementById('f-role').value;
 
     if (!name || !phone || !email) { showToast('Please fill in all required fields.', 'error'); return; }
+    const detail = role === 'contractor' ? trade : message;
+    if (!detail) { showToast(role === 'contractor' ? 'Please tell us your trade.' : 'Please describe your project.', 'error'); return; }
 
     document.getElementById('submitLabel').style.display  = 'none';
     document.getElementById('submitSpinner').style.display = 'inline';
@@ -866,8 +868,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name, phone, email, source: 'web', role,
-          notes: role === 'contractor' ? trade : message,
-          meta: { role, first_message: role === 'contractor' ? trade : message, submitted_at: Date.now() },
+          notes: detail,
+          meta: { role, first_message: detail, submitted_at: Date.now() },
         }),
       });
       const data = await res.json().catch(() => ({}));

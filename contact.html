@@ -206,7 +206,12 @@
     const name  = document.getElementById('c-name').value.trim();
     const phone = document.getElementById('c-phone').value.trim();
     const email = document.getElementById('c-email').value.trim();
+    const role  = document.getElementById('c-role').value;
+    const message = role === 'contractor'
+      ? document.getElementById('c-trade').value.trim()
+      : document.getElementById('c-message').value.trim();
     if (!name || !phone || !email) { showToast('Please fill in all required fields.', 'error'); return; }
+    if (!message) { showToast(role === 'contractor' ? 'Please tell us your trade.' : 'Please describe your project.', 'error'); return; }
     document.getElementById('c-label').style.display   = 'none';
     document.getElementById('c-spinner').style.display = 'inline';
     document.getElementById('c-submitBtn').disabled    = true;
@@ -215,9 +220,9 @@
       const res = await fetch('https://api.linxservices.ca/api/contacts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, email, source: 'web',
-          role: document.getElementById('c-role').value,
-          meta: { role: document.getElementById('c-role').value, submitted_at: Date.now() }
+        body: JSON.stringify({ name, phone, email, source: 'web', role,
+          message,
+          meta: { role, first_message: message, submitted_at: Date.now() }
         })
       });
       const data = await res.json().catch(() => ({}));
