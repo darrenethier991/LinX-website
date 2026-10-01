@@ -2,29 +2,307 @@
 <html lang="en-CA">
 <head>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="LINX Recon provides bounded passive observations for public domains you are authorized to assess."
+  <meta name="description" content="LINX Recon fraud desk — email, phone, domain and IP risk signals for scam and fraud detection." />
   <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="LinX"/>
-  <meta property="og:title" content="LINX Recon — Passive Domain Observations"/>
-  <meta property="og:description" content="LINX Recon provides bounded passive observations for public domains you are authorized to assess."/>
+  <meta property="og:title" content="LINX Recon — Fraud & Scam Detection"/>
+  <meta property="og:description" content="Email, phone, domain and IP risk signals for fraud and scam detection."/>
   <meta property="og:url" content="https://linxservices.ca/osint.html"/>
   <meta property="og:image" content="https://linxservices.ca/og-image.jpg"/>
-  <meta name="twitter:card" content="summary_large_image"/> />
-  <title>LINX Recon — Passive Domain Observations</title>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <title>LINX Recon — Fraud &amp; Scam Detection</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" /><link rel="stylesheet" href="css/linx-design-system.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/linx-design-system.css" />
   <style>
-    .recon{min-height:calc(100vh - var(--nav-h));padding:54px 0 80px;background:radial-gradient(circle at 78% 2%,rgba(6,182,212,.15),transparent 26%),radial-gradient(circle at 15% 38%,rgba(124,92,216,.14),transparent 30%),var(--bg-deep)}.recon-grid{display:grid;grid-template-columns:minmax(0,1.2fr) 315px;gap:20px}.recon-hero{padding:35px}.recon-eyebrow{color:var(--neon-cyan);font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}.recon h1{max-width:700px;margin:10px 0 0;font-size:clamp(34px,5.4vw,62px);line-height:.96;letter-spacing:-.065em}.recon h1 span{color:var(--neon-cyan)}.recon-copy{max-width:690px;margin:18px 0 0;color:var(--text-muted);font-size:14px;line-height:1.75}.scan-form{display:flex;gap:9px;margin-top:28px}.scan-form input{flex:1;min-width:0;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:rgba(0,0,0,.22);color:var(--white-85);font:inherit;outline:none}.scan-form input:focus{border-color:var(--neon-cyan);box-shadow:0 0 0 3px rgba(6,182,212,.10)}.scan-form button{white-space:nowrap}.notice{display:flex;gap:10px;margin-top:15px;padding:12px;border:1px solid rgba(212,168,83,.30);border-radius:9px;background:rgba(212,168,83,.06);color:var(--text-muted);font-size:11px;line-height:1.55}.notice b{color:var(--gold)}.modules{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:25px}.module{padding:13px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.018)}.module strong{display:block;color:var(--neon-cyan);font-family:var(--font-mono);font-size:11px}.module span{display:block;margin-top:5px;color:var(--text-dim);font-size:10px;line-height:1.45}.side{padding:21px}.side h2{margin:0;font-size:15px}.side p{color:var(--text-muted);font-size:11px;line-height:1.65}.guard{display:flex;gap:9px;padding:12px 0;border-bottom:1px solid var(--border)}.guard:last-child{border-bottom:0}.guard i{color:var(--gold);font-style:normal}.guard b{display:block;font-size:11px}.guard span{display:block;margin-top:3px;color:var(--text-dim);font-size:10px;line-height:1.45}.report{display:none;margin-top:20px;padding:23px}.report.show{display:block}.report-head{display:flex;align-items:start;justify-content:space-between;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--border)}.report-head h2{margin:4px 0 0;font-size:21px}.score{display:grid;place-items:center;min-width:72px;height:72px;border:1px solid var(--border-gold);border-radius:50%;color:var(--gold);font-size:21px;font-weight:900}.report-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}.report-card{min-height:135px;padding:15px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.018)}.report-card h3{margin:0;color:var(--neon-cyan);font-family:var(--font-mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase}.report-card pre,.report-card p{margin:10px 0 0;white-space:pre-wrap;word-break:break-word;color:var(--text-muted);font:11px/1.6 var(--font-mono)}.indicator{margin-top:18px;padding:14px;border-radius:10px;background:rgba(124,92,216,.08);border:1px solid rgba(124,92,216,.28);color:var(--text-muted);font-size:11px;line-height:1.6}.indicator b{color:var(--white-85)}.error{display:none;margin-top:12px;color:#fecaca;font-size:12px}.error.show{display:block}@media(max-width:860px){.recon-grid{grid-template-columns:1fr}.report-grid{grid-template-columns:1fr}.modules{grid-template-columns:1fr}.scan-form{flex-direction:column}} 
+    .recon{min-height:calc(100vh - var(--nav-h));padding:46px 0 90px;background:radial-gradient(circle at 80% 0%,rgba(6,182,212,.14),transparent 26%),radial-gradient(circle at 12% 30%,rgba(124,92,216,.13),transparent 30%),var(--bg-deep)}
+    .recon-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+    .recon-hero{padding:32px}
+    .recon-eyebrow{color:var(--neon-cyan);font-size:10px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}
+    .recon h1{margin:10px 0 0;font-size:clamp(30px,4.6vw,52px);line-height:1;letter-spacing:-.05em}
+    .recon h1 span{color:var(--neon-cyan)}
+    .recon-copy{margin:14px 0 0;color:var(--text-muted);font-size:13px;line-height:1.7;max-width:640px}
+    .tabs{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+    .tab{padding:10px 18px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.02);color:var(--text-muted);font:600 12px/1 var(--font-sans);cursor:pointer;transition:.15s}
+    .tab:hover{border-color:var(--neon-cyan);color:var(--white-85)}
+    .tab.active{background:rgba(6,182,212,.14);border-color:var(--neon-cyan);color:var(--neon-cyan)}
+    .scan-form{display:flex;gap:9px;margin-top:16px}
+    .scan-form input{flex:1;min-width:0;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:rgba(0,0,0,.25);color:var(--white-85);font:500 14px var(--font-mono);outline:none}
+    .scan-form input:focus{border-color:var(--neon-cyan);box-shadow:0 0 0 3px rgba(6,182,212,.10)}
+    .scan-form button{white-space:nowrap}
+    .hint{margin-top:8px;color:var(--text-dim);font-size:11px}
+    .hint button{background:none;border:none;color:var(--neon-cyan);cursor:pointer;font:inherit;padding:0;text-decoration:underline}
+    .notice{display:flex;gap:10px;margin-top:16px;padding:12px;border:1px solid rgba(212,168,83,.30);border-radius:9px;background:rgba(212,168,83,.06);color:var(--text-muted);font-size:11px;line-height:1.55}
+    .notice b{color:var(--gold)}
+    .error{display:none;margin-top:12px;padding:12px;border:1px solid rgba(248,113,113,.4);border-radius:9px;background:rgba(248,113,113,.07);color:#fecaca;font-size:12px}
+    .error.show{display:block}
+    /* report */
+    .report{display:none;margin-top:22px}
+    .report.show{display:block;animation:fadeUp .25s ease}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .report-head{display:flex;gap:20px;align-items:center;padding:24px;flex-wrap:wrap}
+    .score-wrap{position:relative;width:120px;height:120px;flex:none}
+    .score-wrap svg{transform:rotate(-90deg)}
+    .score-num{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+    .score-num b{font-size:30px;font-weight:900;line-height:1}
+    .score-num span{display:block;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-top:2px}
+    .report-title h2{margin:6px 0 0;font-size:20px;word-break:break-all}
+    .report-title .lvl{display:inline-block;margin-top:8px;padding:5px 12px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+    .lvl-low{background:rgba(52,211,153,.12);color:#6ee7b7;border:1px solid rgba(52,211,153,.35)}
+    .lvl-elevated{background:rgba(251,191,36,.12);color:#fcd34d;border:1px solid rgba(251,191,36,.35)}
+    .lvl-high{background:rgba(251,146,60,.12);color:#fdba74;border:1px solid rgba(251,146,60,.4)}
+    .lvl-severe{background:rgba(248,113,113,.12);color:#fca5a5;border:1px solid rgba(248,113,113,.45)}
+    .report-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+    .analytics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+    .stat{padding:14px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.018);text-align:center}
+    .stat b{display:block;font-size:22px;font-weight:800}
+    .stat span{font-size:10px;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase}
+    .stat.crit b{color:#fca5a5}.stat.warn b{color:#fcd34d}.stat.info b{color:#6ee7b7}.stat.tot b{color:var(--neon-cyan)}
+    .signals{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px}
+    .sig{padding:16px;border:1px solid var(--border);border-radius:10px;background:rgba(255,255,255,.018)}
+    .sig-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+    .sig-top h3{margin:0;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-dim);font-weight:700}
+    .risk-pill{font:700 11px var(--font-mono);padding:3px 10px;border-radius:999px;flex:none}
+    .rp-low{background:rgba(52,211,153,.12);color:#6ee7b7}
+    .rp-med{background:rgba(251,191,36,.12);color:#fcd34d}
+    .rp-high{background:rgba(248,113,113,.14);color:#fca5a5}
+    .sig-value{margin:8px 0 0;font:600 13px var(--font-mono);color:var(--white-85);word-break:break-word}
+    .sig-detail{margin:6px 0 0;font-size:11px;color:var(--text-muted);line-height:1.6}
+    .bar{height:5px;border-radius:99px;background:rgba(255,255,255,.07);margin-top:10px;overflow:hidden}
+    .bar i{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+    .conf{margin-top:8px;font-size:10px;color:var(--text-dim)}
+    .conf b{font-weight:700}
+    .indicators{margin-top:16px;padding:16px;border-radius:10px;background:rgba(124,92,216,.08);border:1px solid rgba(124,92,216,.28);font-size:12px;line-height:1.7;color:var(--text-muted)}
+    .indicators b{color:var(--white-85)}
+    .indicators ul{margin:8px 0 0;padding-left:18px}
+    .indicators li{margin:4px 0}
+    .indicators li::marker{color:#fca5a5}
+    .extra{margin-top:16px;padding:16px;border:1px solid var(--border);border-radius:10px;background:rgba(0,0,0,.18)}
+    .extra h3{margin:0 0 8px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--neon-cyan)}
+    .extra pre{margin:0;white-space:pre-wrap;word-break:break-word;font:11px/1.7 var(--font-mono);color:var(--text-muted)}
+    .method{margin-top:16px;padding:14px;font-size:10.5px;line-height:1.7;color:var(--text-dim);border-top:1px solid var(--border)}
+    /* side */
+    .side{padding:22px;position:sticky;top:90px}
+    .side h2{margin:0;font-size:15px}
+    .side p{color:var(--text-muted);font-size:11px;line-height:1.65}
+    .guard{display:flex;gap:9px;padding:12px 0;border-bottom:1px solid var(--border)}
+    .guard:last-child{border-bottom:0}
+    .guard i{color:var(--gold);font-style:normal;font-size:11px;font-weight:800}
+    .guard b{display:block;font-size:11px}
+    .guard span{display:block;margin-top:3px;color:var(--text-dim);font-size:10px;line-height:1.45}
+    .session{margin-top:6px}
+    .session h2{margin-bottom:4px}
+    .sess-item{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:11px;cursor:pointer}
+    .sess-item:hover .sess-val{color:var(--neon-cyan)}
+    .sess-val{font-family:var(--font-mono);color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+    .sess-score{font-weight:800;font-family:var(--font-mono)}
+    .sess-empty{color:var(--text-dim);font-size:11px;padding:8px 0}
+    .sess-clear{background:none;border:none;color:var(--text-dim);font-size:10px;cursor:pointer;text-decoration:underline;padding:0;margin-top:6px}
+    @media(max-width:900px){.recon-grid{grid-template-columns:1fr}.signals{grid-template-columns:1fr}.analytics{grid-template-columns:repeat(2,1fr)}.side{position:static}.scan-form{flex-direction:column}}
+    @media print{.nav,.tabs,.scan-form,.hint,.notice,.report-actions,.side,.method{display:none!important}.report{display:block!important}}
   </style>
 </head>
 <body>
   <nav class="nav"><a class="nav__logo" href="index.html"><span class="l">Lin</span><span class="x">X</span></a><ul class="nav__links" aria-label="Primary navigation"><li><a href="about.html">About</a></li><li><a href="services.html">Services</a></li><li class="nav__menu"><details><summary>Explore</summary><div class="nav__menu-panel"><a href="jobs.html"><strong>Job Board</strong><span>Open projects &amp; hiring ads</span></a><a href="marketplace"><strong>Marketplace</strong><span>EchoForge workflows</span></a><a href="ecosystem"><strong>Ecosystem</strong><span>Connected LINX tools</span></a><a href="clam-code.html"><strong>Clam Code</strong><span>Role-aware AI help</span></a><a href="linx-amplify.html"><strong>LinX Amplify</strong><span>Prompt enhancement</span></a><a href="pricing.html"><strong>Pricing</strong><span>Plans and trials</span></a><a href="contact.html"><strong>Contact</strong><span>Talk with LINX</span></a></div></details></li></ul><div class="nav__actions"><a class="btn btn--outline btn--sm" href="pricing.html">Pricing</a><a class="btn btn--primary btn--sm" href="admin/index.html">Admin sign in</a></div></nav>
-  <main class="recon"><div class="container recon-grid"><section><section class="card recon-hero"><div class="recon-eyebrow">LINX Recon · passive public observations</div><h1>Review <span>public signals</span>, not private systems.</h1><p class="recon-copy">LINX Recon provides a bounded, no-login review of a public domain you own or are authorized to assess. It reads public RDAP metadata, DNS-over-HTTPS answers, and one unauthenticated HTTPS response header. It does not submit forms, run page scripts, test credentials, scan ports, or retain a scan history.</p><form class="scan-form" id="scan-form"><input id="target" required maxlength="2048" autocomplete="url" spellcheck="false" placeholder="example.com or https://example.com/path" aria-label="Public domain or URL" /><button class="btn btn--primary" id="scan-button" type="submit">Run passive review</button></form><div class="notice"><span>◇</span><div><b>Authorized use only.</b> Use this tool only for domains you own or are explicitly authorized to assess. Results are technical observations, not a fraud determination or security certification.</div></div><div class="error" id="scan-error"></div><div class="modules"><div class="module"><strong>RDAP</strong><span>Public registration handle and selected lifecycle events.</span></div><div class="module"><strong>DNS / DoH</strong><span>A, AAAA, MX, NS, and TXT-presence observations.</span></div><div class="module"><strong>HTTPS / HEAD</strong><span>One unauthenticated response status and redirect metadata.</span></div></div></section><section class="card report" id="report" aria-live="polite"><div class="report-head"><div><div class="recon-eyebrow">Observation report</div><h2 id="report-target">—</h2><p class="muted" id="report-level"></p></div><div class="score" id="report-score">—</div></div><div class="report-grid"><article class="report-card"><h3>DNS answers</h3><pre id="report-dns">—</pre></article><article class="report-card"><h3>RDAP metadata</h3><pre id="report-rdap">—</pre></article><article class="report-card"><h3>HTTPS response</h3><pre id="report-http">—</pre></article></div><div class="indicator" id="report-indicators"></div></section></section><aside class="card side"><h2>Observation boundary</h2><p>LINX Recon is intentionally passive and limited to public-domain metadata.</p><div class="guard"><i>01</i><div><b>No authentication</b><span>No login, session, form submission, credential testing, or account access.</span></div></div><div class="guard"><i>02</i><div><b>No invasive scanning</b><span>No port scans, brute force, JavaScript execution, or page-content scraping.</span></div></div><div class="guard"><i>03</i><div><b>No scan history</b><span>Results stay in the current browser view; this endpoint does not store scan reports.</span></div></div><div class="guard"><i>04</i><div><b>Private targets blocked</b><span>Local, internal, private-address, and non-HTTP targets are rejected before any request.</span></div></div></aside></div></main>
+  <main class="recon"><div class="container recon-grid">
+    <section>
+      <section class="card recon-hero">
+        <div class="recon-eyebrow">LINX Recon · fraud &amp; scam detection</div>
+        <h1>Check it <span>before</span> you trust it.</h1>
+        <p class="recon-copy">Run an email, phone number, domain, or IP address through public fraud signals — mail infrastructure, domain age, certificate history, geolocation, hosting and proxy flags — and get an explainable risk score you can hand off with the report.</p>
+        <div class="tabs" role="tablist" id="tabs">
+          <button class="tab active" data-type="email" role="tab">Email</button>
+          <button class="tab" data-type="phone" role="tab">Phone</button>
+          <button class="tab" data-type="domain" role="tab">Domain</button>
+          <button class="tab" data-type="ip" role="tab">IP address</button>
+        </div>
+        <form class="scan-form" id="scan-form">
+          <input id="target" required maxlength="254" autocomplete="off" spellcheck="false" placeholder="name@example.com" aria-label="Value to scan" />
+          <button class="btn btn--primary" id="scan-button" type="submit">Run fraud scan</button>
+        </form>
+        <div class="hint" id="hint"></div>
+        <div class="error" id="scan-error"></div>
+        <div class="notice"><span>◇</span><div><b>Authorized use only.</b> Scan only addresses, numbers, domains, and IPs you have a legitimate reason to assess — your own, or as part of fraud prevention you are responsible for. Risk signals are heuristic observations from public data, not a fraud determination or identity verification.</div></div>
+      </section>
+
+      <section class="card report" id="report" aria-live="polite">
+        <div class="report-head">
+          <div class="score-wrap">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="10"/>
+              <circle id="score-arc" cx="60" cy="60" r="52" fill="none" stroke="#34d399" stroke-width="10" stroke-linecap="round" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+            </svg>
+            <div class="score-num"><div><b id="score-num">–</b><span>risk</span></div></div>
+          </div>
+          <div class="report-title">
+            <div class="recon-eyebrow">Fraud signal report</div>
+            <h2 id="report-target">—</h2>
+            <span class="lvl lvl-low" id="report-level">—</span>
+          </div>
+          <div class="report-actions">
+            <button class="btn btn--outline btn--sm" id="btn-json">Download JSON</button>
+            <button class="btn btn--outline btn--sm" id="btn-print">Print report</button>
+          </div>
+        </div>
+        <div style="padding:0 24px">
+          <div class="analytics" id="analytics"></div>
+          <div class="signals" id="signals"></div>
+          <div class="indicators" id="indicators"></div>
+          <div class="extra" id="extra" style="display:none"><h3 id="extra-title"></h3><pre id="extra-body"></pre></div>
+          <div class="method" id="method"></div>
+        </div>
+        <div style="height:24px"></div>
+      </section>
+    </section>
+
+    <aside>
+      <div class="card side">
+        <h2>How scoring works</h2>
+        <p>Every signal is scored 0–100 and combined by weight into one risk score. Nothing is a black box — each card shows its own score, weight in the mix, and where the data came from.</p>
+        <div class="guard"><i>01</i><div><b>Public sources only</b><span>DNS, RDAP, certificate transparency, and IP geolocation. No logins, no port scans, no breach dumps.</span></div></div>
+        <div class="guard"><i>02</i><div><b>Explainable signals</b><span>Disposable email? New domain? Proxy exit? Each finding shows its evidence.</span></div></div>
+        <div class="guard"><i>03</i><div><b>Packaged for handoff</b><span>Download the full JSON report or print it for whoever needs the file.</span></div></div>
+        <div class="guard"><i>04</i><div><b>Session-only history</b><span>Recent scans stay in this browser tab. Nothing is stored server-side.</span></div></div>
+      </div>
+      <div class="card side session" style="margin-top:16px">
+        <h2>This session</h2>
+        <div id="session-list"><div class="sess-empty">No scans yet.</div></div>
+        <button class="sess-clear" id="sess-clear" style="display:none">Clear session</button>
+      </div>
+    </aside>
+  </div></main>
+
   <script>
-    const form=document.getElementById('scan-form'),input=document.getElementById('target'),button=document.getElementById('scan-button'),error=document.getElementById('scan-error'),report=document.getElementById('report');
-    const show=(id,value)=>document.getElementById(id).textContent=value;
-    form.addEventListener('submit',async event=>{event.preventDefault();error.classList.remove('show');button.disabled=true;button.textContent='Observing…';try{const response=await fetch('https://api.linxservices.ca/api/osint/passive-scan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target:input.value})});const payload=await response.json();if(!response.ok||!payload.ok)throw new Error(payload.error||'The public observation could not be completed.');const r=payload.report;show('report-target',r.target);show('report-score',r.review.score);show('report-level',`${r.review.level.replaceAll('_',' ')} · ${r.review.disclaimer}`);show('report-dns',`A: ${r.dns.a.join(', ')||'none'}\nAAAA: ${r.dns.aaaa.join(', ')||'none'}\nMX: ${r.dns.mx.join(', ')||'none'}\nNS: ${r.dns.ns.join(', ')||'none'}\nTXT present: ${r.dns.txt_present?'yes':'no'}`);show('report-rdap',`Available: ${r.rdap.available?'yes':'no'}\nHandle: ${r.rdap.handle||'not returned'}\n${r.rdap.events.map(x=>`${x.action}: ${x.date}`).join('\n')||'No selected lifecycle events returned.'}`);show('report-http',`Reachable: ${r.http.reachable?'yes':'no'}\nStatus: ${r.http.status??'not returned'}\nRedirect: ${r.http.redirect_to||'none'}\nServer: ${r.http.server||'not returned'}\nCSP header: ${r.http.content_security_policy?'present':'not observed'}`);show('report-indicators',`<b>Review notes:</b> ${r.indicators.length?r.indicators.join(' '):'No bounded review indicators were produced from the selected public observations.'}`);report.classList.add('show');report.scrollIntoView({behavior:'smooth',block:'nearest'});}catch(err){error.textContent=err.message||'The public observation could not be completed.';error.classList.add('show');}finally{button.disabled=false;button.textContent='Run passive review';}});
+    const TYPE_META = {
+      email:  { placeholder: 'name@example.com', hint: 'Checks mail servers, disposable providers, domain age, and high-abuse TLDs.', example: 'Try: <button type="button" data-ex="test@mailinator.com">test@mailinator.com</button>' },
+      phone:  { placeholder: '+1 705 555 0134', hint: 'Validates NANP structure, maps the area code to its region, flags premium and invalid ranges.', example: 'Try: <button type="button" data-ex="+1 900 555 0134">+1 900 555 0134</button>' },
+      domain: { placeholder: 'example.com',     hint: 'DNS, RDAP registration age, certificate-transparency history, and HTTPS behaviour.', example: 'Try: <button type="button" data-ex="linxservices.ca">linxservices.ca</button>' },
+      ip:     { placeholder: '8.8.8.8',         hint: 'Geolocation, network owner, hosting/datacenter and proxy/VPN-exit flags.', example: 'Try: <button type="button" data-ex="8.8.8.8">8.8.8.8</button>' },
+    };
+    let scanType = 'email', lastReport = null;
+    const session = [];
+
+    const $ = id => document.getElementById(id);
+    const tabsEl = $('tabs'), form = $('scan-form'), input = $('target'),
+          button = $('scan-button'), error = $('scan-error'), hint = $('hint'),
+          reportEl = $('report');
+
+    function setType(t) {
+      scanType = t;
+      document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.type === t));
+      input.placeholder = TYPE_META[t].placeholder;
+      hint.innerHTML = TYPE_META[t].hint + ' ' + TYPE_META[t].example;
+      hint.querySelectorAll('[data-ex]').forEach(b => b.addEventListener('click', () => { input.value = b.dataset.ex; input.focus(); }));
+      error.classList.remove('show');
+    }
+    tabsEl.addEventListener('click', e => { const b = e.target.closest('.tab'); if (b) setType(b.dataset.type); });
+
+    const LEVEL_LABEL = { low: 'Low risk', elevated: 'Elevated risk', high: 'High risk', severe: 'Severe risk' };
+    const LEVEL_COLOR = { low: '#34d399', elevated: '#fbbf24', high: '#fb923c', severe: '#f87171' };
+
+    function riskClass(r) { return r >= 55 ? 'rp-high' : r >= 25 ? 'rp-med' : 'rp-low'; }
+    function riskColor(r) { return r >= 55 ? '#f87171' : r >= 25 ? '#fbbf24' : '#34d399'; }
+    function esc(s) { return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+    function renderReport(r) {
+      lastReport = r;
+      $('report-target').textContent = r.masked || r.value;
+      $('score-num').textContent = r.score;
+      const lvl = $('report-level');
+      lvl.textContent = LEVEL_LABEL[r.level] || r.level;
+      lvl.className = 'lvl lvl-' + r.level;
+      const arc = $('score-arc'), C = 326.7;
+      arc.style.stroke = LEVEL_COLOR[r.level] || '#34d399';
+      requestAnimationFrame(() => { arc.style.transition = 'stroke-dashoffset .7s ease'; arc.style.strokeDashoffset = C - (C * r.score / 100); });
+
+      const a = r.analytics || {};
+      $('analytics').innerHTML = [
+        ['tot', r.signals.length, 'signals checked'],
+        ['crit', a.critical ?? 0, 'critical'],
+        ['warn', a.warning ?? 0, 'warnings'],
+        ['info', a.info ?? 0, 'clear'],
+      ].map(([cls, n, label]) => `<div class="stat ${cls}"><b>${n}</b><span>${label}</span></div>`).join('');
+
+      $('signals').innerHTML = r.signals.map(s => `
+        <div class="sig">
+          <div class="sig-top"><h3>${esc(s.label)}</h3><span class="risk-pill ${riskClass(s.risk)}">${s.risk}</span></div>
+          <p class="sig-value">${esc(s.value)}</p>
+          <p class="sig-detail">${esc(s.detail)}</p>
+          <div class="bar"><i style="width:${s.risk}%;background:${riskColor(s.risk)}"></i></div>
+          <div class="conf">Confidence: <b>${esc(s.confidence)}</b> · weight ${esc(s.weight)}×</div>
+        </div>`).join('');
+
+      $('indicators').innerHTML = r.indicators && r.indicators.length
+        ? `<b>Key indicators</b><ul>${r.indicators.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`
+        : `<b>Key indicators</b><p style="margin:6px 0 0">No elevated indicators from the checked signals.</p>`;
+
+      const extra = $('extra');
+      let extraTitle = '', extraBody = '';
+      if (r.type === 'phone' && (r.region || r.country)) { extraTitle = 'Numbering analysis'; extraBody = `Region: ${r.region || 'unknown'}\nNumbering plan: ${r.country || 'unknown'}`; }
+      if (r.type === 'domain' && r.ips && r.ips.length) { extraTitle = 'Resolved addresses'; extraBody = r.ips.join('\n'); }
+      if (r.type === 'ip' && r.geo) {
+        const g = r.geo;
+        extraTitle = 'Geolocation detail';
+        extraBody = [`Country: ${g.country || '?'} (${g.countryCode || '?'})`, `Region: ${g.region || '?'}`, `City: ${g.city || '?'}`, `Coordinates: ${g.lat ?? '?'}, ${g.lon ?? '?'}`, `Timezone: ${g.timezone || '?'}`, `ISP: ${g.isp || '?'}`, `Org: ${g.org || '?'}`, `ASN: ${g.asn || '?'}`].join('\n');
+      }
+      if (extraTitle) { $('extra-title').textContent = extraTitle; $('extra-body').textContent = extraBody; extra.style.display = ''; }
+      else extra.style.display = 'none';
+
+      $('method').innerHTML = `<b style="color:var(--text-muted)">Methodology.</b> ${esc(r.methodology)}<br><b style="color:var(--text-muted)">Disclaimer.</b> ${esc(r.disclaimer)}<br>Generated ${esc(r.generated_at)} · average signal confidence: <b>${esc(a.avg_confidence || '—')}</b>`;
+
+      reportEl.classList.add('show');
+      reportEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      session.unshift({ type: r.type, label: r.masked || r.value, score: r.score, level: r.level, report: r });
+      renderSession();
+    }
+
+    function renderSession() {
+      const list = $('session-list');
+      $('sess-clear').style.display = session.length ? '' : 'none';
+      if (!session.length) { list.innerHTML = '<div class="sess-empty">No scans yet.</div>'; return; }
+      list.innerHTML = session.slice(0, 8).map((s, i) => `
+        <div class="sess-item" data-i="${i}">
+          <span class="sess-val">${esc(s.label)}</span>
+          <span class="sess-score" style="color:${LEVEL_COLOR[s.level]}">${s.score}</span>
+        </div>`).join('');
+      list.querySelectorAll('.sess-item').forEach(el => el.addEventListener('click', () => renderReport(session[Number(el.dataset.i)].report)));
+    }
+    $('sess-clear').addEventListener('click', () => { session.length = 0; renderSession(); });
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      error.classList.remove('show');
+      button.disabled = true; button.textContent = 'Scanning…';
+      try {
+        const res = await fetch('https://api.linxservices.ca/api/osint/fraud-scan', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: scanType, value: input.value }),
+        });
+        const payload = await res.json();
+        if (!res.ok || !payload.ok) throw new Error(payload.error || 'The fraud scan could not be completed.');
+        renderReport(payload.report);
+      } catch (err) {
+        error.textContent = err.message || 'The fraud scan could not be completed.';
+        error.classList.add('show');
+      } finally {
+        button.disabled = false; button.textContent = 'Run fraud scan';
+      }
+    });
+
+    $('btn-json').addEventListener('click', () => {
+      if (!lastReport) return;
+      const blob = new Blob([JSON.stringify(lastReport, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `linx-recon-${lastReport.type}-${Date.now()}.json`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    });
+    $('btn-print').addEventListener('click', () => window.print());
+
+    setType('email');
   </script>
 </body>
 </html>

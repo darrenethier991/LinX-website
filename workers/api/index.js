@@ -6,6 +6,7 @@ import {
 } from "./clam-code.js";
 import { normalizeImportedLead, normalizeLeadSourceInput, parseApprovedFeed, sourceReadiness } from "./lead-pipeline.js";
 import { runPassiveDomainObservation } from "./passive-osint.js";
+import { runFraudScan } from "./fraud-intel.js";
 import { enhancePrompt, normalizePromptEnhancementInput } from "./prompt-enhancer.js";
 import { base64ToUtf8, isPushConfirmation, normalizeEngineeringPath, normalizeEngineeringProposal, reviewBranchFor, utf8ToBase64 } from "./engineering-workspace.js";
 import { canAdministerEcosystem, canManageOwnConsent, consentView, ECOSYSTEM_MODULES, normalizeConsentPreferences, normalizeMembershipInput, normalizeModuleConfiguration, normalizeOrganizationInput, normalizePolicyInput } from "./ecosystem-foundation.js";
@@ -769,6 +770,19 @@ export default {
         return json({ ok: true, report }, 200, origin);
       } catch (error) {
         return json({ ok: false, error: String(error?.message || 'Passive observation could not be completed.').slice(0, 240) }, 400, origin);
+      }
+    }
+
+    // ── POST /api/osint/fraud-scan — email/phone/domain/IP fraud signals ──────
+    if (path === '/api/osint/fraud-scan' && method === 'POST') {
+      const limit = await enforceAnonymousRateLimit(request, env, 'fraud-scan', 12, 3600);
+      if (limit) return rateLimitResponse(origin, limit);
+      const { type, value } = await readBody(request);
+      try {
+        const report = await runFraudScan(type, value);
+        return json({ ok: true, report }, 200, origin);
+      } catch (error) {
+        return json({ ok: false, error: String(error?.message || 'Fraud scan could not be completed.').slice(0, 240) }, 400, origin);
       }
     }
 
