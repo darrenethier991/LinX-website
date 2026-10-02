@@ -244,6 +244,12 @@
       .hero__stats-bar { flex-wrap: wrap; }
       .hero__stat { min-width: 50%; border-right: none; border-bottom: 1px solid var(--border); }
       .hero__stat:nth-child(even) { border-right: none; }
+      .ecosystem-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      /* "CONTRACTORS" is one long word — shrink so it fits instead of clipping */
+      .hero h1 { font-size: 34px; letter-spacing: 0.06em; }
+      .hero__eyebrow { letter-spacing: 0.18em; padding: 5px 12px; font-size: 9px; }
     }
   </style>
 </head>
