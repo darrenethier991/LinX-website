@@ -569,61 +569,54 @@
       <h2 class="section-title">Plans for Every Business</h2>
       <p class="section-sub" style="text-align:center;margin:0 auto 24px">Homeowners are always free. Contractors choose the plan that fits their growth stage.</p>
     </div>
-    <div class="pricing-toggle">
-      <span>Monthly</span>
-      <div class="toggle-track" id="billingToggle">
-        <div class="toggle-thumb" id="toggleThumb"></div>
-      </div>
-      <span>Annual <span class="save-badge">Save 20%</span></span>
-    </div>
     <div class="pricing-grid">
-      <div class="pricing-card card">   
-   <div class="plan-period">per month, billed <span class="billing-period">monthly</span></div>
-    <div class="pricing-card card">
-  <div class="plan-name">Starter</div>
-  <div class="plan-price"><sup>$</sup><span class="price-val" data-monthly="49" data-annual="39">49</span></div>
-  <div class="plan-period">per month, billed <span class="billing-period">monthly</span></div>
-  <ul class="plan-features">
-    <li>25 shortened links</li>
-    <li>Basic click analytics</li>
-    <li>CRM up to 2,000 leads</li>
-    <li>Google Sheets sync</li>
-    <li>Browse &amp; buy automations</li>
-    <li>15% EchoForge commission</li>
-  </ul>
-  <a href="#contact" class="btn btn--ghost btn--full">Get Started</a>
-</div>
+      <div class="pricing-card card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price"><sup>$</sup>29</div>
+        <div class="plan-period">CAD / month &middot; 10 leads / month</div>
+        <ul class="plan-features">
+          <li>Email notifications</li>
+          <li>Basic CRM</li>
+          <li>Limited automation</li>
+          <li>1 integration</li>
+          <li>Small marketplace boost</li>
+        </ul>
+        <a href="#" data-plan="starter" class="btn btn--ghost btn--full">Start Starter</a>
+      </div>
 
-<div class="pricing-card card featured">
-  <div class="featured-chip">Most Popular</div>
-  <div class="plan-name">Pro</div>
-  <div class="plan-price"><sup>$</sup><span class="price-val" data-monthly="129" data-annual="103">129</span></div>
-  <div class="plan-period">per month, billed <span class="billing-period">monthly</span></div>
-  <ul class="plan-features">
-    <li>75 shortened links</li>
-    <li>Full analytics — devices, referrers, duration</li>
-    <li>Unlimited CRM leads</li>
-    <li>Google Sheets sync</li>
-    <li>Sell automations on EchoForge</li>
-    <li>Reduced commission (10%)</li>
-  </ul>
-  <a href="#contact" class="btn btn--primary btn--full">Subscribe Now</a>
-</div>
+      <div class="pricing-card card featured">
+        <div class="featured-chip">Recommended</div>
+        <div class="plan-name">Growth</div>
+        <div class="plan-price"><sup>$</sup>79</div>
+        <div class="plan-period">CAD / month &middot; 75 leads / month</div>
+        <ul class="plan-features">
+          <li>Full CRM</li>
+          <li>Email and SMS notifications</li>
+          <li>Moderate automation</li>
+          <li>3 integrations</li>
+          <li>Priority placement</li>
+        </ul>
+        <a href="#" data-plan="growth" class="btn btn--primary btn--full">Start Growth</a>
+      </div>
 
-<div class="pricing-card card">
-  <div class="plan-name">Enterprise</div>
-  <div class="plan-price"><sup>$</sup><span class="price-val" data-monthly="299" data-annual="239">299</span></div>
-  <div class="plan-period">per month, billed <span class="billing-period">monthly</span></div>
-  <ul class="plan-features">
-    <li>Everything in Pro</li>
-    <li>API access for custom integrations</li>
-    <li>White-label link shortener</li>
-    <li>Bulk automation uploads</li>
-    <li>Lowest commission (5%)</li>
-    <li>Priority email support</li>
-  </ul>
-  <a href="#contact" class="btn btn--ghost btn--full">Contact Us</a>
-</div>
+      <div class="pricing-card card">
+        <div class="plan-name">Unlimited</div>
+        <div class="plan-price"><sup>$</sup>199</div>
+        <div class="plan-period">CAD / month &middot; unlimited lead access</div>
+        <ul class="plan-features">
+          <li>Full automation</li>
+          <li>AI agents</li>
+          <li>EcoHome</li>
+          <li>Multi-location access</li>
+          <li>Unlimited integrations</li>
+          <li>Top placement</li>
+        </ul>
+        <a href="#" data-plan="unlimited" class="btn btn--ghost btn--full">Start Unlimited</a>
+      </div>
+    </div>
+    <p class="section-sub" style="text-align:center;margin:22px auto 0;max-width:640px">Just getting started? <a href="pricing.html" style="color:var(--gold-bright)">Free Until First Job</a> and a free 2-day Unlimited trial &mdash; <a href="pricing.html" style="color:var(--gold-bright)">see all options</a>.</p>
+  </div>
+</section>
 
 <!-- ── FAQ ── -->
 <section id="faq" class="section section--alt">
@@ -809,18 +802,34 @@
     el.addEventListener('mouseleave', () => { cursor.style.width = '20px'; cursor.style.height = '20px'; });
   });
 
-  // ── PRICING TOGGLE ──────────────────────────────────────────────────────────
-  let isAnnual = false;
-  document.getElementById('billingToggle').addEventListener('click', () => {
-    isAnnual = !isAnnual;
-    document.getElementById('toggleThumb').style.left = isAnnual ? '23px' : '3px';
-    document.querySelectorAll('.price-val').forEach(el => {
-      el.textContent = isAnnual ? el.dataset.annual : el.dataset.monthly;
-    });
-    document.querySelectorAll('.billing-period').forEach(el => {
-      el.textContent = isAnnual ? 'annually' : 'monthly';
-    });
-  });
+  // ── PLAN CHECKOUT (Stripe) ────────────────────────────────────────────────
+  (() => {
+    const API_BASE = window.LINX_API_BASE || 'https://api.linxservices.ca';
+    const buttons = [...document.querySelectorAll('#pricing [data-plan]')];
+    const originalLabels = new Map(buttons.map(button => [button, button.textContent]));
+    buttons.forEach(button => button.addEventListener('click', async event => {
+      event.preventDefault();
+      if (button.dataset.loading === 'true') return;
+      button.dataset.loading = 'true';
+      button.setAttribute('aria-busy', 'true');
+      button.textContent = 'Opening secure checkout…';
+      try {
+        const response = await fetch(`${API_BASE}/api/billing/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: button.dataset.plan }),
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.checkout_url) throw new Error(payload.error || 'Checkout could not be opened.');
+        window.location.assign(payload.checkout_url);
+      } catch (error) {
+        button.textContent = error.message || 'Checkout unavailable';
+        button.dataset.loading = 'false';
+        button.removeAttribute('aria-busy');
+        window.setTimeout(() => { button.textContent = originalLabels.get(button); }, 3200);
+      }
+    }));
+  })();
 
   // ── FAQ ─────────────────────────────────────────────────────────────────────
   document.querySelectorAll('.faq-q').forEach(q => {
