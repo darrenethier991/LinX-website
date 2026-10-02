@@ -95,6 +95,22 @@
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
     @media (max-width: 800px) { .two-col { grid-template-columns: 1fr; } }
 
+    /* MOBILE: sidebar becomes a full-width top nav instead of eating the screen */
+    @media (max-width: 800px) {
+      .admin-layout { flex-direction: column; }
+      .sidebar {
+        width: 100%; flex-shrink: 1;
+        position: static; height: auto;
+        border-right: none; border-bottom: 1px solid var(--border);
+        padding: var(--sp-3) 0;
+      }
+      .admin-main { padding: var(--sp-4); }
+      .stat-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+      /* keep Sign Out reachable on phones (design system hides nav actions) */
+      .nav__actions { display: flex !important; }
+      #nav-user { display: none; }
+    }
+
     /* LOGIN */
     #login-screen {
       display: flex; align-items: center; justify-content: center;
