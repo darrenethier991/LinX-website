@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contractors — LINX Services Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/linx-design-system.css" />
+  <style>.content{padding:48px 0}.layout{display:grid;grid-template-columns:330px minmax(0,1fr);gap:18px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--border)}th{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em}.access-code{margin-top:14px;padding:12px;border:1px solid var(--success);background:rgba(34,197,94,.08);border-radius:var(--radius-sm);font-family:var(--font-mono);word-break:break-word}.status{padding:4px 8px;border-radius:999px;background:var(--bg-surface);border:1px solid var(--border);color:var(--text-muted);font-size:10px;text-transform:uppercase}.status--off{color:#fca5a5;border-color:rgba(248,113,113,.4)}.row-actions{display:flex;gap:6px;flex-wrap:wrap}@media(max-width:800px){.layout{grid-template-columns:1fr}}</style>
+</head>
+<body>
+  <nav class="nav"><a class="nav__logo" href="../index.html"><span class="l">Lin</span><span class="x">X</span></a><ul class="nav__links"><li><a href="index.html">Dashboard</a></li><li><a href="users.html">Users & Access</a></li><li><a href="contractors.html" aria-current="page">Contractors</a></li><li><a href="../clam-code.html">Clam Code</a></li></ul></nav>
+  <main class="content"><div class="container"><span class="eyebrow">Administrator</span><h1 class="section-title">Contractors</h1><p class="section-sub" style="margin-bottom:24px">Manage the contractor directory for the LinX contractor app. Access codes are issued once and stored only as hashes — share the code with the contractor right away.</p><div class="layout"><section class="card"><h2 style="font-size:15px;margin-bottom:16px">Add contractor</h2><form id="create-contractor"><div class="form-group"><label class="form-label">Display name</label><input class="form-input" id="display_name" maxlength="120" required /></div><div class="form-group"><label class="form-label">Email</label><input class="form-input" id="email" type="email" required /></div><div class="form-group"><label class="form-label">Trade</label><input class="form-input" id="trade" maxlength="80" placeholder="e.g. Electrical" /></div><div class="form-group"><label class="form-label">Company <span style="color:var(--text-dim)">(optional)</span></label><input class="form-input" id="company" maxlength="160" /></div><div class="form-group"><label class="form-label">Phone <span style="color:var(--text-dim)">(optional)</span></label><input class="form-input" id="phone" inputmode="tel" maxlength="40" /></div><button class="btn btn--primary btn--full" type="submit">Add & issue access code</button></form><div id="access-code"></div></section><section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px"><h2 style="font-size:15px">Contractor directory</h2><button class="btn btn--ghost btn--sm" id="refresh">Refresh</button></div><div class="table-wrap"><table><thead><tr><th>Contractor</th><th>Trade</th><th>Status</th><th>Actions</th></tr></thead><tbody id="contractor-rows"><tr><td colspan="4">Loading…</td></tr></tbody></table></div></section></div></div></main>
+  <script>
+    const API_BASE = window.LINX_API_BASE || "https://api.linxservices.ca";
+    const token = localStorage.getItem("linx_token") || sessionStorage.getItem("linx_token") || "";
+    const rows = document.getElementById("contractor-rows");
+    const codePanel = document.getElementById("access-code");
+    const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[character]));
+    function authFail() { localStorage.removeItem("linx_token"); sessionStorage.removeItem("linx_token"); location.href = "index.html?session=expired"; }
+    async function listContractors() {
+      const response = await fetch(`${API_BASE}/api/admin/contractors`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await response.json();
+      if (response.status === 401) { authFail(); return; }
+      if (!response.ok) { rows.innerHTML = `<tr><td colspan="4">${escapeHtml(data.error || "Administrator access is required.")}</td></tr>`; return; }
+      rows.innerHTML = data.contractors.length ? data.contractors.map(c => `<tr><td><strong>${escapeHtml(c.display_name)}</strong><br><span style="color:var(--text-dim)">${escapeHtml(c.email)}${c.company ? " · " + escapeHtml(c.company) : ""}${c.phone ? " · " + escapeHtml(c.phone) : ""}</span></td><td>${escapeHtml(c.trade || "—")}</td><td><span class="status${c.active ? "" : " status--off"}">${c.active ? "Active" : "Inactive"}</span></td><td><div class="row-actions"><button class="btn btn--ghost btn--sm" data-reset="${escapeHtml(c.id)}">Reset code</button><button class="btn btn--ghost btn--sm" data-toggle="${escapeHtml(c.id)}" data-active="${c.active ? 1 : 0}">${c.active ? "Deactivate" : "Activate"}</button></div></td></tr>`).join("") : `<tr><td colspan="4">No contractors yet.</td></tr>`;
+    }
+    rows.addEventListener("click", async event => {
+      const resetBtn = event.target.closest("[data-reset]");
+      const toggleBtn = event.target.closest("[data-toggle]");
+      if (resetBtn) {
+        if (!confirm("Issue a new access code? The old code stops working immediately.")) return;
+        const response = await fetch(`${API_BASE}/api/admin/contractors/${encodeURIComponent(resetBtn.dataset.reset)}/reset-code`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+        const data = await response.json();
+        if (response.status === 401) { authFail(); return; }
+        codePanel.innerHTML = response.ok
+          ? `<div class="access-code"><strong>New access code — show once, then share it with the contractor</strong><br>${escapeHtml(data.access_code)}<br><span style="font-size:11px;color:var(--text-muted)">The previous code no longer works. It is never stored in readable form.</span></div>`
+          : `<p style="color:#fecaca">${escapeHtml(data.error || "Unable to reset the code.")}</p>`;
+        return;
+      }
+      if (toggleBtn) {
+        const toActive = toggleBtn.dataset.active !== "1";
+        const response = await fetch(`${API_BASE}/api/admin/contractors/${encodeURIComponent(toggleBtn.dataset.toggle)}/active`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ active: toActive }) });
+        if (response.status === 401) { authFail(); return; }
+        listContractors();
+      }
+    });
+    document.getElementById("create-contractor").addEventListener("submit", async event => {
+      event.preventDefault(); codePanel.innerHTML = "";
+      const response = await fetch(`${API_BASE}/api/admin/contractors`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ display_name: document.getElementById("display_name").value, email: document.getElementById("email").value, trade: document.getElementById("trade").value, company: document.getElementById("company").value, phone: document.getElementById("phone").value }) });
+      const data = await response.json();
+      if (response.status === 401) { authFail(); return; }
+      if (!response.ok) { codePanel.innerHTML = `<p style="color:#fecaca">${escapeHtml(data.error || "Unable to add the contractor.")}</p>`; return; }
+      codePanel.innerHTML = `<div class="access-code"><strong>Access code — show once, then share it with ${escapeHtml(data.contractor.display_name)}</strong><br>${escapeHtml(data.access_code)}<br><span style="font-size:11px;color:var(--text-muted)">They sign in at linxservices.ca/contractor-app.html. It is never stored in readable form.</span></div>`;
+      event.target.reset(); listContractors();
+    });
+    document.getElementById("refresh").addEventListener("click", listContractors);
+    listContractors();
+  </script>
+</body>
+</html>

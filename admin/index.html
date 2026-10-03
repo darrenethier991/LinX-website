@@ -212,6 +212,7 @@
       <li><a href="../clam-code.html">Clam Code</a></li>
       <li><a href="analytics.html">Analytics</a></li>
       <li><a href="users.html">Users & Access</a></li>
+      <li><a href="contractors.html">Contractors</a></li>
       <li><a href="content.html">Content Controls</a></li>
       <li><a href="crawler-dashboard.html">Crawler</a></li>
       <li><a href="contractor-leads.html">Leads</a></li>
@@ -784,6 +785,38 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Add Contact modal -->
+<style>
+  .contact-modal-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,.65); display: none; align-items: center; justify-content: center; padding: 16px; }
+  .contact-modal-overlay.open { display: flex; }
+  .contact-modal { width: 480px; max-width: 100%; max-height: calc(100vh - 48px); overflow-y: auto; }
+  .contact-modal h2 { font-size: 17px; margin-bottom: 4px; }
+  .contact-modal .modal-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+  .role-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+  .role-toggle button { flex: 1; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+  .role-toggle button.active { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .modal-actions .btn { flex: 1; }
+</style>
+<div class="contact-modal-overlay" id="contact-modal-overlay">
+  <div class="card contact-modal" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+    <h2 id="contact-modal-title">Add contact</h2>
+    <p class="modal-sub">Saved to the lead pipeline — same intake as the website form.</p>
+    <div class="role-toggle" id="contact-role-toggle">
+      <button type="button" data-role="homeowner" class="active">Homeowner</button>
+      <button type="button" data-role="contractor">Contractor</button>
+    </div>
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="contact-name" maxlength="160" placeholder="Full name" /></div>
+    <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="contact-phone" inputmode="tel" maxlength="20" placeholder="+1…" /></div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="contact-email" type="email" maxlength="160" placeholder="name@example.com" /></div>
+    <div class="form-group"><label class="form-label">Project / notes</label><textarea class="form-textarea" id="contact-notes" maxlength="2000" placeholder="What do they need?"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn--ghost" id="contact-cancel">Cancel</button>
+      <button class="btn btn--primary" id="contact-save">Save contact</button>
+    </div>
+  </div>
+</div>
+
 <script>
   // ── SIMPLE AUTH ──────────────────────────────────────────────────────────────
   const API_BASE = window.LINX_API_BASE || 'https://api.linxservices.ca';
@@ -887,6 +920,56 @@
       activatePanel(link.dataset.panel);
     });
   });
+
+  // ── ADD CONTACT (CRM panel) ──────────────────────────────────────────
+  (function initAddContact() {
+    const overlay = document.getElementById('contact-modal-overlay');
+    const openBtn = document.getElementById('add-contact-btn');
+    const cancelBtn = document.getElementById('contact-cancel');
+    const saveBtn = document.getElementById('contact-save');
+    const roleToggle = document.getElementById('contact-role-toggle');
+    if (!overlay || !openBtn) return;
+    let role = 'homeowner';
+    roleToggle.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-role]');
+      if (!btn) return;
+      role = btn.dataset.role;
+      roleToggle.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+    });
+    const close = () => overlay.classList.remove('open');
+    openBtn.addEventListener('click', () => overlay.classList.add('open'));
+    cancelBtn.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    saveBtn.addEventListener('click', async () => {
+      const name = document.getElementById('contact-name').value.trim();
+      const phone = document.getElementById('contact-phone').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const notes = document.getElementById('contact-notes').value.trim();
+      if (!name) { showToast('Add a name first.'); return; }
+      if (!phone && !email) { showToast('Add a phone number or email so they can be reached.'); return; }
+      if (!notes) { showToast('Add a short note about the project.'); return; }
+      saveBtn.disabled = true;
+      try {
+        const res = await fetch(`${API_BASE}/api/contacts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, phone, email, role, message: notes, source: 'manual' }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Could not save the contact.');
+        showToast(data.duplicate ? 'That contact is already in the pipeline.' : 'Contact saved to the lead pipeline.', 'success');
+        document.getElementById('contact-name').value = '';
+        document.getElementById('contact-phone').value = '';
+        document.getElementById('contact-email').value = '';
+        document.getElementById('contact-notes').value = '';
+        close();
+      } catch (err) {
+        showToast(err.message || 'Could not save the contact.');
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+  })();
 
   // ── DASHBOARD ────────────────────────────────────────────────────────────────
   function getAdminToken() {

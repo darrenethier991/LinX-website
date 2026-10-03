@@ -16,6 +16,7 @@ import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatus
 import { notifyOwnerOfApplication, reconcileOwnerApplicationNotifications } from "./application-notifications.js";
 import { handleContactSubmission } from "./contact-intake.js";
 import { contractorLogin, contractorMe, contractorLeads, contractorLeadAction, contractorJobs, contractorJobStatus, contractorEarnings, contractorProfile } from "./contractor-app.js";
+import { adminListContractors, adminCreateContractor, adminResetContractorCode, adminSetContractorActive } from "./contractor-admin.js";
 
 /**
  * LinX API — Cloudflare Worker
@@ -1536,6 +1537,35 @@ export default {
         }
       }
       return json({ ok: true }, 200, origin);
+    }
+
+    // ── LinX Contractor App — admin management ──────────────────────────────
+    // All routes here sit below the admin auth gate. Code hashes never leave
+    // the database; plain codes are returned once at issue/reset time.
+    if (path === '/api/admin/contractors' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      return json(await adminListContractors(env), 200, origin);
+    }
+    if (path === '/api/admin/contractors' && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const result = await adminCreateContractor(env, await readBody(request));
+      if (result.error) return json({ error: result.error }, result.status || 400, origin);
+      return json({ ok: true, contractor: result.contractor, access_code: result.access_code }, 201, origin);
+    }
+    const contractorResetMatch = path.match(/^\/api\/admin\/contractors\/([^/]+)\/reset-code$/);
+    if (contractorResetMatch && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const result = await adminResetContractorCode(env, contractorResetMatch[1]);
+      if (result.error) return json({ error: result.error }, result.status || 400, origin);
+      return json({ ok: true, contractor_id: result.contractor_id, access_code: result.access_code }, 200, origin);
+    }
+    const contractorActiveMatch = path.match(/^\/api\/admin\/contractors\/([^/]+)\/active$/);
+    if (contractorActiveMatch && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const { active } = await readBody(request);
+      const result = await adminSetContractorActive(env, contractorActiveMatch[1], active);
+      if (result.error) return json({ error: result.error }, result.status || 400, origin);
+      return json({ ok: true, contractor_id: result.contractor_id, active: result.active }, 200, origin);
     }
 
     // ── GET /api/leads/stats ───────────────────────────────────────────────
