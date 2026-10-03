@@ -15,6 +15,7 @@ import { deviceCategory, generatedSlug, normalizeShortLinkInput, refererHost } f
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 import { notifyOwnerOfApplication, reconcileOwnerApplicationNotifications } from "./application-notifications.js";
 import { handleContactSubmission } from "./contact-intake.js";
+import { contractorLogin, contractorMe, contractorLeads, contractorLeadAction, contractorJobs, contractorJobStatus, contractorEarnings, contractorProfile } from "./contractor-app.js";
 
 /**
  * LinX API — Cloudflare Worker
@@ -784,6 +785,48 @@ export default {
       } catch (error) {
         return json({ ok: false, error: String(error?.message || 'Fraud scan could not be completed.').slice(0, 240) }, 400, origin);
       }
+    }
+
+    // ── LinX Contractor App ─────────────────────────────────────────────────
+    // Contractor-scoped endpoints. Every authenticated handler in
+    // contractor-app.js verifies the JWT itself and scopes all queries to
+    // WHERE contractor_id = <verified JWT contractor_id>, so a contractor can
+    // never see another contractor's data.
+    if (path === '/api/contractor/login' && method === 'POST') {
+      return contractorLogin(request, env, origin);
+    }
+    if (path === '/api/contractor/me' && method === 'GET') {
+      return contractorMe(request, env, origin);
+    }
+    if (path === '/api/contractor/leads' && method === 'GET') {
+      return contractorLeads(request, env, origin);
+    }
+    if (path.startsWith('/api/contractor/leads/')) {
+      const segments = path.split('/').filter(Boolean);
+      const leadId = segments[3] || '';
+      const action = segments[4] || '';
+      if (method === 'POST' && (action === 'accept' || action === 'decline')) {
+        return contractorLeadAction(request, env, origin, leadId, action);
+      }
+      return json({ error: 'Not found.' }, 404, origin);
+    }
+    if (path === '/api/contractor/jobs' && method === 'GET') {
+      return contractorJobs(request, env, origin);
+    }
+    if (path.startsWith('/api/contractor/jobs/')) {
+      const segments = path.split('/').filter(Boolean);
+      const jobId = segments[3] || '';
+      const action = segments[4] || '';
+      if (method === 'POST' && action === 'status') {
+        return contractorJobStatus(request, env, origin, jobId);
+      }
+      return json({ error: 'Not found.' }, 404, origin);
+    }
+    if (path === '/api/contractor/earnings' && method === 'GET') {
+      return contractorEarnings(request, env, origin);
+    }
+    if (path === '/api/contractor/profile' && method === 'GET') {
+      return contractorProfile(request, env, origin);
     }
 
     // ── Short-link management — administrator-only ──────────────────────────

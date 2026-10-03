@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#050507" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>LinX Contractor App</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #D4A853;
+      --gold-light: #E9C66A;
+      --gold-dark: #A27A33;
+      --bg: #050507;
+      --bg-card: #0A0A0E;
+      --bg-card-hover: #101016;
+      --text: #F4F4F5;
+      --text-muted: #A1A1AA;
+      --text-dim: #71717A;
+      --border: #1C1C24;
+      --success: #22C55E;
+      --error: #EF4444;
+      --warning: #F59E0B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+    }
+    /* App shell: mobile-first, centered on desktop */
+    .shell {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      background:
+        radial-gradient(ellipse 90% 40% at 50% -10%, rgba(212,168,83,.10), transparent 70%),
+        var(--bg);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .view { display: none; flex: 1; padding: 20px 18px 110px; animation: fadein .18s ease; }
+    .view.active { display: block; }
+    @keyframes fadein { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: none;} }
+
+    /* ── Login ── */
+    .login-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 32px 28px 48px;
+      text-align: center;
+    }
+    .brand-mark {
+      width: 76px; height: 76px; margin: 0 auto 20px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #1a1408, #0a0a0e);
+      border: 1px solid rgba(212,168,83,.45);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; font-weight: 800; color: var(--gold);
+      letter-spacing: 1px;
+      box-shadow: 0 0 34px rgba(212,168,83,.16);
+    }
+    .login-wrap h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+    .login-wrap h1 span { color: var(--gold); }
+    .login-sub { color: var(--text-muted); font-size: 14px; margin: 10px 0 28px; line-height: 1.5; }
+    .field { text-align: left; margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .6px; }
+    .field input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 17px;
+      font-family: 'Inter', monospace;
+      letter-spacing: 3px;
+      text-align: center;
+      padding: 15px 12px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .field input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,168,83,.15); }
+    .btn {
+      display: block; width: 100%;
+      padding: 15px; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: transform .1s, opacity .15s;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .55; cursor: default; }
+    .btn-gold { background: linear-gradient(135deg, var(--gold-light), var(--gold)); color: #14100a; }
+    .btn-outline { background: transparent; color: var(--gold); border: 1px solid rgba(212,168,83,.5); }
+    .btn-danger-outline { background: transparent; color: var(--error); border: 1px solid rgba(239,68,68,.45); }
+    .login-err {
+      display: none;
+      margin-top: 14px; padding: 12px 14px;
+      background: rgba(239,68,68,.10);
+      border: 1px solid rgba(239,68,68,.4);
+      border-radius: 10px; color: #fca5a5; font-size: 14px; line-height: 1.45;
+    }
+    .login-err.show { display: block; }
+
+    /* ── Headers / sections ── */
+    .screen-head { margin: 6px 0 16px; }
+    .screen-head h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+    .screen-head p { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .card .row-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
+    .card h3 { font-size: 16px; font-weight: 700; }
+    .card .meta { color: var(--text-muted); font-size: 13px; line-height: 1.65; margin-top: 6px; }
+    .card .meta a { color: var(--gold-light); text-decoration: none; }
+    .card .desc { font-size: 14px; color: var(--text); line-height: 1.55; margin-top: 8px; white-space: pre-wrap; }
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
+      padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+      background: rgba(212,168,83,.14); color: var(--gold-light); border: 1px solid rgba(212,168,83,.35);
+    }
+    .time { color: var(--text-dim); font-size: 12px; margin-top: 8px; }
+
+    .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+    .btn-accept { flex: 1; padding: 13px; border: none; border-radius: 10px; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer; background: var(--success); color: #04120a; }
+    .btn-decline { flex: 1; padding: 13px; border: 1px solid rgba(239,68,68,.45); border-radius: 10px; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer; background: transparent; color: var(--error); }
+
+    /* ── 5-step tracker ── */
+    .steps { display: flex; align-items: flex-start; margin: 14px 0 4px; }
+    .step { flex: 1; text-align: center; position: relative; }
+    .step .dot {
+      width: 30px; height: 30px; border-radius: 50%; margin: 0 auto;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800;
+      background: #16161d; border: 1px solid var(--border); color: var(--text-dim);
+      position: relative; z-index: 1;
+    }
+    .step.done .dot { background: var(--gold); border-color: var(--gold); color: #14100a; }
+    .step.current .dot { background: rgba(212,168,83,.18); border-color: var(--gold); color: var(--gold-light); box-shadow: 0 0 12px rgba(212,168,83,.35); }
+    .step .lbl { font-size: 9.5px; color: var(--text-dim); margin-top: 5px; line-height: 1.25; display: block; }
+    .step.done .lbl, .step.current .lbl { color: var(--text-muted); }
+    .step::before {
+      content: ''; position: absolute; top: 15px; left: -50%; width: 100%; height: 2px;
+      background: var(--border); z-index: 0;
+    }
+    .step:first-child::before { display: none; }
+    .step.done::before, .step.current::before { background: rgba(212,168,83,.5); }
+
+    /* ── Earnings ── */
+    .totals { display: flex; gap: 10px; margin-bottom: 16px; }
+    .total-card {
+      flex: 1; background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px; text-align: center;
+    }
+    .total-card.gold { border-color: rgba(212,168,83,.4); background: linear-gradient(180deg, rgba(212,168,83,.08), var(--bg-card)); }
+    .total-card .k { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; }
+    .total-card .v { font-size: 26px; font-weight: 800; color: var(--gold-light); }
+    .payout { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .payout .amt { font-weight: 800; font-size: 16px; color: var(--gold-light); white-space: nowrap; }
+    .status { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 3px 9px; border-radius: 999px; }
+    .status.paid { background: rgba(34,197,94,.14); color: #86efac; border: 1px solid rgba(34,197,94,.35); }
+    .status.pending { background: rgba(245,158,11,.14); color: #fcd34d; border: 1px solid rgba(245,158,11,.35); }
+
+    /* ── Profile ── */
+    .profile-hero { margin: -20px -18px 0; position: relative; height: 190px; overflow: hidden; }
+    .profile-hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .profile-hero::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 30%, var(--bg) 100%);
+    }
+    .profile-body { padding-top: 18px; }
+    .profile-name { font-size: 24px; font-weight: 800; letter-spacing: -0.4px; }
+    .profile-company { color: var(--text-muted); font-size: 14px; margin-top: 2px; }
+    .profile-fields { margin-top: 18px; }
+    .pfield { display: flex; justify-content: space-between; gap: 14px; padding: 13px 2px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .pfield .k { color: var(--text-dim); font-weight: 600; flex-shrink: 0; }
+    .pfield .v { text-align: right; word-break: break-word; }
+    .pfield .v a { color: var(--gold-light); text-decoration: none; }
+    .signout { margin-top: 22px; }
+
+    /* ── States ── */
+    .empty {
+      text-align: center; padding: 56px 26px;
+      border: 1px dashed var(--border); border-radius: 14px;
+      color: var(--text-muted); font-size: 14px; line-height: 1.6;
+    }
+    .empty .icon { font-size: 34px; display: block; margin-bottom: 12px; }
+    .spinner { text-align: center; padding: 44px 0; color: var(--text-dim); font-size: 14px; }
+    .spinner::before {
+      content: ''; display: block; width: 30px; height: 30px; margin: 0 auto 12px;
+      border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg);} }
+    .inline-err {
+      margin-bottom: 12px; padding: 12px 14px;
+      background: rgba(239,68,68,.10); border: 1px solid rgba(239,68,68,.4);
+      border-radius: 10px; color: #fca5a5; font-size: 13.5px; line-height: 1.5;
+    }
+
+    /* ── Bottom tab bar ── */
+    .tabbar {
+      position: sticky; bottom: 0; z-index: 10;
+      max-width: 480px; margin: 0 auto;
+      display: flex;
+      background: rgba(10,10,14,.96);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .tab {
+      flex: 1; background: none; border: none; cursor: pointer;
+      padding: 10px 4px 8px; color: var(--text-dim);
+      font-family: inherit; font-size: 10.5px; font-weight: 600;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      position: relative;
+    }
+    .tab .tic { font-size: 20px; line-height: 1; }
+    .tab.active { color: var(--gold-light); }
+    .tab.active::before {
+      content: ''; position: absolute; top: 0; left: 30%; right: 30%; height: 2px;
+      background: var(--gold); border-radius: 2px;
+    }
+    .tab .count {
+      position: absolute; top: 4px; right: calc(50% - 24px);
+      background: var(--gold); color: #14100a;
+      font-size: 10px; font-weight: 800;
+      min-width: 17px; height: 17px; line-height: 17px; text-align: center;
+      border-radius: 999px; padding: 0 4px;
+    }
+    .toast {
+      position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%) translateY(20px);
+      background: #16161d; border: 1px solid var(--border); color: var(--text);
+      padding: 12px 18px; border-radius: 12px; font-size: 14px; font-weight: 600;
+      opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 50;
+      max-width: 90vw; text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,.5);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (min-width: 520px) {
+      body { padding: 24px 0; }
+      .shell { border-radius: 24px; overflow: hidden; min-height: calc(100dvh - 48px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell" id="shell">
+    <!-- ═══ LOGIN VIEW ═══ -->
+    <div class="view active" id="view-login">
+      <div class="login-wrap">
+        <div class="brand-mark">LX</div>
+        <h1>Lin<span>X</span> Contractor</h1>
+        <p class="login-sub">Enter the access code issued to you by the LinX team to open your contractor workspace.</p>
+        <div class="field">
+          <label for="code-input">Access code</label>
+          <input id="code-input" type="text" inputmode="text" autocomplete="one-time-code"
+                 placeholder="••••••••" maxlength="64" />
+        </div>
+        <button class="btn btn-gold" id="btn-login">Sign in</button>
+        <div class="login-err" id="login-err" role="alert"></div>
+      </div>
+    </div>
+
+    <!-- ═══ LEADS VIEW ═══ -->
+    <div class="view" id="view-leads">
+      <div class="screen-head">
+        <h2>New Leads</h2>
+        <p id="leads-sub">Jobs matched to your trade.</p>
+      </div>
+      <div id="leads-body"></div>
+    </div>
+
+    <!-- ═══ JOBS VIEW ═══ -->
+    <div class="view" id="view-jobs">
+      <div class="screen-head">
+        <h2>Active Jobs</h2>
+        <p>Track progress and advance each job through its steps.</p>
+      </div>
+      <div id="jobs-body"></div>
+    </div>
+
+    <!-- ═══ EARNINGS VIEW ═══ -->
+    <div class="view" id="view-earnings">
+      <div class="screen-head">
+        <h2>Earnings</h2>
+        <p>Your payout totals and history.</p>
+      </div>
+      <div id="earnings-body"></div>
+    </div>
+
+    <!-- ═══ PROFILE VIEW ═══ -->
+    <div class="view" id="view-profile">
+      <div id="profile-body"></div>
+    </div>
+
+    <!-- ═══ TAB BAR ═══ -->
+    <nav class="tabbar" id="tabbar" style="display:none">
+      <button class="tab active" data-tab="leads"><span class="tic">⚡</span>Leads<span class="count" id="leads-count" style="display:none"></span></button>
+      <button class="tab" data-tab="jobs"><span class="tic">🔧</span>Jobs</button>
+      <button class="tab" data-tab="earnings"><span class="tic">💰</span>Earnings</button>
+      <button class="tab" data-tab="profile"><span class="tic">👤</span>Profile</button>
+    </nav>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var API = window.LINX_API_BASE || 'https://api.linxservices.ca'; // contractor API lives on the LinX worker
+
+    /* ---------- helpers ---------- */
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+    function fmtCAD(cents) {
+      var n = Number(cents) || 0;
+      return '$' + (n / 100).toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function fmtDate(iso) {
+      if (!iso) return '';
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return esc(iso);
+      return esc(d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' }));
+    }
+    function toast(msg) {
+      var t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(t._h);
+      t._h = setTimeout(function () { t.classList.remove('show'); }, 2600);
+    }
+
+    /* ---------- auth ---------- */
+    var TOKEN_KEY = 'linx_contractor_token';
+    function getToken() { return sessionStorage.getItem(TOKEN_KEY); }
+    function setToken(t) { sessionStorage.setItem(TOKEN_KEY, t); }
+    function clearToken() { sessionStorage.removeItem(TOKEN_KEY); }
+
+    function api(path, opts) {
+      opts = opts || {};
+      var headers = { 'Accept': 'application/json' };
+      var token = getToken();
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+      if (opts.body) headers['Content-Type'] = 'application/json';
+      return fetch(API + path, {
+        method: opts.method || 'GET',
+        headers: headers,
+        body: opts.body ? JSON.stringify(opts.body) : undefined
+      }).then(function (res) {
+        if (res.status === 401) {
+          logout();
+          throw new Error('Session expired. Please sign in again.');
+        }
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (!res.ok) throw new Error(data.error || data.message || ('Request failed (' + res.status + ')'));
+          return data;
+        });
+      });
+    }
+
+    /* ---------- views ---------- */
+    var views = ['leads', 'jobs', 'earnings', 'profile'];
+    function showView(name) {
+      document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+      var el = document.getElementById('view-' + name);
+      if (el) el.classList.add('active');
+      document.querySelectorAll('.tab').forEach(function (t) {
+        t.classList.toggle('active', t.getAttribute('data-tab') === name);
+      });
+      window.scrollTo(0, 0);
+    }
+    function showLogin() {
+      clearToken();
+      document.getElementById('tabbar').style.display = 'none';
+      document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+      document.getElementById('view-login').classList.add('active');
+      document.getElementById('code-input').value = '';
+    }
+    function logout() {
+      clearToken();
+      showLogin();
+    }
+
+    var me = null;
+    var headerForTrade = function (trade) {
+      // Exact asset filenames; fall back to electrical for any other trade.
+      var t = String(trade || '').toLowerCase();
+      if (t.indexOf('roof') !== -1) return 'assets/contractor-header-roofing.jpg';
+      return 'assets/contractor-header-electrical.jpg';
+    };
+
+    /* ---------- leads ---------- */
+    function loadLeads() {
+      var body = document.getElementById('leads-body');
+      body.innerHTML = '<div class="spinner">Loading leads…</div>';
+      api('/api/contractor/leads').then(function (data) {
+        var leads = data.leads || data || [];
+        if (!Array.isArray(leads)) leads = [];
+        var badge = document.getElementById('leads-count');
+        if (leads.length > 0) { badge.style.display = ''; badge.textContent = leads.length; }
+        else { badge.style.display = 'none'; }
+        if (leads.length === 0) {
+          body.innerHTML = '<div class="empty"><span class="icon">📭</span>' +
+            'No new leads yet — we\'ll notify you when one comes in.</div>';
+          return;
+        }
+        body.innerHTML = leads.map(function (l) {
+          return '<div class="card" data-lead="' + esc(l.id) + '">' +
+            '<div class="row-top"><h3>' + esc(l.homeowner_name || 'Homeowner') + '</h3>' +
+            (l.trade ? '<span class="badge">' + esc(l.trade) + '</span>' : '') + '</div>' +
+            (l.phone ? '<div class="meta">📞 <a href="tel:' + esc(l.phone.replace(/[^+\d]/g, '')) + '">' + esc(l.phone) + '</a></div>' : '') +
+            (l.address ? '<div class="meta">📍 ' + esc(l.address) + '</div>' : '') +
+            (l.description ? '<div class="desc">' + esc(l.description) + '</div>' : '') +
+            '<div class="time">Received ' + fmtDate(l.created_at) + '</div>' +
+            '<div class="btn-row">' +
+            '<button class="btn-accept" data-act="accept">Accept</button>' +
+            '<button class="btn-decline" data-act="decline">Decline</button>' +
+            '</div></div>';
+        }).join('');
+        body.querySelectorAll('[data-lead]').forEach(function (card) {
+          var id = card.getAttribute('data-lead');
+          card.querySelector('[data-act="accept"]').addEventListener('click', function () {
+            acceptLead(id, card);
+          });
+          card.querySelector('[data-act="decline"]').addEventListener('click', function () {
+            if (confirm('Decline this lead? It will be removed from your list.')) {
+              declineLead(id, card);
+            }
+          });
+        });
+      }).catch(function (err) {
+        body.innerHTML = '<div class="inline-err">' + esc(err.message) + '</div>' +
+          '<button class="btn btn-outline" id="leads-retry">Retry</button>';
+        document.getElementById('leads-retry').addEventListener('click', loadLeads);
+      });
+    }
+    function acceptLead(id, card) {
+      var btn = card.querySelector('[data-act="accept"]');
+      btn.disabled = true; btn.textContent = 'Accepting…';
+      api('/api/contractor/leads/' + encodeURIComponent(id) + '/accept', { method: 'POST' })
+        .then(function () {
+          toast('Lead accepted');
+          loadLeads(); loadJobs();
+        })
+        .catch(function (err) {
+          toast(err.message);
+          btn.disabled = false; btn.textContent = 'Accept';
+        });
+    }
+    function declineLead(id, card) {
+      var btn = card.querySelector('[data-act="decline"]');
+      btn.disabled = true; btn.textContent = 'Declining…';
+      api('/api/contractor/leads/' + encodeURIComponent(id) + '/decline', { method: 'POST' })
+        .then(function () {
+          toast('Lead declined');
+          loadLeads();
+        })
+        .catch(function (err) {
+          toast(err.message);
+          btn.disabled = false; btn.textContent = 'Decline';
+        });
+    }
+
+    /* ---------- jobs ---------- */
+    var STEPS = ['Received', 'Scheduled', 'In progress', 'Review', 'Done'];
+    function loadJobs() {
+      var body = document.getElementById('jobs-body');
+      body.innerHTML = '<div class="spinner">Loading jobs…</div>';
+      api('/api/contractor/jobs').then(function (data) {
+        var jobs = data.jobs || data || [];
+        if (!Array.isArray(jobs)) jobs = [];
+        if (jobs.length === 0) {
+          body.innerHTML = '<div class="empty"><span class="icon">🛠️</span>No active jobs.</div>';
+          return;
+        }
+        body.innerHTML = jobs.map(function (j) {
+          var step = Math.min(5, Math.max(1, Number(j.status_step) || 1));
+          var dots = STEPS.map(function (label, i) {
+            var n = i + 1;
+            var cls = n < step ? 'done' : (n === step ? 'current' : '');
+            return '<div class="step ' + cls + '"><div class="dot">' + (n < step ? '✓' : n) +
+              '</div><span class="lbl">' + label + '</span></div>';
+          }).join('');
+          var nextBtn = step < 5
+            ? '<button class="btn btn-gold" data-advance style="margin-top:14px">Advance to “' + STEPS[step] + '”</button>'
+            : '<div class="time" style="margin-top:10px;color:var(--success)">✓ Job complete</div>';
+          return '<div class="card" data-job="' + esc(j.id) + '">' +
+            '<div class="row-top"><h3>' + esc(j.title || 'Job') + '</h3>' +
+            '<span class="badge">Step ' + step + '/5</span></div>' +
+            (j.address ? '<div class="meta">📍 ' + esc(j.address) + '</div>' : '') +
+            (j.scheduled_date ? '<div class="meta">🗓 ' + fmtDate(j.scheduled_date) + '</div>' : '') +
+            (j.notes ? '<div class="desc">' + esc(j.notes) + '</div>' : '') +
+            '<div class="steps">' + dots + '</div>' + nextBtn + '</div>';
+        }).join('');
+        body.querySelectorAll('[data-job]').forEach(function (card) {
+          var id = card.getAttribute('data-job');
+          var adv = card.querySelector('[data-advance]');
+          if (!adv) return;
+          adv.addEventListener('click', function () {
+            advanceJob(id, adv);
+          });
+        });
+      }).catch(function (err) {
+        body.innerHTML = '<div class="inline-err">' + esc(err.message) + '</div>';
+      });
+    }
+    function advanceJob(id, btn) {
+      btn.disabled = true; btn.textContent = 'Updating…';
+      var card = btn.closest('[data-job]');
+      var current = card.querySelectorAll('.step.done').length + 1;
+      var next = Math.min(5, current + 1);
+      api('/api/contractor/jobs/' + encodeURIComponent(id) + '/status', {
+        method: 'POST', body: { step: next }
+      }).then(function () {
+        toast('Moved to “' + STEPS[next - 1] + '”');
+        loadJobs();
+      }).catch(function (err) {
+        toast(err.message);
+        btn.disabled = false; btn.textContent = 'Retry';
+      });
+    }
+
+    /* ---------- earnings ---------- */
+    function loadEarnings() {
+      var body = document.getElementById('earnings-body');
+      body.innerHTML = '<div class="spinner">Loading earnings…</div>';
+      api('/api/contractor/earnings').then(function (d) {
+        var pending = fmtCAD(d.pending_total_cents);
+        var paid = fmtCAD(d.paid_total_cents);
+        var payouts = Array.isArray(d.payouts) ? d.payouts : [];
+        var html = '<div class="totals">' +
+          '<div class="total-card"><div class="k">Pending</div><div class="v">' + esc(pending) + '</div></div>' +
+          '<div class="total-card gold"><div class="k">Paid out</div><div class="v">' + esc(paid) + '</div></div>' +
+          '</div>';
+        if (payouts.length === 0) {
+          html += '<div class="empty"><span class="icon">💳</span>No payouts yet.</div>';
+        } else {
+          html += '<div class="screen-head" style="margin-top:6px"><h2 style="font-size:16px">Payout history</h2></div>';
+          html += payouts.map(function (p) {
+            var st = String(p.status || 'pending').toLowerCase();
+            return '<div class="card"><div class="payout"><div>' +
+              '<div style="font-weight:700;font-size:14px">' + esc(p.job_id || 'Payout') + '</div>' +
+              '<div class="time" style="margin-top:2px">' + fmtDate(p.paid_at) + '</div></div>' +
+              '<div style="text-align:right"><div class="amt">' + esc(fmtCAD(p.amount_cents)) + '</div>' +
+              '<span class="status ' + (st === 'paid' ? 'paid' : 'pending') + '">' + esc(st) + '</span></div>' +
+              '</div></div>';
+          }).join('');
+        }
+        body.innerHTML = html;
+      }).catch(function (err) {
+        body.innerHTML = '<div class="inline-err">' + esc(err.message) + '</div>';
+      });
+    }
+
+    /* ---------- profile ---------- */
+    function loadProfile() {
+      var body = document.getElementById('profile-body');
+      body.innerHTML = '<div class="spinner">Loading profile…</div>';
+      api('/api/contractor/me').then(function (d) {
+        me = d;
+        return api('/api/contractor/profile').then(function (p) { return { me: d, profile: p }; })
+          .catch(function () { return { me: d, profile: {} }; });
+      }).then(function (both) {
+        var m = both.me || {};
+        var p = both.profile || {};
+        var hero = headerForTrade(m.trade);
+        var html = '<div class="profile-hero"><img src="' + esc(hero) + '" alt="' + esc(m.trade || 'Contractor') + ' trade" ' +
+          'onerror="this.onerror=null;this.src=\'assets/contractor-header-electrical.jpg\'" /></div>' +
+          '<div class="profile-body">' +
+          '<div class="profile-name">' + esc(m.display_name || 'Contractor') + '</div>' +
+          (m.company ? '<div class="profile-company">' + esc(m.company) + '</div>' : '') +
+          (m.trade ? '<div style="margin-top:8px"><span class="badge">' + esc(m.trade) + '</span></div>' : '') +
+          '<div class="profile-fields">' +
+          field('Email', m.email ? '<a href="mailto:' + esc(m.email) + '">' + esc(m.email) + '</a>' : '') +
+          field('Phone', m.phone ? '<a href="tel:' + esc(String(m.phone).replace(/[^+\d]/g, '')) + '">' + esc(m.phone) + '</a>' : '');
+        Object.keys(p).forEach(function (k) {
+          if (['id', 'display_name', 'company', 'trade', 'email', 'phone'].indexOf(k) !== -1) return;
+          if (p[k] == null || p[k] === '') return;
+          html += field(k.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); }), esc(p[k]));
+        });
+        html += '</div><button class="btn btn-danger-outline signout" id="btn-signout">Sign out</button></div>';
+        body.innerHTML = html;
+        document.getElementById('btn-signout').addEventListener('click', function () {
+          if (confirm('Sign out of the LinX contractor app?')) logout();
+        });
+      }).catch(function (err) {
+        body.innerHTML = '<div class="inline-err">' + esc(err.message) + '</div>';
+      });
+    }
+    function field(k, v) {
+      return '<div class="pfield"><span class="k">' + esc(k) + '</span><span class="v">' + (v || '<span style="color:var(--text-dim)">—</span>') + '</span></div>';
+    }
+
+    /* ---------- login ---------- */
+    function doLogin() {
+      var input = document.getElementById('code-input');
+      var errBox = document.getElementById('login-err');
+      var btn = document.getElementById('btn-login');
+      var code = input.value.trim();
+      errBox.classList.remove('show');
+      if (!code) {
+        errBox.textContent = 'Please enter your access code.';
+        errBox.classList.add('show');
+        return;
+      }
+      btn.disabled = true; btn.textContent = 'Signing in…';
+      fetch(API + '/api/contractor/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ code: code })
+      }).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (!res.ok) throw new Error(data.error || data.message || 'Sign-in failed.');
+          if (!data.token) throw new Error('No access token returned. Please try again.');
+          return data.token;
+        });
+      }).then(function (token) {
+        setToken(token);
+        return api('/api/contractor/me');
+      }).then(function (d) {
+        me = d;
+        document.getElementById('tabbar').style.display = '';
+        document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+        document.getElementById('view-leads').classList.add('active');
+        document.querySelectorAll('.tab').forEach(function (t) {
+          t.classList.toggle('active', t.getAttribute('data-tab') === 'leads');
+        });
+        loadLeads();
+      }).catch(function (err) {
+        clearToken();
+        errBox.textContent = err.message;
+        errBox.classList.add('show');
+      }).then(function () {
+        btn.disabled = false; btn.textContent = 'Sign in';
+      });
+    }
+
+    /* ---------- init ---------- */
+    document.getElementById('btn-login').addEventListener('click', doLogin);
+    document.getElementById('code-input').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') doLogin();
+    });
+    document.querySelectorAll('.tab').forEach(function (t) {
+      t.addEventListener('click', function () {
+        var tab = t.getAttribute('data-tab');
+        showView(tab);
+        if (tab === 'leads') loadLeads();
+        else if (tab === 'jobs') loadJobs();
+        else if (tab === 'earnings') loadEarnings();
+        else if (tab === 'profile') loadProfile();
+      });
+    });
+
+    // Restore session if a token is present
+    if (getToken()) {
+      api('/api/contractor/me').then(function (d) {
+        me = d;
+        document.getElementById('tabbar').style.display = '';
+        document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+        document.getElementById('view-leads').classList.add('active');
+        loadLeads();
+      }).catch(function () {
+        showLogin(); // 401 path already clears token
+      });
+    }
+  })();
+  </script>
+</body>
+</html>
