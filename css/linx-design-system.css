@@ -114,6 +114,8 @@ button { font-family: var(--font); cursor: pointer; border: none; background: no
 }
 .nav__logo .l { color: var(--gold); text-shadow: 0 0 12px var(--gold-glow); }
 .nav__logo .x { color: #fff; }
+.nav__logo img { height: 38px; width: auto; display: block; }
+.footer__brand-logo img { height: 44px; width: auto; display: block; }
 .nav__links {
   display: flex; gap: 28px; list-style: none;
   font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
