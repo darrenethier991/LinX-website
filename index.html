@@ -73,11 +73,20 @@
       background: var(--gold); animation: pulse-dot 1.5s ease-in-out infinite;
     }
     .hero h1 {
-      font-size: clamp(58px, 9vw, 96px); font-weight: 900;
+      font-size: clamp(40px, 5.5vw, 64px); font-weight: 900;
       letter-spacing: 0.1em; text-transform: uppercase;
       margin-bottom: 24px; line-height: 1;
+      background: linear-gradient(120deg, #f8eed0 0%, #eccf7d 28%, #c9962e 52%, #f3dd9a 76%, #d4a853 100%);
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 14px rgba(212,168,83,0.28));
     }
-    .hero h1 em { color: var(--gold); font-style: normal; text-shadow: 0 0 40px rgba(212,168,83,0.3); }
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(120deg, #e9cf7e 0%, #a87c1f 55%, #f0d998 100%);
+      -webkit-background-clip: text; background-clip: text;
+      color: transparent; -webkit-text-fill-color: transparent;
+    }
     .hero__sub {
       font-size: 15px; color: var(--text-muted); max-width: 460px;
       margin: 0 auto 44px; line-height: 1.75;
