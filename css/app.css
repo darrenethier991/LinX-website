@@ -745,3 +745,5 @@ textarea.form-input { resize: vertical; }
   .btn, .card, .trade-chip { transition: none; }
   .btn--gold:hover, .card--hover:hover { transform: none; }
 }
+.nav__logo img { height: 38px; width: auto; display: block; }
+.footer__brand-logo img { height: 44px; width: auto; display: block; }
