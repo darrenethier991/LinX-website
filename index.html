@@ -27,23 +27,29 @@
       position: relative; isolation: isolate;
       overflow: hidden;
       background:
+        radial-gradient(ellipse 60% 42% at 50% 44%, rgba(233,207,126,0.10) 0%, transparent 65%),
         radial-gradient(ellipse 70% 66% at 50% 120%, rgba(124,92,216,0.13) 0%, transparent 62%),
         radial-gradient(ellipse 80% 54% at 50% -20%, rgba(212,168,83,0.12) 0%, transparent 72%),
         #030306;
+      box-shadow: inset 0 0 190px rgba(0,0,0,0.6);
     }
     .hero::before {
       content: ''; position: absolute; inset: 0; z-index: -3; pointer-events: none;
       background-image:
         linear-gradient(90deg, rgba(6,182,212,0.055) 1px, transparent 1px),
-        linear-gradient(0deg, rgba(212,168,83,0.04) 1px, transparent 1px);
-      background-size: 64px 64px;
+        linear-gradient(0deg, rgba(212,168,83,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(233,207,126,0.028) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(233,207,126,0.028) 1px, transparent 1px);
+      background-size: 64px 64px, 64px 64px, 16px 16px, 16px 16px;
       mask-image: linear-gradient(to bottom, black, rgba(0,0,0,.72) 60%, transparent 100%);
     }
     .hero::after {
       content: ''; position: absolute; inset: auto 10% -130px; height: 300px; z-index: -2; pointer-events: none;
-      background: radial-gradient(ellipse, rgba(212,168,83,.18), rgba(6,182,212,.07) 38%, transparent 70%);
+      background: radial-gradient(ellipse, rgba(212,168,83,.22), rgba(6,182,212,.08) 38%, transparent 70%);
       filter: blur(24px);
+      animation: heroBreathe 9s ease-in-out infinite alternate;
     }
+    @keyframes heroBreathe { from { opacity: .7; transform: scaleX(1); } to { opacity: 1; transform: scaleX(1.07); } }
     .hero .container { position: relative; z-index: 2; }
     .circuit-highway { position:absolute; inset:0; z-index:-1; pointer-events:none; overflow:hidden; opacity:.9; }
     .circuit-highway svg { width:100%; height:100%; min-width:980px; transform:translateX(50%) translateX(-490px); }
@@ -59,7 +65,7 @@
     .circuit-flow--cyan { stroke:var(--neon-cyan); color:var(--neon-cyan); animation:circuitFlow 7s linear infinite reverse; }
     .circuit-flow--violet { stroke:var(--neon-violet); color:var(--neon-violet); animation:circuitFlow 8.5s linear infinite; }
     @keyframes circuitFlow { to { stroke-dashoffset:-320; } }
-    @media (prefers-reduced-motion: reduce) { .circuit-flow { animation:none; } }
+    @media (prefers-reduced-motion: reduce) { .circuit-flow, .hero::after { animation: none; } }
     }
     .hero__eyebrow {
       display: inline-flex; align-items: center; gap: 8px;
