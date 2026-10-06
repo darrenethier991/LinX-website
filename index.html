@@ -67,15 +67,14 @@
     @keyframes circuitFlow { to { stroke-dashoffset:-320; } }
     @media (prefers-reduced-motion: reduce) { .circuit-flow, .hero::after { animation: none; } }
     .hero__eyebrow {
-      display: inline-flex; align-items: center; gap: 8px;
-      border: 1px solid var(--border-gold); color: var(--gold);
-      font-size: 10px; font-weight: 700; letter-spacing: 0.3em; text-transform: uppercase;
-      padding: 5px 18px; border-radius: var(--radius-pill); margin-bottom: 36px;
-      background: rgba(0,0,0,0.5);
+      display: inline-flex; align-items: center; gap: 10px;
+      border: 1px solid rgba(212,168,83,0.35); color: var(--gold);
+      font-size: 10px; font-weight: 600; letter-spacing: 0.42em; text-transform: uppercase;
+      padding: 8px 22px 8px 28px; border-radius: var(--radius-pill); margin-bottom: 38px;
+      background: rgba(0,0,0,0.35);
     }
     .hero__eyebrow::before {
-      content: ''; width: 6px; height: 6px; border-radius: 50%;
-      background: var(--gold); animation: pulse-dot 1.5s ease-in-out infinite;
+      display: none;
     }
     .hero h1 {
       font-size: clamp(40px, 5.5vw, 64px); font-weight: 900;
@@ -317,10 +316,10 @@
     </svg>
   </div>
   <div class="container">
-    <div class="hero__eyebrow">Launch Six · Contractor early access</div>
-    <h1 id="hero-headline"><em>Be among the first</em><br>contractors in your city.</h1>
+    <div class="hero__eyebrow">Now onboarding · Barrie &amp; Simcoe</div>
+    <h1 id="hero-headline"><em>Exceptional trades.</em><br>Exceptional clients.</h1>
     <p class="hero__sub" id="hero-subhead">
-      LINX is opening six 60-day Growth-access spots for contractors who want to shape the workflow with candid feedback before the next group is invited.
+      LinX is a private network connecting vetted local contractors with homeowners who value quality work. Six founding spots are now open in this region.
     </p>
     <div class="hero__actions">
       <a href="#contact" class="btn btn--primary btn--lg">Post a Project Free</a>
@@ -405,7 +404,7 @@
       </div>
       <div class="step">
         <div class="step__num">2</div>
-        <h3>Get Matched Instantly</h3>
+        <h3>Get Matched</h3>
         <p>LINX gives contractors and homeowners a clearer place to begin the conversation when a project needs attention.</p>
       </div>
       <div class="step">
@@ -479,8 +478,8 @@
       </div>
       <div class="market-card">
         <div class="market-card__icon">📅</div>
-        <div class="market-card__name">Follow-Up Scheduler</div>
-        <div class="market-card__desc">Automated 7-day follow-up cadence. Scores leads and routes hot ones to your phone.</div>
+        <div class="market-card__name">Lead Alerts</div>
+        <div class="market-card__desc">New requests land in your inbox and your CRM sheet the moment they come in.</div>
         <div class="market-card__footer">
           <span class="market-card__price">Template preview</span>
           <span class="market-card__sales">Request details</span>
@@ -488,8 +487,8 @@
       </div>
       <div class="market-card">
         <div class="market-card__icon">🎯</div>
-        <div class="market-card__name">Lead Qualifier Bot</div>
-        <div class="market-card__desc">AI agent that scores every incoming lead 1–10 and notifies you only on the best ones.</div>
+        <div class="market-card__name">Instant Lead Alerts</div>
+        <div class="market-card__desc">New requests notify you by email right away, so you can respond first.</div>
         <div class="market-card__footer">
           <span class="market-card__price">Template preview</span>
           <span class="market-card__sales">Request details</span>
@@ -591,7 +590,7 @@
         <ul class="plan-features">
           <li>Email notifications</li>
           <li>Basic CRM</li>
-          <li>Limited automation</li>
+          <li>CSV lead import</li>
           <li>1 integration</li>
           <li>Small marketplace boost</li>
         </ul>
@@ -606,7 +605,7 @@
         <ul class="plan-features">
           <li>Full CRM</li>
           <li>Email and SMS notifications</li>
-          <li>Moderate automation</li>
+          <li>CSV + manual lead import</li>
           <li>3 integrations</li>
           <li>Priority placement</li>
         </ul>
@@ -618,8 +617,8 @@
         <div class="plan-price"><sup>$</sup>199</div>
         <div class="plan-period">CAD / month &middot; unlimited lead access</div>
         <ul class="plan-features">
-          <li>Full automation</li>
-          <li>AI agents</li>
+          <li>Everything in Growth</li>
+          <li>First access to new features</li>
           <li>EcoHome</li>
           <li>Multi-location access</li>
           <li>Unlimited integrations</li>

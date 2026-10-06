@@ -15,6 +15,7 @@ import { deviceCategory, generatedSlug, normalizeShortLinkInput, refererHost } f
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 import { notifyOwnerOfApplication, reconcileOwnerApplicationNotifications } from "./application-notifications.js";
 import { handleContactSubmission } from "./contact-intake.js";
+import { handleOverflowSubmission } from "./overflow-intake.js";
 import { contractorLogin, contractorMe, contractorLeads, contractorLeadAction, contractorJobs, contractorJobStatus, contractorEarnings, contractorProfile } from "./contractor-app.js";
 import { adminListContractors, adminCreateContractor, adminResetContractorCode, adminSetContractorActive } from "./contractor-admin.js";
 
@@ -973,6 +974,18 @@ export default {
       if (limit) return rateLimitResponse(origin, limit);
       if (!env.DB) return json({ error: 'Contact form is temporarily unavailable.' }, 503, origin);
       const result = await handleContactSubmission(env, await readBody(request));
+      if (result.error) return json({ error: result.error }, result.status || 400, origin);
+      return json({ ok: true, lead_id: result.leadId, delivery: result.delivery }, 201, origin);
+    }
+
+    // ── POST /api/overflow — contractor "Forward to LinX" lead intake ───────
+    // Contractor-attributed homeowner lead. The access code identifies the
+    // contractor; the lead is stored exactly as submitted (no scoring).
+    if (path === '/api/overflow' && method === 'POST') {
+      const limit = await enforceAnonymousRateLimit(request, env, 'overflow-intake', 20, 3600);
+      if (limit) return rateLimitResponse(origin, limit);
+      if (!env.DB) return json({ error: 'Lead intake is temporarily unavailable.' }, 503, origin);
+      const result = await handleOverflowSubmission(env, await readBody(request));
       if (result.error) return json({ error: result.error }, result.status || 400, origin);
       return json({ ok: true, lead_id: result.leadId, delivery: result.delivery }, 201, origin);
     }

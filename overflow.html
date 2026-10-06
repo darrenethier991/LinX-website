@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Forward a Lead — LinX</title>
+  <meta name="description" content="Can't take this job? Forward the lead to LinX in 30 seconds — we'll match the homeowner with another vetted local pro."/>
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="LinX"/>
+  <meta property="og:title" content="Forward a Lead — LinX"/>
+  <meta property="og:description" content="Can't take this job? Forward the lead to LinX in 30 seconds."/>
+  <meta property="og:url" content="https://linxservices.ca/overflow.html"/>
+  <meta property="og:image" content="https://linxservices.ca/og-image.jpg"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <link rel="stylesheet" href="css/app.css?v=2"/>
+  <style>
+    .fwd-reasons { display:flex; flex-wrap:wrap; gap:8px; }
+    .fwd-reason input { display:none; }
+    .fwd-reason span {
+      display:inline-block; padding:9px 16px; border-radius:999px;
+      border:1px solid var(--border); color:var(--text-muted);
+      font-size:.82rem; font-weight:600; cursor:pointer;
+      transition:border-color .15s, color .15s, background .15s;
+    }
+    .fwd-reason input:checked + span {
+      border-color:var(--gold); color:var(--gold);
+      background:rgba(212,168,83,.08);
+    }
+    #fwd-success { display:none; text-align:center; padding:3rem 1rem; }
+    #fwd-success .big-check {
+      width:72px; height:72px; margin:0 auto 1.2rem; border-radius:50%;
+      border:2px solid var(--gold); color:var(--gold);
+      display:flex; align-items:center; justify-content:center;
+      font-size:2rem;
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="index.html">
+      <span class="brand__dot"></span>
+      <span class="brand__text">LinX</span>
+    </a>
+    <button class="topbar__toggle" id="nav-toggle" aria-expanded="false" aria-controls="topbar-nav">☰</button>
+    <nav class="topbar__nav" id="topbar-nav">
+      <a href="index.html">Home</a>
+      <a href="find-contractors.html">Find Contractors</a>
+      <a href="jobs.html">Job Board</a>
+      <a href="pricing.html">For Contractors</a>
+      <a href="contact.html">Contact</a>
+      <a href="post-job.html" class="btn btn--gold btn--sm">Post a Job — Free</a>
+    </nav>
+  </div>
+</header>
+
+<section class="section">
+  <div class="shell" style="max-width:680px;">
+
+    <div id="fwd-form-wrap">
+      <div class="section-head">
+        <p class="eyebrow">Contractor overflow</p>
+        <h1 class="section-title">Forward a lead to LinX</h1>
+        <p class="section-sub">Can't take this job? Send it over in 30 seconds — we'll match the homeowner with another vetted local pro. No homeowner signup needed.</p>
+      </div>
+
+      <form id="fwd-form">
+        <div class="card" style="margin-bottom:1.2rem;">
+          <h3 style="font-family:var(--font-head);font-size:1.02rem;margin:0 0 1.1rem;">🔑 Your access</h3>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" for="fwd-code">Contractor access code <span class="req">*</span></label>
+            <input class="form-input" type="text" id="fwd-code" placeholder="e.g. BILLY-8NX4-2HWH" required maxlength="32" autocomplete="off" style="text-transform:uppercase;"/>
+            <div class="form-hint">The code LinX issued you at onboarding. The lead is credited to you.</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:1.2rem;">
+          <h3 style="font-family:var(--font-head);font-size:1.02rem;margin:0 0 1.1rem;">🏠 The homeowner</h3>
+          <div class="form-group">
+            <label class="form-label" for="fwd-name">Homeowner name <span class="req">*</span></label>
+            <input class="form-input" type="text" id="fwd-name" placeholder="Who needs the work done?" required maxlength="160"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fwd-phone">Phone <span class="req">*</span></label>
+            <input class="form-input" type="tel" id="fwd-phone" placeholder="(705) 555-0123" required maxlength="32"/>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" for="fwd-email">Email <span style="color:var(--text-dim);font-weight:400;">(optional)</span></label>
+            <input class="form-input" type="email" id="fwd-email" placeholder="homeowner@email.com" maxlength="320"/>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:1.2rem;">
+          <h3 style="font-family:var(--font-head);font-size:1.02rem;margin:0 0 1.1rem;">🔨 The job</h3>
+          <div class="form-group">
+            <label class="form-label" for="fwd-jobtype">Job type <span class="req">*</span></label>
+            <select class="form-select" id="fwd-jobtype" required>
+              <option value="">— Select a trade —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fwd-location">Location</label>
+            <input class="form-input" type="text" id="fwd-location" placeholder="e.g. Barrie, Oro-Medonte" maxlength="120"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Urgency</label>
+            <div class="urgency-grid" style="grid-template-columns:1fr 1fr 1fr;">
+              <label><input type="radio" name="fwd-urgency" value="routine" checked style="display:none;"/><div class="urgency-card selected"><div class="u-emoji">🗓</div><div class="u-title">Routine</div></div></label>
+              <label><input type="radio" name="fwd-urgency" value="soon" style="display:none;"/><div class="urgency-card"><div class="u-emoji">⚡</div><div class="u-title">Soon</div></div></label>
+              <label><input type="radio" name="fwd-urgency" value="urgent" style="display:none;"/><div class="urgency-card"><div class="u-emoji">🚨</div><div class="u-title">Urgent</div></div></label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Why are you forwarding it?</label>
+            <div class="fwd-reasons">
+              <label class="fwd-reason"><input type="radio" name="fwd-reason" value="too_busy" checked/><span>Too busy</span></label>
+              <label class="fwd-reason"><input type="radio" name="fwd-reason" value="too_far"/><span>Too far</span></label>
+              <label class="fwd-reason"><input type="radio" name="fwd-reason" value="wrong_trade"/><span>Wrong trade</span></label>
+              <label class="fwd-reason"><input type="radio" name="fwd-reason" value="too_small"/><span>Too small</span></label>
+              <label class="fwd-reason"><input type="radio" name="fwd-reason" value="timing"/><span>Timing</span></label>
+              <label class="fwd-reason"><input type="radio" name="fwd-reason" value="other"/><span>Other</span></label>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label" for="fwd-notes">Notes for LinX</label>
+            <textarea class="form-input" id="fwd-notes" rows="4" maxlength="2000" placeholder="Anything the next contractor should know — scope, timeline, budget mentioned, access details…"></textarea>
+          </div>
+        </div>
+
+        <div id="fwd-error" class="card" style="display:none;margin-bottom:1.2rem;border-color:#a33;">
+          <p style="margin:0;color:#e88;">Couldn't forward the lead. <span id="fwd-error-detail"></span></p>
+        </div>
+
+        <button type="submit" class="btn btn--gold btn--lg" id="fwd-submit" style="width:100%;">Forward to LinX →</button>
+        <p class="form-hint" style="text-align:center;margin-top:.8rem;">The homeowner hears from another local pro — never a call center.</p>
+      </form>
+    </div>
+
+    <div id="fwd-success" class="card">
+      <div class="big-check">✓</div>
+      <h2 class="section-title" style="font-size:1.6rem;">Lead forwarded.</h2>
+      <p class="section-sub">We'll match the homeowner with another vetted local pro. Thanks for keeping it in the LinX network.</p>
+      <button class="btn btn--outline" id="fwd-another">Forward another lead</button>
+    </div>
+
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="shell">
+    <div class="footer__legal" style="border-top:none;padding-top:0;">
+      <span>© <span class="js-year">2026</span> LinX · Darren Ethier, Sole Proprietor · Barrie, Ontario</span>
+      <span><a href="index.html" style="color:inherit;">Home</a> · <a href="pricing.html" style="color:inherit;">Contractor Plans</a> · <a href="terms.html" style="color:inherit;">Terms</a> · <a href="privacy.html" style="color:inherit;">Privacy</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+<script>
+  const OVERFLOW_ENDPOINT = 'https://api.linxservices.ca/api/overflow';
+
+  const JOB_TYPES = ['Electrical','Roofing','Plumbing','HVAC','Painting','Drywall','Flooring','Kitchen/Bath remodel','Landscaping','Fencing','Decks','Concrete/Asphalt','Appliance install/repair','General handyman','Other'];
+
+  // Populate job types
+  const jobSel = document.getElementById('fwd-jobtype');
+  JOB_TYPES.forEach(t => {
+    const o = document.createElement('option');
+    o.value = t; o.textContent = t;
+    jobSel.appendChild(o);
+  });
+
+  // Pre-fill access code from ?c= link (personal link per contractor)
+  const params = new URLSearchParams(location.search);
+  const presetCode = (params.get('c') || '').trim().toUpperCase();
+  if (presetCode) document.getElementById('fwd-code').value = presetCode;
+
+  // Urgency card selection
+  document.querySelectorAll('input[name="fwd-urgency"]').forEach(r => {
+    r.addEventListener('change', () => {
+      document.querySelectorAll('input[name="fwd-urgency"]').forEach(x =>
+        x.closest('label').querySelector('.urgency-card').classList.toggle('selected', x.checked));
+    });
+  });
+
+  // Mobile nav
+  const toggle = document.getElementById('nav-toggle');
+  const nav = document.getElementById('topbar-nav');
+  if (toggle && nav) toggle.addEventListener('click', () => {
+    const open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  document.getElementById('fwd-another').addEventListener('click', () => {
+    document.getElementById('fwd-form').reset();
+    if (presetCode) document.getElementById('fwd-code').value = presetCode;
+    document.getElementById('fwd-success').style.display = 'none';
+    document.getElementById('fwd-form-wrap').style.display = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  document.getElementById('fwd-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('fwd-submit');
+    const errBox = document.getElementById('fwd-error');
+    const errDetail = document.getElementById('fwd-error-detail');
+    errBox.style.display = 'none';
+
+    const phone = document.getElementById('fwd-phone').value.trim();
+    const email = document.getElementById('fwd-email').value.trim();
+    if (!phone && !email) {
+      errDetail.textContent = 'Please include a phone number or email.';
+      errBox.style.display = '';
+      return;
+    }
+
+    const payload = {
+      access_code: document.getElementById('fwd-code').value.trim(),
+      homeowner_name: document.getElementById('fwd-name').value.trim(),
+      phone, email,
+      job_type: jobSel.value,
+      location: document.getElementById('fwd-location').value.trim(),
+      urgency: (document.querySelector('input[name="fwd-urgency"]:checked') || {}).value || 'routine',
+      reason: (document.querySelector('input[name="fwd-reason"]:checked') || {}).value || 'other',
+      notes: document.getElementById('fwd-notes').value.trim(),
+    };
+
+    btn.disabled = true;
+    btn.textContent = 'Forwarding…';
+    try {
+      const res = await fetch(OVERFLOW_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      document.getElementById('fwd-form-wrap').style.display = 'none';
+      document.getElementById('fwd-success').style.display = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      errDetail.textContent = '(' + err.message + ')';
+      errBox.style.display = '';
+      btn.disabled = false;
+      btn.textContent = 'Forward to LinX →';
+    }
+  });
+</script>
+</body>
+</html>
