@@ -1,0 +1,2027 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LinX Reach — a free local campaign studio for introducing LinX Services to homeowners and contractors. Build share-ready messages with tracked links." />
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="LinX"/>
+  <meta property="og:title" content="LinX Reach — Local Campaign Studio"/>
+  <meta property="og:description" content="Shape a clear message for homeowners or contractors, pick a channel, and share it yourself. Free."/>
+  <meta property="og:url" content="https://linxservices.ca/reach.html"/>
+  <meta property="og:image" content="https://linxservices.ca/og-image.jpg"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <title>LinX Reach — Local Campaign Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/linx-design-system.css?v=2" />
+  <style>
+:root {
+  color-scheme: dark;
+}
+.reach-scope {
+  --ink: #050507;
+  --ink-soft: #0A0A0E;
+  --green: #D4A853;
+  --paper: #000000;
+  --white: #0A0A0E;
+  --muted: #A1A1AA;
+  --line: #1C1C24;
+  --orange: #E9C66A;
+  --reach-radius: 18px;
+  --reach-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  color: #F4F4F5;
+  background: #000000;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+}
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 1rem;
+  background: var(--green);
+  color: var(--ink);
+  padding: 0.75rem 1rem;
+  z-index: 20;
+}
+.skip-link:focus {
+  left: 1rem;
+}
+.topbar {
+  height: 76px;
+  padding: 0 clamp(20px, 5vw, 76px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ink);
+  color: #0A0A0E;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  text-decoration: none;
+  color: #0A0A0E;
+}
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  position: relative;
+  display: block;
+}
+.brand-mark:before,
+.brand-mark:after,
+.brand-mark i,
+.brand-mark b {
+  content: "";
+  display: block;
+  position: absolute;
+  height: 3px;
+  border-radius: 4px;
+  background: var(--green);
+  transform: rotate(-42deg);
+}
+.brand-mark:before {
+  width: 24px;
+  top: 7px;
+  left: 3px;
+}
+.brand-mark:after {
+  width: 24px;
+  bottom: 7px;
+  right: 3px;
+}
+.brand-mark i {
+  width: 20px;
+  top: 10px;
+  right: 0;
+  background: #0A0A0E;
+  transform: rotate(42deg);
+}
+.brand-mark b {
+  width: 20px;
+  bottom: 10px;
+  left: 0;
+  background: #0A0A0E;
+  transform: rotate(42deg);
+}
+.brand-name,
+.reach-footer-brand {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-size: 16px;
+}
+.brand-name span,
+.reach-footer-brand span {
+  color: var(--green);
+  font-size: 10px;
+  margin-left: 8px;
+  letter-spacing: 0.16em;
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+.workspace-chip,
+.eyebrow,
+.control-heading,
+.board-top,
+.board-bottom,
+.caption-label,
+.link-label,
+.image-label,
+.preview-kicker,
+.source-bar,
+.card-utility,
+.panel-number {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+.workspace-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #A1A1AA;
+}
+.live-dot,
+.signal-mark,
+.preview-status span {
+  width: 7px;
+  height: 7px;
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 3px rgba(212, 168, 83, 0.13);
+}
+.top-link {
+  color: #F4F4F5;
+  text-decoration: none;
+  font-size: 12px;
+}
+.top-link span {
+  color: var(--green);
+  margin-left: 4px;
+}
+.top-link:hover,
+.reach-footer a:hover {
+  color: var(--green);
+}
+.hero {
+  background: var(--ink);
+  color: #0A0A0E;
+  min-height: 440px;
+  padding: 62px clamp(20px, 7vw, 108px) 72px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(340px, 0.88fr);
+  gap: 7vw;
+  align-items: center;
+  overflow: hidden;
+  position: relative;
+}
+.hero:after {
+  content: "";
+  position: absolute;
+  top: -240px;
+  right: 25%;
+  width: 480px;
+  height: 480px;
+  border: 1px solid rgba(212, 168, 83, 0.14);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.eyebrow {
+  color: #71717A;
+  margin: 0 0 17px;
+}
+.hero .eyebrow {
+  color: #A1A1AA;
+}
+.signal-mark {
+  margin-right: 9px;
+  vertical-align: 1px;
+}
+.hero h1 {
+  font-size: clamp(42px, 6vw, 79px);
+  line-height: 0.99;
+  letter-spacing: -0.065em;
+  margin: 0 0 23px;
+  max-width: 700px;
+}
+.hero h1 em,
+.audience-heading h2 em {
+  font-style: normal;
+  color: var(--green);
+}
+.hero-lede {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #A1A1AA;
+  max-width: 570px;
+  margin: 0;
+}
+.hero-actions {
+  display: flex;
+  gap: 11px;
+  margin: 28px 0 17px;
+  flex-wrap: wrap;
+}
+.button {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font:
+    700 12px Inter, sans-serif;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease;
+}
+.button:hover {
+  transform: translateY(-2px);
+}
+.button:focus-visible,
+button:focus-visible,
+a:focus-visible,
+select:focus-visible {
+  outline: 3px solid #D4A853;
+  outline-offset: 3px;
+}
+.button-primary {
+  background: var(--green);
+  color: var(--ink);
+}
+.button-primary:hover {
+  background: #E9C66A;
+}
+.button-quiet {
+  background: transparent;
+  color: inherit;
+  border-color: rgba(255, 255, 255, 0.26);
+}
+.button-quiet:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+.button-outline {
+  background: #0A0A0E;
+  color: var(--ink);
+  border-color: var(--line);
+}
+.button-outline:hover {
+  border-color: var(--ink);
+}
+.hero-note {
+  color: #A1A1AA;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.note-icon {
+  width: 15px;
+  height: 15px;
+  border: 1px solid #7c8b82;
+  border-radius: 50%;
+  font: 600 9px serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-board {
+  min-height: 280px;
+  max-width: 455px;
+  width: 100%;
+  justify-self: end;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(145deg, #0A0A0E, #050507);
+  border-radius: 16px;
+  position: relative;
+  padding: 17px 20px;
+  box-shadow: 0 32px 70px rgba(0, 0, 0, 0.25);
+  z-index: 1;
+}
+.board-top,
+.board-bottom {
+  color: #71717A;
+  display: flex;
+  justify-content: space-between;
+}
+.board-top {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 13px;
+}
+.board-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 13px;
+}
+.board-bottom b {
+  color: var(--green);
+  font-size: 15px;
+  margin-left: 6px;
+}
+.board-diagram {
+  height: 205px;
+  position: relative;
+  overflow: hidden;
+}
+.orbit {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  transform: rotate(-24deg);
+}
+.orbit-one {
+  width: 220px;
+  height: 134px;
+  left: 50%;
+  top: 33px;
+  margin-left: -110px;
+}
+.orbit-two {
+  width: 316px;
+  height: 193px;
+  left: 50%;
+  top: 4px;
+  margin-left: -158px;
+  border-color: rgba(212, 168, 83, 0.19);
+}
+.node {
+  position: absolute;
+  background: #0F0F14;
+  border: 1px solid #1C1C24;
+  border-radius: 5px;
+  color: #A1A1AA;
+  padding: 7px 9px;
+  font-size: 8px;
+  letter-spacing: 0.11em;
+  font-weight: 700;
+}
+.node-home {
+  left: 13%;
+  top: 54px;
+}
+.node-trade {
+  right: 10%;
+  bottom: 47px;
+}
+.node-linx {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 47px;
+  height: 47px;
+  border-radius: 50%;
+  background: var(--green);
+  color: var(--ink);
+  display: grid;
+  place-content: center;
+  text-align: center;
+  line-height: 0.88;
+  font-size: 14px;
+  box-shadow: 0 0 0 7px rgba(212, 168, 83, 0.09);
+}
+.node-line {
+  position: absolute;
+  width: 27%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--green));
+  left: 23%;
+  top: 38%;
+  transform: rotate(17deg);
+}
+.line-two {
+  left: 50%;
+  top: 63%;
+  transform: rotate(-21deg);
+  background: linear-gradient(90deg, var(--green), transparent);
+}
+.diagram-plus {
+  position: absolute;
+  color: var(--green);
+  font-size: 17px;
+  font-weight: 400;
+}
+.plus-one {
+  right: 21%;
+  top: 23px;
+}
+.plus-two {
+  left: 18%;
+  bottom: 24px;
+}
+.studio-section,
+.audience-section,
+.source-section,
+.contact-strip {
+  padding: 76px clamp(20px, 7vw, 108px);
+}
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 30px;
+  margin: 0 0 28px;
+}
+.section-heading h2,
+.source-heading h2,
+.contact-strip h2 {
+  font-size: clamp(29px, 4vw, 45px);
+  letter-spacing: -0.055em;
+  line-height: 1.04;
+  margin: 0;
+}
+.section-heading > p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: #A1A1AA;
+  max-width: 390px;
+  margin: 0 0 3px;
+}
+.studio-layout {
+  display: grid;
+  grid-template-columns: minmax(255px, 0.74fr) minmax(0, 1.6fr);
+  gap: 18px;
+  align-items: start;
+}
+.control-panel,
+.preview-panel {
+  background: #0A0A0E;
+  border: 1px solid #1C1C24;
+  border-radius: var(--reach-radius);
+  box-shadow: var(--reach-shadow);
+}
+.control-panel {
+  padding: 22px;
+}
+.control-heading {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  color: #A1A1AA;
+}
+.panel-number {
+  color: var(--ink);
+  background: var(--green);
+  width: 23px;
+  height: 23px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+.field-group {
+  border: 0;
+  padding: 0;
+  margin: 24px 0 0;
+}
+.field-group legend,
+.field-group > label {
+  font-weight: 700;
+  font-size: 12px;
+  display: block;
+  margin-bottom: 10px;
+}
+.segmented {
+  padding: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #0F0F14;
+  border-radius: 9px;
+  gap: 4px;
+}
+.segment {
+  border: 0;
+  background: transparent;
+  color: #A1A1AA;
+  padding: 10px 6px;
+  border-radius: 7px;
+  font:
+    600 11px Inter, sans-serif;
+  cursor: pointer;
+}
+.segment.is-active {
+  background: var(--ink);
+  color: #0A0A0E;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+}
+.select-wrap {
+  position: relative;
+}
+.select-wrap select {
+  appearance: none;
+  width: 100%;
+  height: 42px;
+  padding: 0 34px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0A0A0E;
+  color: var(--ink);
+  font:
+    600 12px Inter, sans-serif;
+}
+.select-wrap > span {
+  position: absolute;
+  right: 13px;
+  top: 8px;
+  font-size: 17px;
+  color: #A1A1AA;
+  pointer-events: none;
+}
+.field-hint {
+  font-size: 10px;
+  line-height: 1.45;
+  color: #71717A;
+  margin: 8px 0 0;
+}
+.channel-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.channel-button {
+  height: 37px;
+  border: 1px solid #1C1C24;
+  background: #0A0A0E;
+  color: #A1A1AA;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 9px;
+  font:
+    600 10px Inter, sans-serif;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.channel-button.is-active {
+  background: rgba(212,168,83,.12);
+  border-color: rgba(212,168,83,.45);
+  color: #E9C66A;
+}
+.channel-glyph {
+  font-weight: 700;
+  color: #D4A853;
+  font-size: 12px;
+  min-width: 12px;
+  text-align: center;
+}
+.channel-glyph.camera {
+  font-size: 16px;
+}
+.control-footnote {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding-top: 20px;
+  margin-top: 20px;
+  border-top: 1px solid #1C1C24;
+}
+.footnote-line {
+  width: 3px;
+  min-height: 31px;
+  background: var(--green);
+  border-radius: 4px;
+}
+.control-footnote p {
+  font-size: 10px;
+  line-height: 1.55;
+  color: #A1A1AA;
+  margin: 0;
+}
+.preview-panel {
+  padding: 24px;
+  min-width: 0;
+}
+.preview-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.preview-status {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #71717A;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.preview-status span {
+  width: 6px;
+  height: 6px;
+}
+.preview-title-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin: 26px 0 15px;
+  gap: 12px;
+}
+.preview-kicker {
+  color: #71717A;
+  margin: 0 0 8px;
+}
+.preview-title-row h3 {
+  font-size: clamp(18px, 2vw, 26px);
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+  margin: 0;
+}
+.preview-index {
+  #0A0A0E-space: nowrap;
+  color: #71717A;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 700;
+}
+.preview-index span {
+  color: var(--ink);
+}
+.preview-index small {
+  font-size: 10px;
+  font-weight: 500;
+}
+.preview-card {
+  display: grid;
+  grid-template-columns: minmax(170px, 0.85fr) minmax(0, 1.25fr);
+  min-height: 222px;
+  border: 1px solid #1C1C24;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0F0F14;
+}
+.preview-image-wrap {
+  position: relative;
+  min-height: 222px;
+  background: #0F0F14;
+  overflow: hidden;
+}
+.preview-image-wrap img {
+  width: 100%;
+  height: 100%;
+  min-height: 222px;
+  object-fit: cover;
+  display: block;
+}
+.image-label {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  background: rgba(22, 26, 29, 0.86);
+  color: #0A0A0E;
+  border-radius: 4px;
+  padding: 6px 7px;
+  font-size: 8px;
+}
+.caption-wrap {
+  padding: 17px 17px 14px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.caption-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: #71717A;
+  font-size: 8px;
+}
+.campaign-copy {
+  font-size: 12px;
+  line-height: 1.56;
+  color: #F4F4F5;
+  #0A0A0E-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 14px 0 18px;
+}
+.tracked-link-wrap {
+  margin-top: auto;
+  padding-top: 11px;
+  border-top: 1px solid #1C1C24;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  align-items: center;
+}
+.link-label {
+  grid-column: 1/-1;
+  font-size: 8px;
+  color: #71717A;
+}
+.tracked-link-wrap a {
+  color: #E9C66A;
+  font-size: 10px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  #0A0A0E-space: nowrap;
+}
+.icon-copy {
+  width: 27px;
+  height: 27px;
+  border: 1px solid #1C1C24;
+  background: #0A0A0E;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+}
+.preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.preview-actions .button {
+  min-height: 39px;
+  font-size: 10px;
+}
+.download-link {
+  border: 1px solid var(--line);
+  color: #F4F4F5;
+}
+.action-status {
+  min-height: 17px;
+  margin: 8px 0 0;
+  color: #E9C66A;
+  font-size: 10px;
+  font-weight: 600;
+}
+.share-caution {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  background: #0F0F14;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 3px;
+  color: #A1A1AA;
+}
+.share-caution > span {
+  color: #D4A853;
+  font-weight: 700;
+  font-size: 14px;
+}
+.share-caution p {
+  font-size: 10px;
+  line-height: 1.45;
+  margin: 0;
+}
+.audience-section {
+  background: #050507;
+}
+.audience-heading {
+  align-items: end;
+}
+.audience-heading h2 em {
+  color: #D4A853;
+}
+.audience-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.audience-card {
+  border-radius: 15px;
+  padding: 25px 27px 26px;
+  min-height: 230px;
+  position: relative;
+  overflow: hidden;
+}
+.home-card {
+  background: #0A0A0E;
+  border: 1px solid #1C1C24;
+}
+.trade-card {
+  background: var(--ink);
+  color: #0A0A0E;
+}
+.audience-card:after {
+  content: "";
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border: 1px solid rgba(212, 168, 83, 0.12);
+  border-radius: 50%;
+  right: -70px;
+  bottom: -145px;
+  pointer-events: none;
+}
+.trade-card:after {
+  border-color: rgba(212, 168, 83, 0.2);
+}
+.card-utility {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #71717A;
+  font-size: 9px;
+}
+.trade-card .card-utility {
+  color: #A1A1AA;
+}
+.card-icon {
+  font-size: 22px;
+  color: #D4A853;
+}
+.trade-card .card-icon {
+  color: var(--green);
+}
+.audience-card h3 {
+  font-size: 29px;
+  line-height: 1.04;
+  letter-spacing: -0.05em;
+  margin: 19px 0 10px;
+}
+.audience-card p {
+  font-size: 11px;
+  line-height: 1.62;
+  color: #A1A1AA;
+  max-width: 440px;
+  margin: 0 0 18px;
+}
+.trade-card p {
+  color: #A1A1AA;
+}
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #D4A853;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(212, 168, 83, 0.35);
+  padding-bottom: 3px;
+}
+.trade-card .card-link {
+  color: var(--green);
+  border-color: rgba(212, 168, 83, 0.45);
+}
+.card-link:hover {
+  gap: 14px;
+}
+.source-section {
+  background: #000000;
+}
+.source-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.source-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid #1C1C24;
+  border-bottom: 1px solid #1C1C24;
+}
+.source-item {
+  display: flex;
+  gap: 15px;
+  padding: 22px 20px 23px 0;
+}
+.source-item + .source-item {
+  border-left: 1px solid #1C1C24;
+  padding-left: 20px;
+}
+.source-number {
+  font-weight: 700;
+  font-size: 11px;
+  color: #D4A853;
+}
+.source-item h3 {
+  font-size: 13px;
+  margin: 0 0 7px;
+}
+.source-item p {
+  font-size: 10px;
+  line-height: 1.55;
+  color: #A1A1AA;
+  margin: 0;
+  max-width: 290px;
+}
+.source-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding-top: 15px;
+  color: #71717A;
+  font-size: 8px;
+}
+.source-bar a {
+  color: #D4A853;
+  text-decoration: none;
+}
+.contact-strip {
+  background: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  padding-top: 35px;
+  padding-bottom: 35px;
+}
+.contact-strip .eyebrow {
+  color: #5c451a;
+  margin-bottom: 8px;
+}
+.contact-strip h2 {
+  font-size: 31px;
+}
+.contact-details {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 4vw, 45px);
+  flex-wrap: wrap;
+}
+.contact-details a,
+.contact-details span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #241a06;
+  text-decoration: none;
+}
+.contact-details a:hover {
+  text-decoration: underline;
+}
+.reach-footer {
+  background: var(--ink);
+  color: #A1A1AA;
+  min-height: 66px;
+  padding: 16px clamp(20px, 5vw, 76px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.reach-footer-brand {
+  text-decoration: none;
+  color: #0A0A0E;
+  font-size: 13px;
+}
+.reach-footer-brand span {
+  color: var(--green);
+  font-size: 8px;
+}
+.reach-footer > span,
+.reach-footer > a:last-child {
+  font-size: 9px;
+  color: #A1A1AA;
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr minmax(270px, 0.8fr);
+    gap: 32px;
+    padding-top: 53px;
+  }
+  .hero-board {
+    min-height: 248px;
+  }
+  .board-diagram {
+    height: 175px;
+  }
+  .studio-layout {
+    grid-template-columns: minmax(230px, 0.7fr) minmax(0, 1.3fr);
+  }
+  .control-panel {
+    padding: 18px;
+  }
+  .preview-panel {
+    padding: 18px;
+  }
+  .preview-card {
+    grid-template-columns: minmax(140px, 0.75fr) minmax(0, 1.25fr);
+  }
+  .preview-actions .button {
+    flex-grow: 1;
+  }
+  .contact-strip {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .contact-details {
+    gap: 18px;
+  }
+}
+@media (max-width: 680px) {
+  .topbar {
+    height: 65px;
+    padding: 0 18px;
+  }
+  .workspace-chip {
+    display: none;
+  }
+  .topbar-right {
+    gap: 0;
+  }
+  .top-link {
+    font-size: 10px;
+  }
+  .brand-name {
+    font-size: 14px;
+  }
+  .hero {
+    display: block;
+    padding: 48px 20px 35px;
+    min-height: 0;
+  }
+  .hero h1 {
+    font-size: clamp(45px, 12vw, 68px);
+  }
+  .hero-lede {
+    font-size: 13px;
+  }
+  .hero-board {
+    margin-top: 36px;
+    min-height: 218px;
+    max-width: none;
+    padding: 14px;
+  }
+  .board-diagram {
+    height: 146px;
+  }
+  .studio-section,
+  .audience-section,
+  .source-section {
+    padding: 52px 18px;
+  }
+  .section-heading {
+    display: block;
+    margin-bottom: 20px;
+  }
+  .section-heading > p {
+    margin-top: 12px;
+    font-size: 12px;
+  }
+  .studio-layout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .control-panel {
+    padding: 18px;
+  }
+  .field-group {
+    margin-top: 19px;
+  }
+  .preview-panel {
+    padding: 17px;
+  }
+  .preview-card {
+    grid-template-columns: 1fr;
+  }
+  .preview-image-wrap,
+  .preview-image-wrap img {
+    min-height: 200px;
+    max-height: 245px;
+  }
+  .caption-wrap {
+    min-height: 207px;
+  }
+  .preview-actions .button {
+    flex: 1 1 calc(50% - 8px);
+    padding: 0 10px;
+  }
+  .preview-title-row h3 {
+    font-size: 21px;
+  }
+  .audience-heading h2 {
+    font-size: 36px;
+  }
+  .audience-cards {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+  .audience-card {
+    min-height: 218px;
+    padding: 22px;
+  }
+  .source-heading {
+    display: block;
+  }
+  .source-heading h2 {
+    font-size: 32px;
+  }
+  .source-grid {
+    grid-template-columns: 1fr;
+  }
+  .source-item,
+  .source-item + .source-item {
+    border-left: 0;
+    padding: 17px 0;
+    border-bottom: 1px solid #1C1C24;
+  }
+  .source-item:last-child {
+    border-bottom: 0;
+  }
+  .source-bar {
+    flex-wrap: wrap;
+    font-size: 7px;
+  }
+  .contact-strip {
+    padding: 29px 20px;
+  }
+  .contact-details {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 9px;
+  }
+  .reach-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+    padding: 16px 20px;
+  }
+  .reach-footer > span {
+    max-width: 290px;
+  }
+  .preview-topline {
+    align-items: flex-start;
+  }
+  .preview-status {
+    font-size: 8px;
+  }
+  .hero-note {
+    align-items: flex-start;
+    font-size: 10px;
+  }
+  .note-icon {
+    flex: none;
+    margin-top: 1px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+.action-status.is-error{color:#f87171}
+
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main" style="position:absolute;left:-999px">Skip to content</a>
+  <nav class="nav"><a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"></a><ul class="nav__links" aria-label="Primary navigation"><li><a href="about.html">About</a></li><li><a href="services.html">Services</a></li><li><a href="jobs.html">Job Board</a></li><li><a href="pricing.html">Pricing</a></li><li><a href="contact.html">Contact</a></li></ul><div class="nav__actions"><a class="btn btn--outline btn--sm" href="pricing.html">Plans</a><a class="btn btn--primary btn--sm" href="clam-code.html">Clam Code</a></div></nav>
+<main id="main" class="reach-scope">
+ <section class="hero" id="top" aria-labelledby="hero-title">
+ <div class="hero-copy">
+ <p class="eyebrow">
+ <span class="signal-mark"></span> SIMCOE COUNTY → ONTARIO
+ </p>
+ <h1 id="hero-title">
+ Make the next<br /><em>connection clearer.</em>
+ </h1>
+ <p class="hero-lede">
+ A focused campaign workspace for introducing LinX Services to
+ homeowners and contractors—one useful message at a time.
+ </p>
+ <div class="hero-actions">
+ <a class="button button-primary" href="#studio"
+ >Build a campaign <span aria-hidden="true">↓</span></a
+ >
+ <a class="button button-quiet" href="#audiences"
+ >Choose your audience</a
+ >
+ </div>
+ <p class="hero-note">
+ <span class="note-icon" aria-hidden="true">i</span> Local labels
+ describe who you want to reach—not confirmed service coverage.
+ </p>
+ </div>
+ <div
+ class="hero-board"
+ aria-label="LinX Reach campaign workspace summary"
+ >
+ <div class="board-top">
+ <span>LINX / FIELD SIGNAL 01</span><span>SIMCOE · ON</span>
+ </div>
+ <div class="board-diagram" aria-hidden="true">
+ <div class="orbit orbit-one"></div>
+ <div class="orbit orbit-two"></div>
+ <span class="node node-home">HOME</span
+ ><span class="node node-trade">TRADE</span>
+ <span class="node node-linx">L<br />X</span>
+ <span class="node-line line-one"></span
+ ><span class="node-line line-two"></span>
+ <span class="diagram-plus plus-one">+</span
+ ><span class="diagram-plus plus-two">+</span>
+ </div>
+ <div class="board-bottom">
+ <span>02 AUDIENCES</span><span>01 CLEAR NEXT STEP <b>↗</b></span>
+ </div>
+ </div>
+ </section>
+
+ <section
+ class="studio-section"
+ id="studio"
+ aria-labelledby="studio-title"
+ >
+ <div class="section-heading">
+ <div>
+ <p class="eyebrow">01 / CAMPAIGN BUILDER</p>
+ <h2 id="studio-title">Shape the message.</h2>
+ </div>
+ <p>
+ Choose an audience, a place to target, and a channel. The tracked
+ link and ready-to-share copy update together.
+ </p>
+ </div>
+ <div class="studio-layout">
+ <aside class="control-panel" aria-label="Campaign settings">
+ <div class="control-heading">
+ <span class="panel-number">A</span><span>CAMPAIGN SETUP</span>
+ </div>
+ <fieldset class="field-group audience-field">
+ <legend>Who are you reaching?</legend>
+ <div
+ class="segmented"
+ role="group"
+ aria-label="Choose an audience"
+ >
+ <button
+ class="segment is-active"
+ type="button"
+ data-audience="homeowners"
+ aria-pressed="true"
+ >
+ Homeowners
+ </button>
+ <button
+ class="segment"
+ type="button"
+ data-audience="contractors"
+ aria-pressed="false"
+ >
+ Contractors
+ </button>
+ </div>
+ </fieldset>
+ <div class="field-group">
+ <label for="region-select">Where should it reach?</label>
+ <div class="select-wrap">
+ <select id="region-select" aria-describedby="region-disclaimer">
+ <option value="Barrie">Barrie</option>
+ <option value="Simcoe County">Simcoe County</option>
+ <option value="Orillia">Orillia</option>
+ <option value="Midland">Midland</option>
+ <option value="Penetanguishene">Penetanguishene</option>
+ <option value="Collingwood">Collingwood</option>
+ <option value="Wasaga Beach">Wasaga Beach</option>
+ <option value="Innisfil">Innisfil</option>
+ <option value="Bradford West Gwillimbury">
+ Bradford West Gwillimbury
+ </option>
+ <option value="Ontario">Ontario-wide</option></select
+ ><span aria-hidden="true">⌄</span>
+ </div>
+ <p class="field-hint" id="region-disclaimer">
+ Targeting label only; availability isn’t confirmed for every
+ location.
+ </p>
+ </div>
+ <div class="field-group">
+ <label for="campaign-select">Pick a message</label>
+ <div class="select-wrap">
+ <select id="campaign-select"></select
+ ><span aria-hidden="true">⌄</span>
+ </div>
+ </div>
+ <fieldset class="field-group channel-field">
+ <legend>Choose a channel</legend>
+ <div
+ class="channel-grid"
+ role="group"
+ aria-label="Choose a share channel"
+ >
+ <button
+ class="channel-button is-active"
+ type="button"
+ data-channel="facebook"
+ aria-pressed="true"
+ >
+ <span class="channel-glyph">f</span> Facebook
+ </button>
+ <button
+ class="channel-button"
+ type="button"
+ data-channel="meta_ads"
+ aria-pressed="false"
+ >
+ <span class="channel-glyph">∞</span> Meta Ads
+ </button>
+ <button
+ class="channel-button"
+ type="button"
+ data-channel="instagram"
+ aria-pressed="false"
+ >
+ <span class="channel-glyph camera">◎</span> Instagram
+ </button>
+ <button
+ class="channel-button"
+ type="button"
+ data-channel="linkedin"
+ aria-pressed="false"
+ >
+ <span class="channel-glyph">in</span> LinkedIn
+ </button>
+ <button
+ class="channel-button"
+ type="button"
+ data-channel="whatsapp"
+ aria-pressed="false"
+ >
+ <span class="channel-glyph">◉</span> WhatsApp
+ </button>
+ <button
+ class="channel-button"
+ type="button"
+ data-channel="email"
+ aria-pressed="false"
+ >
+ <span class="channel-glyph">✉</span> Email
+ </button>
+ <button
+ class="channel-button"
+ type="button"
+ data-channel="sms"
+ aria-pressed="false"
+ >
+ <span class="channel-glyph">↗</span> Text message
+ </button>
+ </div>
+ </fieldset>
+ <div class="control-footnote">
+ <span class="footnote-line"></span>
+ <p>
+ Everything stays a draft until you choose to share or publish it
+ yourself.
+ </p>
+ </div>
+ </aside>
+
+ <section class="preview-panel" aria-label="Campaign preview">
+ <div class="preview-topline">
+ <div class="control-heading">
+ <span class="panel-number">B</span><span>LIVE PREVIEW</span>
+ </div>
+ <span class="preview-status"><span></span> READY TO REVIEW</span>
+ </div>
+ <div class="preview-title-row">
+ <div>
+ <p class="preview-kicker" id="preview-kicker">
+ HOMEOWNER / FACEBOOK
+ </p>
+ <h3 id="preview-title">
+ A home project starts with a clear brief.
+ </h3>
+ </div>
+ <div class="preview-index">
+ <span id="preview-index">01</span><small>/ 03</small>
+ </div>
+ </div>
+ <div class="preview-card">
+ <div class="preview-image-wrap">
+ <img
+ id="campaign-image"
+ src="assets/reach/homeowner.webp"
+ alt="Illustrative homeowner campaign artwork; not a LinX customer project"
+ /><span class="image-label">ILLUSTRATIVE CAMPAIGN ART</span>
+ </div>
+ <div class="caption-wrap">
+ <div class="caption-label">
+ <span>CAMPAIGN COPY</span
+ ><span id="caption-char-count">0 CHARS</span>
+ </div>
+ <p id="campaign-copy" class="campaign-copy"></p>
+ <div class="tracked-link-wrap">
+ <span class="link-label">TRACKED DESTINATION</span
+ ><a
+ id="tracked-link"
+ href="https://linxservices.ca/"
+ target="_blank"
+ rel="noopener noreferrer"
+ ></a
+ ><button
+ type="button"
+ class="icon-copy"
+ id="copy-link"
+ aria-label="Copy tracked destination link"
+ title="Copy tracked link"
+ >
+ ⧉
+ </button>
+ </div>
+ </div>
+ </div>
+ <div class="preview-actions">
+ <button
+ class="button button-primary"
+ id="share-campaign"
+ type="button"
+ >
+ <span aria-hidden="true">↗</span>
+ <span id="share-label">Open Facebook share</span>
+ </button>
+ <button
+ class="button button-outline"
+ id="copy-copy"
+ type="button"
+ >
+ <span aria-hidden="true">⧉</span> Copy campaign
+ </button>
+ <a
+ class="button button-quiet download-link"
+ id="download-art"
+ href="assets/reach/homeowner.webp"
+ download="linxreach-homeowner-illustration.webp"
+ ><span aria-hidden="true">↓</span> Download image</a
+ >
+ </div>
+ <p
+ id="action-status"
+ class="action-status"
+ role="status"
+ aria-live="polite"
+ ></p>
+ <div class="share-caution">
+ <span aria-hidden="true">↗</span>
+ <p>
+ Meta Ads copies the draft and tracked link, then opens Ads
+ Manager. You set the audience, creative and budget and submit it
+ yourself. Nothing is posted or billed automatically.
+ </p>
+ </div>
+ </section>
+ </div>
+ </section>
+
+ <section
+ class="audience-section"
+ id="audiences"
+ aria-labelledby="audiences-title"
+ >
+ <div class="section-heading audience-heading">
+ <div>
+ <p class="eyebrow">02 / TWO SIDES, ONE NETWORK</p>
+ <h2 id="audiences-title">
+ A good next step<br /><em>for either side.</em>
+ </h2>
+ </div>
+ <p>
+ Send people straight to the verified LinX page that fits their
+ intent. LinX Reach does not rebuild or change those pages.
+ </p>
+ </div>
+ <div class="audience-cards">
+ <article class="audience-card home-card">
+ <div class="card-utility">
+ <span>01 / FOR HOMEOWNERS</span
+ ><span class="card-icon" aria-hidden="true">⌂</span>
+ </div>
+ <h3>Start with the<br />project details.</h3>
+ <p>
+ LINX offers free homeowner project posting to structure scope,
+ timing, and contact details. Contractor participation is still
+ growing; a match or quote isn’t guaranteed.
+ </p>
+ <a
+ class="card-link"
+ href="https://linxservices.ca/?utm_source=linxreach&amp;utm_medium=referral&amp;utm_campaign=homeowner"
+ target="_blank"
+ rel="noopener noreferrer"
+ >Post a project free <span aria-hidden="true">↗</span></a
+ >
+ </article>
+ <article class="audience-card trade-card">
+ <div class="card-utility">
+ <span>02 / FOR CONTRACTORS</span
+ ><span class="card-icon" aria-hidden="true">↗</span>
+ </div>
+ <h3>Shape the next<br />local workflow.</h3>
+ <p>
+ LINX is inviting contractors to review its early-access
+ opportunity and share candid feedback on the lead and follow-up
+ workflow.
+ </p>
+ <a
+ class="card-link"
+ href="https://linxservices.ca/early-access.html?utm_source=linxreach&amp;utm_medium=referral&amp;utm_campaign=contractor"
+ target="_blank"
+ rel="noopener noreferrer"
+ >Explore contractor early access
+ <span aria-hidden="true">↗</span></a
+ >
+ </article>
+ </div>
+ </section>
+
+ <section class="source-section" aria-labelledby="source-title">
+ <div class="source-heading">
+ <p class="eyebrow">03 / SOURCE-SAFE BY DESIGN</p>
+ <h2 id="source-title">Useful, not overstated.</h2>
+ </div>
+ <div class="source-grid">
+ <div class="source-item">
+ <span class="source-number">01</span>
+ <div>
+ <h3>Targeting isn’t coverage.</h3>
+ <p>
+ Select a location to tailor a campaign, not to claim LinX has a
+ contractor network or confirmed services there.
+ </p>
+ </div>
+ </div>
+ <div class="source-item">
+ <span class="source-number">02</span>
+ <div>
+ <h3>No invented proof.</h3>
+ <p>
+ No demo testimonials, ratings, guarantees, response times, or
+ made-up campaign performance are included.
+ </p>
+ </div>
+ </div>
+ <div class="source-item">
+ <span class="source-number">03</span>
+ <div>
+ <h3>You stay in control.</h3>
+ <p>
+ Share links open a platform composer or your device’s share
+ sheet. You review and complete each post; paid ads are not
+ launched here.
+ </p>
+ </div>
+ </div>
+ </div>
+ <div class="source-bar">
+ <span>DETAILS CHECKED AGAINST LINXSERVICES.CA</span
+ ><span>LAST REVIEWED OCT 05, 2026</span
+ ><a
+ href="https://linxservices.ca/"
+ target="_blank"
+ rel="noopener noreferrer"
+ >OPEN SOURCE ↗</a
+ >
+ </div>
+ </section>
+
+ <section class="contact-strip" aria-label="LinX Services contact details">
+ <div>
+ <p class="eyebrow">DIRECT FROM THE SOURCE</p>
+ <h2>Talk with LinX.</h2>
+ </div>
+ <div class="contact-details">
+ <a href="tel:+17057160803">705-716-0803</a
+ ><a href="mailto:Darrenethier991@gmail.com"
+ >Darrenethier991@gmail.com</a
+ ><span>Barrie, Ontario, Canada</span>
+ </div>
+ </section>
+ </main>
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div>
+        <div class="footer__brand-logo"><img src="assets/linx-logo.png" alt="LinX"></div>
+        <div class="footer__tagline">"Linking People Together" — Est. 2024</div>
+        <p style="font-size:12px;color:var(--text-muted);line-height:1.75;max-width:280px">Canada's Contractor Network. Connecting homeowners with local trades people across the country.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Platform</h4>
+        <ul class="footer__links">
+          <li><a href="about.html">About LINX Services</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="#how">How It Works</a></li>
+          <li><a href="#who">For Homeowners</a></li>
+          <li><a href="#who">For Contractors</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Features</h4>
+        <ul class="footer__links">
+          <li><a href="#who">Lead Matching</a></li>
+          <li><a href="#who">CRM Pipeline</a></li>
+          <li><a href="clam-code.html">Clam Code</a></li>
+          <li><a href="subscriber-access.html">Subscriber Access</a></li>
+          <li><a href="admin/index.html?panel=shortener">URL Shortener &amp; Analytics</a></li>
+          <li><a href="marketplace">EchoForge</a></li>
+          <li><a href="ecosystem">Ecosystem Hub</a></li>
+          <li><a href="status/">System Status</a></li>
+          <li><a href="admin/index.html?panel=crawler">OSINT Crawler</a></li>
+        </ul>
+      </div>
+      <div class="footer__col">
+        <h4>Company</h4>
+        <ul class="footer__links">
+          <li><a href="#faq">FAQ</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="mailto:Darrenethier991@gmail.com">Support</a></li>
+          <li><a href="terms.html">Terms of Service</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="admin/index.html">Admin</a></li>
+          <li><a href="admin/analytics.html">Admin Analytics</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2024–2025 LinX — Canada's Contractor Network. Sole Proprietor: Darren Ethier.</span>
+      <span>linxservices.ca</span>
+    </div>
+  </div>
+</footer>
+  <script>
+const campaignLibrary = {
+  homeowners: {
+    image: "assets/reach/homeowner.webp",
+    imageAlt:
+      "Illustrative homeowner campaign artwork; not a LinX customer project",
+    destination: "https://linxservices.ca/",
+    cta: "Post a project free",
+    records: [
+      {
+        id: "scope-first",
+        title: "A home project starts with a clear brief.",
+        shortTitle: "Start with the project details",
+        post: "Planning a home project in {region}? LINX gives homeowners a clear place to describe the scope, timing, and contact details. Homeowner project posting is free. Contractor participation is still growing, so a match or quote isn't guaranteed. Start here:",
+        emailSubject: "A clearer first step for your home project",
+        emailBody:
+          "Planning a home project in {region}? LINX gives homeowners a clear place to describe the scope, timing, and contact details. Homeowner project posting is free. Contractor participation is still growing, so a match or quote isn't guaranteed. Start here:",
+      },
+      {
+        id: "clear-request",
+        title: "Make the first conversation easier.",
+        shortTitle: "A clearer first conversation",
+        post: "A useful project request begins with the details. LINX helps homeowners structure what needs doing and when. If you're planning work in {region}, you can post a project for free. Local contractor availability can vary:",
+        emailSubject: "Put your project details in one clear place",
+        emailBody:
+          "A useful project request begins with the details. LINX helps homeowners structure what needs doing and when. If you're planning work in {region}, you can post a project for free. Local contractor availability can vary:",
+      },
+      {
+        id: "free-intake",
+        title: "A free place to put your project in motion.",
+        shortTitle: "Free project posting",
+        post: "Homeowners in {region}: LINX project posting is free. Share the basics—scope, timing, and contact details—and make your next step clearer. Posting doesn't guarantee a contractor match or quote. See how it works:",
+        emailSubject: "Home project posting is free on LINX",
+        emailBody:
+          "Homeowners in {region}: LINX project posting is free. Share the basics—scope, timing, and contact details—and make your next step clearer. Posting doesn't guarantee a contractor match or quote. See how it works:",
+      },
+    ],
+  },
+  contractors: {
+    image: "assets/reach/contractor.webp",
+    imageAlt:
+      "Illustrative contractor campaign artwork; not a LinX contractor profile or customer job",
+    destination: "https://linxservices.ca/early-access.html",
+    cta: "Explore contractor early access",
+    records: [
+      {
+        id: "shape-workflow",
+        title: "Shape a clearer lead workflow.",
+        shortTitle: "Help shape the workflow",
+        post: "Contractors in {region}: LINX is inviting professionals to explore its early-access opportunity and share candid feedback on the lead and follow-up workflow. Check current details and eligibility:",
+        emailSubject: "Explore the LINX contractor early-access opportunity",
+        emailBody:
+          "LINX is inviting contractors to explore its early-access opportunity and share candid feedback on the lead and follow-up workflow. Check current details and eligibility here:",
+      },
+      {
+        id: "early-access",
+        title: "A practical place to start the conversation.",
+        shortTitle: "Contractor early access",
+        post: "Building your trade business in {region}? LINX is opening a small early-access contractor cohort in Canada. Review the current opportunity on the official LINX page and decide if it fits your business:",
+        emailSubject: "LINX early access for contractors",
+        emailBody:
+          "LINX is opening a small early-access contractor cohort in Canada. Review the current opportunity on the official LINX page and decide if it fits your business:",
+      },
+      {
+        id: "lead-context",
+        title: "Better context before the next step.",
+        shortTitle: "Lead context that starts clearly",
+        post: "The first useful detail can make a project conversation clearer. LINX is building structured project intake and a contractor follow-up workspace. Contractors can review the early-access details here:",
+        emailSubject: "See the LINX contractor workflow early-access details",
+        emailBody:
+          "LINX is building structured project intake and a contractor follow-up workspace. Contractors can review the early-access details and current eligibility here:",
+      },
+    ],
+  },
+};
+
+const channelSettings = {
+  facebook: { label: "Facebook", medium: "social" },
+  meta_ads: { label: "Meta Ads", medium: "paid_social" },
+  instagram: { label: "Instagram", medium: "social" },
+  linkedin: { label: "LinkedIn", medium: "social" },
+  whatsapp: { label: "WhatsApp", medium: "social" },
+  email: { label: "Email", medium: "email" },
+  sms: { label: "Text message", medium: "sms" },
+};
+
+const $ = (selector) => document.querySelector(selector);
+const audienceButtons = [...document.querySelectorAll("[data-audience]")];
+const channelButtons = [...document.querySelectorAll("[data-channel]")];
+const regionSelect = $("#region-select");
+const campaignSelect = $("#campaign-select");
+const state = {
+  audience: "homeowners",
+  region: "Barrie",
+  channel: "facebook",
+  campaignId: "scope-first",
+};
+const campaignCopy = $("#campaign-copy");
+const trackedLink = $("#tracked-link");
+const actionStatus = $("#action-status");
+const image = $("#campaign-image");
+const imageDownload = $("#download-art");
+
+function slug(value) {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_|_$/g, "");
+}
+
+function library() {
+  return campaignLibrary[state.audience];
+}
+
+function currentCampaign() {
+  return (
+    library().records.find((item) => item.id === state.campaignId) ||
+    library().records[0]
+  );
+}
+
+function currentUrl() {
+  const target = new URL(library().destination);
+  const channel = channelSettings[state.channel];
+  target.searchParams.set("utm_source", "linxreach");
+  target.searchParams.set("utm_medium", channel.medium);
+  target.searchParams.set(
+    "utm_campaign",
+    `${state.audience}_${slug(state.region)}`,
+  );
+  target.searchParams.set("utm_content", currentCampaign().id);
+  return target.toString();
+}
+
+function messageText(includeUrl = true) {
+  const campaign = currentCampaign();
+  const template =
+    state.channel === "email" ? campaign.emailBody : campaign.post;
+  const body = template.replaceAll("{region}", state.region);
+  return includeUrl ? `${body}\n${currentUrl()}` : body;
+}
+
+function setStatus(text, error = false) {
+  actionStatus.textContent = text;
+  actionStatus.classList.toggle("is-error", error);
+}
+
+function rebuildCampaignOptions() {
+  const items = library().records;
+  campaignSelect.replaceChildren(
+    ...items.map((item, index) => {
+      const option = document.createElement("option");
+      option.value = item.id;
+      option.textContent = `${String(index + 1).padStart(2, "0")} — ${item.shortTitle}`;
+      return option;
+    }),
+  );
+  if (!items.some((item) => item.id === state.campaignId))
+    state.campaignId = items[0].id;
+  campaignSelect.value = state.campaignId;
+}
+
+function sync() {
+  const campaign = currentCampaign();
+  const channel = channelSettings[state.channel];
+  const url = currentUrl();
+  const text = messageText();
+  campaignCopy.textContent = text;
+  trackedLink.href = url;
+  trackedLink.textContent = url;
+  image.src = library().image;
+  image.alt = library().imageAlt;
+  imageDownload.href = library().image;
+  imageDownload.download = `linxreach-${state.audience}-illustration.webp`;
+  $("#preview-kicker").textContent =
+    `${state.audience === "homeowners" ? "HOMEOWNER" : "CONTRACTOR"} / ${channel.label.toUpperCase()}`;
+  $("#preview-title").textContent = campaign.title;
+  $("#caption-char-count").textContent = `${text.length} CHARS`;
+  $("#preview-index").textContent = String(
+    library().records.indexOf(campaign) + 1,
+  ).padStart(2, "0");
+  const shareLabels = {
+    facebook: "Open Facebook share",
+    meta_ads: "Prepare Meta ad",
+    instagram: "Prepare Instagram share",
+    linkedin: "Open LinkedIn share",
+    whatsapp: "Open WhatsApp draft",
+    email: "Open email draft",
+    sms: "Open text draft",
+  };
+  $("#share-label").textContent = shareLabels[state.channel];
+}
+
+function setAudience(audience) {
+  state.audience = audience;
+  state.campaignId = campaignLibrary[audience].records[0].id;
+  audienceButtons.forEach((button) => {
+    const selected = button.dataset.audience === audience;
+    button.classList.toggle("is-active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+  });
+  rebuildCampaignOptions();
+  setStatus("");
+  sync();
+}
+
+async function copyText(text, success) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const helper = document.createElement("textarea");
+    helper.value = text;
+    helper.setAttribute("readonly", "");
+    helper.style.position = "fixed";
+    helper.style.opacity = "0";
+    document.body.append(helper);
+    helper.select();
+    const copied = document.execCommand("copy");
+    helper.remove();
+    if (!copied) {
+      setStatus(
+        "Copy was blocked by the browser. Select the campaign text and copy it manually.",
+        true,
+      );
+      return false;
+    }
+  }
+  setStatus(success);
+  return true;
+}
+
+function openExternal(url) {
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+async function shareCampaign() {
+  const url = currentUrl();
+  const text = messageText(false);
+  const fullText = messageText(true);
+  const title = currentCampaign().title;
+  const channel = state.channel;
+
+  if (channel === "email") {
+    const subject = encodeURIComponent(currentCampaign().emailSubject);
+    const body = encodeURIComponent(fullText);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    setStatus("Email draft opened. Review it and send when ready.");
+    return;
+  }
+  if (channel === "sms") {
+    window.location.href = `sms:?&body=${encodeURIComponent(fullText)}`;
+    setStatus(
+      "Text draft opened. Review it and tap send in your messaging app.",
+    );
+    return;
+  }
+  if (channel === "meta_ads") {
+    const packageText = `${title}\n\n${fullText}`;
+    openExternal("https://adsmanager.facebook.com/");
+    await copyText(
+      packageText,
+      "Ad copy and tracked link copied. Review audience, creative, and budget in Meta Ads Manager; launch manually.",
+    );
+    return;
+  }
+  if (channel === "whatsapp") {
+    openExternal(`https://wa.me/?text=${encodeURIComponent(fullText)}`);
+    setStatus("WhatsApp draft opened. Review it in WhatsApp before sending.");
+    return;
+  }
+  if (channel === "facebook") {
+    const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`;
+    openExternal(shareUrl);
+    setStatus(
+      "Facebook share composer opened. Review and finish the post on Facebook.",
+    );
+    return;
+  }
+  if (channel === "linkedin") {
+    openExternal(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+    );
+    setStatus(
+      "LinkedIn share composer opened. Review and finish the post on LinkedIn.",
+    );
+    return;
+  }
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, text, url });
+      setStatus(
+        "Share sheet opened. Finish in your chosen app; nothing is posted automatically.",
+      );
+    } catch (error) {
+      if (error.name !== "AbortError")
+        setStatus(
+          "The device share sheet could not open. Copy the campaign instead.",
+          true,
+        );
+    }
+  } else {
+    const copied = await copyText(
+      fullText,
+      "Campaign copied. Open Instagram and paste it into your post or story.",
+    );
+    if (copied) openExternal("https://www.instagram.com/");
+  }
+}
+
+audienceButtons.forEach((button) =>
+  button.addEventListener("click", () => setAudience(button.dataset.audience)),
+);
+channelButtons.forEach((button) =>
+  button.addEventListener("click", () => {
+    state.channel = button.dataset.channel;
+    channelButtons.forEach((candidate) => {
+      const selected = candidate === button;
+      candidate.classList.toggle("is-active", selected);
+      candidate.setAttribute("aria-pressed", String(selected));
+    });
+    setStatus("");
+    sync();
+  }),
+);
+regionSelect.addEventListener("change", () => {
+  state.region = regionSelect.value;
+  setStatus("");
+  sync();
+});
+campaignSelect.addEventListener("change", () => {
+  state.campaignId = campaignSelect.value;
+  setStatus("");
+  sync();
+});
+$("#share-campaign").addEventListener("click", shareCampaign);
+$("#copy-copy").addEventListener("click", () =>
+  copyText(messageText(), "Campaign copied with its tracked LinX destination."),
+);
+$("#copy-link").addEventListener("click", () =>
+  copyText(currentUrl(), "Tracked LinX link copied."),
+);
+
+rebuildCampaignOptions();
+sync();
+
+  </script>
+</body>
+</html>
