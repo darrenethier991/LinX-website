@@ -317,7 +317,7 @@
   </div>
   <div class="container">
     <div class="hero__eyebrow">Now onboarding · Barrie &amp; Simcoe</div>
-    <h1 id="hero-headline"><em>Exceptional trades.</em><br>Exceptional clients.</h1>
+    <h1 id="hero-headline"><em class="gold">Exceptional trades.</em><br>Exceptional clients.</h1>
     <p class="hero__sub" id="hero-subhead">
       LinX is a private network connecting vetted local contractors with homeowners who value quality work. Six founding spots are now open in this region.
     </p>
@@ -800,7 +800,8 @@
   // ── PUBLIC CONTENT OVERRIDES ───────────────────────────────────────────────
   fetch('https://api.linxservices.ca/api/content/home').then(response => response.ok ? response.json() : null).then(payload => {
     const content = payload?.content || {};
-    if (content.hero_headline) document.getElementById('hero-headline').textContent = content.hero_headline;
+    const hl = document.getElementById('hero-headline');
+    if (content.hero_headline) { hl.innerHTML = ''; const em = document.createElement('em'); em.className = 'gold'; em.textContent = content.hero_headline; hl.appendChild(em); }
     if (content.hero_subhead) document.getElementById('hero-subhead').textContent = content.hero_subhead;
   }).catch(() => {});
 

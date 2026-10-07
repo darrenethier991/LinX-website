@@ -299,10 +299,14 @@ a { color: var(--gold); }
 }
 
 .hero h1 .gold {
-  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+  background: linear-gradient(180deg,
+    #fffbe8 0%, #f9e7a8 22%, #e8b64c 42%, #9a6b1e 52%,
+    #e8b64c 62%, #f9e7a8 80%, #fffbe8 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 22px rgba(232, 182, 76, 0.22));
 }
 
 .hero p {
