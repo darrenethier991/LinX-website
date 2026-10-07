@@ -14,8 +14,44 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { stripeRequest } from "./index.js";
+import { getGoogleAccessToken } from "./signup-automation.js";
 
 const PLATFORM_FEE_BPS = 3000; // 30%
+
+// ── EchoForge analytics → Google Sheet (best-effort; never fails a request) ──
+function cad(cents) { return (Number(cents || 0) / 100).toFixed(2); }
+
+async function appendAnalyticsRow(env, tab, values) {
+  const sheetId = String(env.MARKETPLACE_ANALYTICS_SHEET_ID || "").trim();
+  if (!sheetId) return;
+  try {
+    const accessToken = await getGoogleAccessToken(env);
+    const range = encodeURIComponent(`${tab}!A1`);
+    await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(sheetId)}/values/${range}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ majorDimension: "ROWS", values: [values] }),
+      },
+    );
+  } catch { /* analytics must never break a sale */ }
+}
+
+export async function logMarketplaceEvent(env, evt) {
+  try {
+    await appendAnalyticsRow(env, "Events", [
+      new Date().toISOString(),
+      evt.event || "",
+      evt.listingId || "",
+      String(evt.title || "").slice(0, 120),
+      String(evt.actor || "").slice(0, 120),
+      evt.amountCents != null ? cad(evt.amountCents) : "",
+      evt.feeCents != null ? cad(evt.feeCents) : "",
+      String(evt.notes || "").slice(0, 300),
+    ]);
+  } catch { /* never fail the request */ }
+}
 
 function newId(prefix) {
   const bytes = crypto.getRandomValues(new Uint8Array(12));
@@ -86,6 +122,19 @@ export async function createListing(env, data) {
     priceCents,
     String(data.category || 'automation').slice(0, 40),
   ).run();
+  // Analytics: listing created (best-effort)
+  logMarketplaceEvent(env, {
+    event: "listing_created", listingId: id, title,
+    actor: String(data.seller_name || 'LinX').slice(0, 120),
+    amountCents: priceCents, notes: `category=${String(data.category || 'automation').slice(0, 40)}`,
+  }).catch(() => {});
+  appendAnalyticsRow(env, "Listings", [
+    id, new Date().toISOString().slice(0, 10), title,
+    String(data.seller_name || 'LinX').slice(0, 120),
+    priceCents != null ? cad(priceCents) : "bid-only",
+    String(data.category || 'automation').slice(0, 40),
+    "active", "0",
+  ]).catch(() => {});
   return { ok: true, id };
 }
 
@@ -106,6 +155,11 @@ export async function placeBid(env, listingId, data) {
     INSERT INTO marketplace_bids (id, listing_id, bidder_name, bidder_email, amount_cents, message)
     VALUES (?, ?, ?, ?, ?, ?)
   `).bind(id, listingId, bidderName, bidderEmail, amountCents, String(data.message || '').slice(0, 1000)).run();
+  // Analytics: bid placed (best-effort)
+  logMarketplaceEvent(env, {
+    event: "bid_placed", listingId, actor: bidderName,
+    amountCents, notes: `bid ${id}`,
+  }).catch(() => {});
   return { ok: true, id };
 }
 
@@ -183,8 +237,27 @@ export async function getOrderBySession(env, sessionId) {
 // Called from the Stripe webhook when checkout.session.completed carries a
 // marketplace order id.
 export async function markOrderPaid(env, orderId) {
-  const order = await env.DB.prepare(`SELECT id, listing_id, status FROM marketplace_orders WHERE id = ?`).bind(orderId).first();
+  const order = await env.DB.prepare(`
+    SELECT o.id, o.listing_id, o.status, o.buyer_email, o.amount_cents,
+           o.platform_fee_cents, o.seller_amount_cents,
+           l.title AS listing_title, l.seller_name
+    FROM marketplace_orders o
+    JOIN marketplace_listings l ON l.id = o.listing_id
+    WHERE o.id = ?
+  `).bind(orderId).first();
   if (!order || order.status === 'paid') return;
   await env.DB.prepare(`UPDATE marketplace_orders SET status = 'paid', paid_at = datetime('now') WHERE id = ?`).bind(orderId).run();
   await env.DB.prepare(`UPDATE marketplace_listings SET status = 'sold' WHERE id = ?`).bind(order.listing_id).run();
+  // Analytics: order paid — event feed + revenue ledger row (best-effort)
+  const today = new Date().toISOString().slice(0, 10);
+  logMarketplaceEvent(env, {
+    event: "order_paid", listingId: order.listing_id, title: order.listing_title,
+    actor: order.buyer_email, amountCents: order.amount_cents,
+    feeCents: order.platform_fee_cents, notes: `order ${orderId}`,
+  }).catch(() => {});
+  appendAnalyticsRow(env, "Orders", [
+    orderId, today, order.listing_id, order.listing_title, order.buyer_email,
+    cad(order.amount_cents), cad(order.platform_fee_cents), cad(order.seller_amount_cents),
+    order.seller_name || "LinX", "owed",
+  ]).catch(() => {});
 }

@@ -43,6 +43,7 @@
     "RESEND_FROM_EMAIL": "darren-ethier@updates.linxservices.ca",
             "GOOGLE_SHEETS_SPREADSHEET_ID": "1cXsooFB4t5BRr0ArNDp_nrZi20p9tHMw7OwXTdlpslQ",
     "GOOGLE_SHEETS_SIGNUPS_TAB": "Subscriber Signups",
+            "MARKETPLACE_ANALYTICS_SHEET_ID": "1opkWSJ2kS580x9ltlg4OGFgWiuu8vhB9VHkjhm0JHXc",
     "OWNER_NOTIFICATION_PHONE": "+17057160803",
     "TWILIO_MESSAGING_SERVICE_SID": "ACb808f0ef1424e0677506dd797d8bd197",
     "TWILIO_STATUS_CALLBACK_URL": "https://api.linxservices.ca/api/webhooks/twilio/status",
