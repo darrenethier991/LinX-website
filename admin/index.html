@@ -177,6 +177,41 @@
     /* CARD HEADER */
     .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .card-title { font-size: 14px; font-weight: 700; }
+
+    /* ── NEW-DASHBOARD VISUAL LANGUAGE (pure reskin, no functional changes) ── */
+    :root {
+      --gold: #C8A951;
+      --bg-deep: #0A0A0A;
+      --bg-surface: #141414;
+      --bg-card: #1C1C1C;
+      --bg-card-hover: #222222;
+      --border: #2A2A2A;
+      --text: #F5F5F5;
+      --text-muted: #9CA3AF;
+      --radius-sm: 12px;
+    }
+    body { background: #0A0A0A; color: #F5F5F5; }
+    .nav { background: #141414; border-bottom: 1px solid #2A2A2A; }
+    .sidebar { background: #141414; border-right: 1px solid #2A2A2A; }
+    .sidebar-link {
+      padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; font-weight: 500; margin-bottom: 2px;
+    }
+    .sidebar-link:hover, .sidebar-link.active { background: #1C1C1C; color: #C8A951; }
+    .sidebar-section-title { font-size: 10px; letter-spacing: 1.5px; color: #9CA3AF; }
+    .stat-card { background: #1C1C1C; border: 1px solid #2A2A2A; border-radius: 12px; padding: 16px; }
+    .stat-card .value { color: #C8A951; }
+    .card, .panel .card { border-radius: 12px; }
+    .btn--primary { background: #C8A951; }
+    .btn--primary:hover { background: #E5D28C; }
+    table th { background: #141414; border-bottom: 1px solid #2A2A2A; }
+    table td { border-bottom: 1px solid #2A2A2A; }
+    .log-area { background: #0A0A0A; border: 1px solid #2A2A2A; }
+    .tab.active { border-color: #C8A951; color: #C8A951; }
+    .tab:hover { border-color: #C8A951; color: #C8A951; }
+    .bar-fill { background: #C8A951; }
+    input, textarea, select { background: #141414; border: 1px solid #2A2A2A; color: #F5F5F5; }
+    input:focus, textarea:focus, select:focus { border-color: #C8A951; }
   </style>
 </head>
 <body>
