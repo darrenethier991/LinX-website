@@ -15,6 +15,7 @@ import { deviceCategory, generatedSlug, normalizeShortLinkInput, refererHost } f
 import { normalizeSubscriberInput, processApprovalAutomation, verifyTwilioStatusCallback } from "./signup-automation.js";
 import { notifyOwnerOfApplication, reconcileOwnerApplicationNotifications } from "./application-notifications.js";
 import { handleContactSubmission } from "./contact-intake.js";
+import { decryptContactPII } from "./pii-crypto.js";
 import { handleOverflowSubmission } from "./overflow-intake.js";
 import { contractorLogin, contractorMe, contractorLeads, contractorLeadAction, contractorJobs, contractorJobStatus, contractorEarnings, contractorProfile } from "./contractor-app.js";
 import { adminListContractors, adminCreateContractor, adminResetContractorCode, adminSetContractorActive } from "./contractor-admin.js";
@@ -1653,7 +1654,7 @@ export default {
       const freshHrs = parseInt(params.get('freshness_hours') || '72', 10);
       const cutoff   = new Date(Date.now() - freshHrs * 3600000).toISOString();
 
-      let q = "SELECT id,title,description,source_url,source_platform,posted_at,scraped_at,category,category_score,city,province,postal_code,status,claimed_by,source_id FROM leads WHERE status = ? AND posted_at >= ?";
+      let q = "SELECT id,title,description,source_url,source_platform,posted_at,scraped_at,category,category_score,city,province,postal_code,status,claimed_by,source_id,raw FROM leads WHERE status = ? AND posted_at >= ?";
       const binds = [status, cutoff];
       if (category) { q += " AND category = ?"; binds.push(category); }
       if (city)     { q += " AND city LIKE ?";   binds.push(`%${city}%`); }
@@ -1662,7 +1663,21 @@ export default {
       binds.push(limit, offset);
 
       const rows = await DB(env).prepare(q).bind(...binds).all();
-      return json(rows.results || [], 200, origin);
+      // Admin-only endpoint: decrypt v1 PII bundles so the dashboard can show
+      // contact details. Ciphertext never leaves the worker undecrypted here.
+      const out = [];
+      for (const row of (rows.results || [])) {
+        let contact = null;
+        try {
+          const bundle = JSON.parse(row.raw || "{}");
+          if (bundle && bundle.v === 1 && (bundle.name || bundle.email || bundle.phone)) {
+            contact = await decryptContactPII(env, bundle);
+          }
+        } catch { /* non-JSON or legacy raw — leave contact null */ }
+        const { raw: _raw, ...rest } = row;
+        out.push({ ...rest, contact });
+      }
+      return json(out, 200, origin);
     }
 
     // ── POST /api/leads — organic lead submission ──────────────────────────

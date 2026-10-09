@@ -16,6 +16,7 @@
  */
 
 import { getGoogleAccessToken } from "./signup-automation.js";
+import { encryptContactPII } from "./pii-crypto.js";
 
 function safeText(value, max = 500) {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
@@ -65,14 +66,17 @@ export async function storeContactLead(env, contact) {
   const existing = await env.DB.prepare("SELECT id FROM leads WHERE content_hash = ?").bind(hash).first();
   if (existing) return { id: existing.id, duplicate: true };
 
-  const title = `Contact form — ${contact.name}`.slice(0, 300);
+  // PII is AES-256-GCM encrypted before storage. title/description stay
+  // PII-free so contractor/public views never leak contact details; the
+  // encrypted bundle lives in `raw` and is decrypted only on admin reads.
+  const enc = await encryptContactPII(env, contact);
+
+  const title = `Contact form — ${contact.role}`.slice(0, 300);
   const description = [
     `Role: ${contact.role}`,
-    contact.email ? `Email: ${contact.email}` : null,
-    contact.phone ? `Phone: ${contact.phone}` : null,
     "",
     contact.message,
-  ].filter((line) => line !== null).join("\n").slice(0, 2000);
+  ].join("\n").slice(0, 2000);
 
   await env.DB.prepare(`
     INSERT INTO leads (id,content_hash,title,description,source_url,source_platform,posted_at,scraped_at,category,category_score,city,province,postal_code,contact_method,status,claimed_by,raw)
@@ -80,9 +84,9 @@ export async function storeContactLead(env, contact) {
   `).bind(
     id, hash, title, description, "", "contact_form", now, now,
     contact.role === "contractor" ? "contractor_signup" : "homeowner_inquiry", 0,
-    "", "", "", [contact.email, contact.phone].filter(Boolean).join(" / "),
+    "", "", "", "encrypted",
     "new", null,
-    JSON.stringify({ name: contact.name, email: contact.email, phone: contact.phone, role: contact.role, source: contact.source }).slice(0, 2000),
+    JSON.stringify({ v: 1, name: enc.name, email: enc.email, phone: enc.phone, role: contact.role, source: contact.source, message: contact.message }).slice(0, 2000),
   ).run();
 
   return { id, duplicate: false };
