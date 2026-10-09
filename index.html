@@ -20,6 +20,9 @@
     /* ── PAGE-SPECIFIC OVERRIDES ── */
     :root { --nav-h: 52px; }
     .nav__logo img { height: 30px; }
+    .nav__logo { gap: 10px; }
+    .nav__wordmark { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #fff; white-space: nowrap; }
+    .nav__wordmark span { color: var(--gold); font-weight: 600; }
     body { cursor: none; }
 
     /* HERO */
@@ -277,7 +280,7 @@
 
 <!-- ── NAVIGATION ── -->
 <nav class="nav">
-  <a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"></a>
+  <a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"><span class="nav__wordmark">LinX <span>Services</span></span></a>
   <ul class="nav__links" aria-label="Primary navigation">
     <li><a href="about.html">About</a></li>
     <li><a href="services.html">Services</a></li>
