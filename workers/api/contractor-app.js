@@ -406,4 +406,4 @@ export async function contractorProfile(request, env, origin = '') {
 }
 
 // Pure helpers exported for unit testing.
-export { sha256hex, constantTimeEqual, validateJobStepTransition, contractorPublicView };
+export { sha256hex, constantTimeEqual, validateJobStepTransition, contractorPublicView, contractorAuth };

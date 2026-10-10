@@ -80,7 +80,7 @@ export async function resolveOverflowContractor(env, code) {
   return null;
 }
 
-export function normalizeOverflowInput(body = {}) {
+export function normalizeOverflowInput(body = {}, skipCodeCheck = false) {
   const accessCode = safeText(body.access_code || body.code, 64);
   const homeownerName = safeText(body.homeowner_name || body.name, 160);
   const phone = safePhone(body.phone);
@@ -91,7 +91,7 @@ export function normalizeOverflowInput(body = {}) {
   const reason = FORWARD_REASONS.includes(body.reason) ? body.reason : "other";
   const notes = safeText(body.notes || body.message, 2000);
 
-  if (!accessCode) throw new Error("Your contractor access code is required.");
+  if (!skipCodeCheck && !accessCode) throw new Error("Your contractor access code is required.");
   if (!homeownerName) throw new Error("Please include the homeowner's name.");
   if (!phone && !email) throw new Error("Please include a phone number or email so the homeowner can be reached.");
   if (!jobType) throw new Error("Please choose a job type.");
@@ -235,21 +235,23 @@ export async function appendOverflowToSheet(env, leadId, contractor, lead) {
  * Full overflow intake orchestration. Storage is authoritative; email + sheets
  * are best-effort and reported honestly per channel — they never fail the request.
  */
-export async function handleOverflowSubmission(env, body) {
+export async function handleOverflowSubmission(env, body, resolvedContractor = null) {
   let lead;
   try {
-    lead = normalizeOverflowInput(body);
+    lead = normalizeOverflowInput(body, !!resolvedContractor);
   } catch (error) {
     return { error: error.message, status: 400 };
   }
 
-  let contractor = null;
-  try {
-    contractor = await resolveOverflowContractor(env, lead.accessCode);
-  } catch (error) {
-    return { error: "Contractor lookup is temporarily unavailable.", status: 503 };
+  let contractor = resolvedContractor;
+  if (!contractor) {
+    try {
+      contractor = await resolveOverflowContractor(env, lead.accessCode);
+    } catch (error) {
+      return { error: "Contractor lookup is temporarily unavailable.", status: 503 };
+    }
+    if (!contractor) return { error: "That access code was not recognized. Check the code and try again.", status: 401 };
   }
-  if (!contractor) return { error: "That access code was not recognized. Check the code and try again.", status: 401 };
 
   const stored = await storeOverflowLead(env, contractor, lead);
   const delivery = { stored: stored.duplicate ? "duplicate" : "stored" };

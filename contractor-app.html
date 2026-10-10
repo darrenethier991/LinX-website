@@ -100,6 +100,15 @@
     .btn:disabled { opacity: .55; cursor: default; }
     .btn-gold { background: linear-gradient(135deg, var(--gold-light), var(--gold)); color: #14100a; }
     .btn-outline { background: transparent; color: var(--gold); border: 1px solid rgba(212,168,83,.5); }
+
+    /* ── Forward form ── */
+    #forward-form label { display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.6px; }
+    #forward-form input, #forward-form select, #forward-form textarea {
+      width:100%; background:var(--bg-card); border:1px solid var(--border); border-radius:12px;
+      color:var(--text); font-size:15px; font-family:inherit; padding:12px; outline:none;
+    }
+    #forward-form input:focus, #forward-form select:focus, #forward-form textarea:focus { border-color:var(--gold); }
+    #forward-form textarea { resize:vertical; }
     .btn-danger-outline { background: transparent; color: var(--error); border: 1px solid rgba(239,68,68,.45); }
     .login-err {
       display: none;
@@ -293,6 +302,61 @@
       <div id="jobs-body"></div>
     </div>
 
+    <!-- ═══ FORWARD VIEW ═══ -->
+    <div class="view" id="view-forward">
+      <div class="screen-head">
+        <h2>Forward to LinX</h2>
+        <p>Can't take a job? Send it our way — earn commission when it completes.</p>
+      </div>
+      <form id="forward-form" style="display:flex;flex-direction:column;gap:12px">
+        <div>
+          <label for="fw-name">Homeowner name *</label>
+          <input id="fw-name" type="text" autocomplete="off" required />
+        </div>
+        <div>
+          <label for="fw-phone">Phone *</label>
+          <input id="fw-phone" type="tel" autocomplete="off" required />
+        </div>
+        <div>
+          <label for="fw-email">Email (optional)</label>
+          <input id="fw-email" type="email" autocomplete="off" />
+        </div>
+        <div>
+          <label for="fw-jobtype">Job type *</label>
+          <select id="fw-jobtype" required>
+            <option value="">Choose…</option>
+            <option>Electrical</option><option>Roofing</option><option>Plumbing</option>
+            <option>HVAC</option><option>Painting</option><option>Drywall</option>
+            <option>Flooring</option><option>Kitchen/Bath remodel</option><option>Landscaping</option>
+            <option>Fencing</option><option>Decks</option><option>Concrete/Asphalt</option>
+            <option>Appliance install/repair</option><option>General handyman</option><option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="fw-location">Location / city</label>
+          <input id="fw-location" type="text" autocomplete="off" />
+        </div>
+        <div>
+          <label for="fw-reason">Why are you forwarding it?</label>
+          <select id="fw-reason">
+            <option value="too_busy">Too busy</option>
+            <option value="too_far">Too far</option>
+            <option value="wrong_trade">Not my trade</option>
+            <option value="too_small">Too small</option>
+            <option value="timing">Bad timing</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="fw-notes">Notes for us (optional)</label>
+          <textarea id="fw-notes" rows="3" placeholder="Anything the next contractor should know…"></textarea>
+        </div>
+        <div class="login-err" id="forward-err" role="alert"></div>
+        <div id="forward-ok" style="display:none;margin-bottom:12px;padding:12px 14px;background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.4);border-radius:10px;color:#86efac;font-size:13.5px"></div>
+        <button class="btn btn-gold" type="submit" id="forward-btn">➕ Forward Lead</button>
+      </form>
+    </div>
+
     <!-- ═══ EARNINGS VIEW ═══ -->
     <div class="view" id="view-earnings">
       <div class="screen-head">
@@ -311,6 +375,7 @@
     <nav class="tabbar" id="tabbar" style="display:none">
       <button class="tab active" data-tab="leads"><span class="tic">⚡</span>Leads<span class="count" id="leads-count" style="display:none"></span></button>
       <button class="tab" data-tab="jobs"><span class="tic">🔧</span>Jobs</button>
+      <button class="tab" data-tab="forward"><span class="tic">➕</span>Forward</button>
       <button class="tab" data-tab="earnings"><span class="tic">💰</span>Earnings</button>
       <button class="tab" data-tab="profile"><span class="tic">👤</span>Profile</button>
     </nav>
@@ -376,7 +441,7 @@
     }
 
     /* ---------- views ---------- */
-    var views = ['leads', 'jobs', 'earnings', 'profile'];
+    var views = ['leads', 'jobs', 'forward', 'earnings', 'profile'];
     function showView(name) {
       document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
       var el = document.getElementById('view-' + name);
@@ -663,8 +728,47 @@
         showView(tab);
         if (tab === 'leads') loadLeads();
         else if (tab === 'jobs') loadJobs();
+        else if (tab === 'forward') { /* form is static, nothing to load */ }
         else if (tab === 'earnings') loadEarnings();
         else if (tab === 'profile') loadProfile();
+      });
+    });
+
+    /* ---------- forward a lead ---------- */
+    document.getElementById('forward-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var errBox = document.getElementById('forward-err');
+      var okBox = document.getElementById('forward-ok');
+      var btn = document.getElementById('forward-btn');
+      errBox.classList.remove('show'); errBox.textContent = '';
+      okBox.style.display = 'none';
+      var payload = {
+        homeowner_name: document.getElementById('fw-name').value.trim(),
+        phone: document.getElementById('fw-phone').value.trim(),
+        email: document.getElementById('fw-email').value.trim(),
+        job_type: document.getElementById('fw-jobtype').value,
+        location: document.getElementById('fw-location').value.trim(),
+        reason: document.getElementById('fw-reason').value,
+        notes: document.getElementById('fw-notes').value.trim()
+      };
+      if (!payload.homeowner_name || !payload.phone || !payload.job_type) {
+        errBox.textContent = 'Name, phone, and job type are required.';
+        errBox.classList.add('show');
+        return;
+      }
+      btn.disabled = true; btn.textContent = 'Forwarding…';
+      api('/api/overflow', {
+        method: 'POST',
+        body: payload
+      }).then(function () {
+        document.getElementById('forward-form').reset();
+        okBox.textContent = '✓ Lead forwarded! You\u2019ll earn commission when the job completes.';
+        okBox.style.display = '';
+      }).catch(function (err) {
+        errBox.textContent = err.message;
+        errBox.classList.add('show');
+      }).then(function () {
+        btn.disabled = false; btn.textContent = '➕ Forward Lead';
       });
     });
 

@@ -17,7 +17,7 @@ import { notifyOwnerOfApplication, reconcileOwnerApplicationNotifications } from
 import { handleContactSubmission } from "./contact-intake.js";
 import { decryptContactPII } from "./pii-crypto.js";
 import { handleOverflowSubmission } from "./overflow-intake.js";
-import { contractorLogin, contractorMe, contractorLeads, contractorLeadAction, contractorJobs, contractorJobStatus, contractorEarnings, contractorProfile } from "./contractor-app.js";
+import { contractorLogin, contractorMe, contractorLeads, contractorLeadAction, contractorJobs, contractorJobStatus, contractorEarnings, contractorProfile, contractorAuth } from "./contractor-app.js";
 import { adminListContractors, adminCreateContractor, adminResetContractorCode, adminSetContractorActive } from "./contractor-admin.js";
 
 /**
@@ -986,9 +986,42 @@ export default {
       const limit = await enforceAnonymousRateLimit(request, env, 'overflow-intake', 20, 3600);
       if (limit) return rateLimitResponse(origin, limit);
       if (!env.DB) return json({ error: 'Lead intake is temporarily unavailable.' }, 503, origin);
-      const result = await handleOverflowSubmission(env, await readBody(request));
+      // Signed-in contractors (app JWT) skip the access-code step — attribute directly.
+      let resolvedContractor = null;
+      const authHeader = request.headers.get('Authorization') || '';
+      if (authHeader.startsWith('Bearer ')) {
+        const auth = await contractorAuth(request, env, origin);
+        if (!auth.error) resolvedContractor = auth.contractor;
+      }
+      const result = await handleOverflowSubmission(env, await readBody(request), resolvedContractor);
       if (result.error) return json({ error: result.error }, result.status || 400, origin);
       return json({ ok: true, lead_id: result.leadId, delivery: result.delivery }, 201, origin);
+    }
+
+    // ── POST /api/admin/overflow/:id/complete — mark a forwarded lead's job
+    // ── complete and issue the referrer's commission (status 'pending').
+    if (path.startsWith('/api/admin/overflow/') && path.endsWith('/complete') && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Storage is not configured.' }, 503, origin);
+      const leadId = path.split('/')[4];
+      const lead = await env.DB.prepare(
+        "SELECT id, claimed_by, status, source_platform FROM leads WHERE id = ?"
+      ).bind(leadId).first();
+      if (!lead) return json({ error: 'Lead not found.' }, 404, origin);
+      if (lead.source_platform !== 'contractor_overflow') return json({ error: 'Not a forwarded lead.' }, 400, origin);
+      if (lead.status === 'completed') return json({ error: 'Already marked complete.' }, 409, origin);
+      if (!lead.claimed_by) return json({ error: 'No referring contractor attributed.' }, 400, origin);
+
+      const commissionCents = Math.max(0, parseInt(env.OVERFLOW_COMMISSION_CENTS || '2500', 10) || 2500);
+      const payoutId = crypto.randomUUID();
+      const now = new Date().toISOString();
+      await env.DB.batch([
+        env.DB.prepare("UPDATE leads SET status = 'completed' WHERE id = ?").bind(leadId),
+        env.DB.prepare(
+          "INSERT INTO contractor_payouts (id, contractor_id, job_id, amount_cents, status, created_at) VALUES (?,?,?,?,?,?)"
+        ).bind(payoutId, lead.claimed_by, leadId, commissionCents, 'pending', now),
+      ]);
+      return json({ ok: true, payout_id: payoutId, contractor_id: lead.claimed_by, amount_cents: commissionCents, status: 'pending' }, 200, origin);
     }
 
     if (path === '/api/launch/early-access' && method === 'POST') {
