@@ -1311,7 +1311,12 @@
           <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">${escHtml(ld.description || '')}</div>
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-dim)">
             <span style="text-transform:capitalize">${escHtml(ld.source_platform || '—')} · ${ld.posted_at ? escHtml(new Date(ld.posted_at).toLocaleDateString()) : '—'}</span>
-            ${ld.source_url ? `<a href="${escHtml(ld.source_url)}" target="_blank" rel="noopener" style="color:var(--gold)">View →</a>` : ''}
+            <span style="display:flex;gap:8px;align-items:center">
+              ${ld.source_platform === 'contractor_overflow' && ld.status !== 'completed'
+                ? `<button class="btn btn--primary btn--sm" data-complete-lead="${escHtml(ld.id)}" title="Mark job complete — issues the referrer's commission">✓ Complete</button>`
+                : ld.status === 'completed' ? `<span style="color:var(--gold)">✓ completed</span>` : ''}
+              ${ld.source_url ? `<a href="${escHtml(ld.source_url)}" target="_blank" rel="noopener" style="color:var(--gold)">View →</a>` : ''}
+            </span>
           </div>
         </div>`).join('')
         : '<div style="text-align:center;padding:48px;color:var(--text-dim)">No leads found. Adjust the filters or check the Lead Pipeline panel.</div>';
@@ -1327,6 +1332,24 @@
   }
 
   document.getElementById('search-leads').addEventListener('click', () => { _leadsOffset = 0; loadContractorLeads(); });
+
+  // Mark a forwarded (overflow) lead's job complete → issues referrer commission.
+  document.getElementById('leads-grid').addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-complete-lead]');
+    if (!btn) return;
+    const leadId = btn.getAttribute('data-complete-lead');
+    if (!confirm('Mark this forwarded job complete? This issues the referring contractor\u2019s commission.')) return;
+    btn.disabled = true; btn.textContent = '…';
+    try {
+      const res = await apiFetch(`/api/admin/overflow/${encodeURIComponent(leadId)}/complete`, { method: 'POST' });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error((data && data.error) || 'Could not complete.');
+      loadContractorLeads();
+    } catch (err) {
+      alert(err.message || 'Could not complete.');
+      btn.disabled = false; btn.textContent = '✓ Complete';
+    }
+  });
   document.getElementById('reset-leads').addEventListener('click', () => {
     document.getElementById('f-category').value = '';
     document.getElementById('f-city').value = '';
