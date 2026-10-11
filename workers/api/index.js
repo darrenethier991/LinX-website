@@ -998,32 +998,6 @@ export default {
       return json({ ok: true, lead_id: result.leadId, delivery: result.delivery }, 201, origin);
     }
 
-    // ── POST /api/admin/overflow/:id/complete — mark a forwarded lead's job
-    // ── complete and issue the referrer's commission (status 'pending').
-    if (path.startsWith('/api/admin/overflow/') && path.endsWith('/complete') && method === 'POST') {
-      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
-      if (!env.DB) return json({ error: 'Storage is not configured.' }, 503, origin);
-      const leadId = path.split('/')[4];
-      const lead = await env.DB.prepare(
-        "SELECT id, claimed_by, status, source_platform FROM leads WHERE id = ?"
-      ).bind(leadId).first();
-      if (!lead) return json({ error: 'Lead not found.' }, 404, origin);
-      if (lead.source_platform !== 'contractor_overflow') return json({ error: 'Not a forwarded lead.' }, 400, origin);
-      if (lead.status === 'completed') return json({ error: 'Already marked complete.' }, 409, origin);
-      if (!lead.claimed_by) return json({ error: 'No referring contractor attributed.' }, 400, origin);
-
-      const commissionCents = Math.max(0, parseInt(env.OVERFLOW_COMMISSION_CENTS || '2500', 10) || 2500);
-      const payoutId = crypto.randomUUID();
-      const now = new Date().toISOString();
-      await env.DB.batch([
-        env.DB.prepare("UPDATE leads SET status = 'completed' WHERE id = ?").bind(leadId),
-        env.DB.prepare(
-          "INSERT INTO contractor_payouts (id, contractor_id, job_id, amount_cents, status, created_at) VALUES (?,?,?,?,?,?)"
-        ).bind(payoutId, lead.claimed_by, leadId, commissionCents, 'pending', now),
-      ]);
-      return json({ ok: true, payout_id: payoutId, contractor_id: lead.claimed_by, amount_cents: commissionCents, status: 'pending' }, 200, origin);
-    }
-
     if (path === '/api/launch/early-access' && method === 'POST') {
       const limit = await enforceAnonymousRateLimit(request, env, 'launch-early-access', 5, 86400);
       if (limit) return rateLimitResponse(origin, limit);
@@ -1235,6 +1209,32 @@ export default {
     if (!admin) return json({ error: 'Unauthorized' }, 401, origin);
     const ecosystemAdmin = canAdministerEcosystem(admin);
     const ecosystemSubscriber = canManageOwnConsent(admin);
+
+    // ── POST /api/admin/overflow/:id/complete — mark a forwarded lead's job
+    // ── complete and issue the referrer's commission (status 'pending').
+    if (path.startsWith('/api/admin/overflow/') && path.endsWith('/complete') && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Storage is not configured.' }, 503, origin);
+      const leadId = path.split('/')[4];
+      const lead = await env.DB.prepare(
+        "SELECT id, claimed_by, status, source_platform FROM leads WHERE id = ?"
+      ).bind(leadId).first();
+      if (!lead) return json({ error: 'Lead not found.' }, 404, origin);
+      if (lead.source_platform !== 'contractor_overflow') return json({ error: 'Not a forwarded lead.' }, 400, origin);
+      if (lead.status === 'completed') return json({ error: 'Already marked complete.' }, 409, origin);
+      if (!lead.claimed_by) return json({ error: 'No referring contractor attributed.' }, 400, origin);
+
+      const commissionCents = Math.max(0, parseInt(env.OVERFLOW_COMMISSION_CENTS || '2500', 10) || 2500);
+      const payoutId = crypto.randomUUID();
+      const now = new Date().toISOString();
+      await env.DB.batch([
+        env.DB.prepare("UPDATE leads SET status = 'completed' WHERE id = ?").bind(leadId),
+        env.DB.prepare(
+          "INSERT INTO contractor_payouts (id, contractor_id, job_id, amount_cents, status, created_at) VALUES (?,?,?,?,?,?)"
+        ).bind(payoutId, lead.claimed_by, leadId, commissionCents, 'pending', now),
+      ]);
+      return json({ ok: true, payout_id: payoutId, contractor_id: lead.claimed_by, amount_cents: commissionCents, status: 'pending' }, 200, origin);
+    }
 
     if (path === '/api/admin/launch/early-access' && method === 'GET') {
       if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
