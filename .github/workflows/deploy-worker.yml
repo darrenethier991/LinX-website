@@ -1,10 +1,19 @@
 name: Deploy LINX API Worker
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'workers/**'
+      - 'wrangler.jsonc'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: worker-deploy
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -20,5 +29,5 @@ jobs:
       - name: Deploy current LINX API Worker
         run: npx --yes wrangler@4.124.0 deploy --config wrangler.jsonc
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKER_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
