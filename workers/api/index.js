@@ -434,7 +434,10 @@ async function processVerifiedStripeEvent(env, event) {
 
 async function recordPageView(env, body) {
   if (!env.DB) return;
-  const path = typeof body.path === "string" ? body.path.slice(0, 200) : "/";
+  const raw = typeof body.path === "string" ? body.path.slice(0, 200) : "/";
+  // Allowlist path-like characters only — rejects sentence-like injection
+  // attempts aimed at the admin AI context snapshot.
+  const path = /^[\w\-./?#=&%+~:;@()[\]{}|!$'*,]+$/.test(raw) ? raw : "/";
   try {
     await env.DB.prepare("INSERT INTO page_events (id,path,event_type,role) VALUES (?,?,?,?)")
       .bind(requestId(), path, "page_view", "public").run();
@@ -897,6 +900,8 @@ export default {
 
     // ── POST /api/events/pageview — privacy-safe public telemetry ──────────
     if (path === '/api/events/pageview' && method === 'POST') {
+      const limit = await enforceAnonymousRateLimit(request, env, 'pageview', 60, 3600);
+      if (limit) return rateLimitResponse(origin, limit);
       const body = await readBody(request);
       await recordPageView(env, body);
       return json({ ok: true }, 202, origin);

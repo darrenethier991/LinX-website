@@ -353,7 +353,6 @@
           token = candidate;
           if (status.role === "admin") {
             sessionStorage.setItem("linx_admin_token", candidate);
-            localStorage.setItem("linx_admin_token", candidate);
           }
           setMode(status.role);
           return;

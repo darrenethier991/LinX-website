@@ -901,9 +901,7 @@
       if (!response.ok || !payload.token) throw new Error(payload.error || 'Invalid credentials.');
       _token = payload.token;
       sessionStorage.setItem('linx_token', _token);
-      localStorage.setItem('linx_token', _token);
       sessionStorage.setItem('linx_admin_token', _token);
-      localStorage.setItem('linx_admin_token', _token);
       sessionStorage.setItem('linx_admin_user', u);
       showApp(u);
     } catch (loginError) {

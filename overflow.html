@@ -237,7 +237,7 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
       document.getElementById('fwd-form-wrap').style.display = 'none';
-      document.getElementById('fwd-success').style.display = '';
+      document.getElementById('fwd-success').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       errDetail.textContent = '(' + err.message + ')';
