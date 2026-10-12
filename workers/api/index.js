@@ -848,7 +848,15 @@ export default {
       const authz = await authorizeConversation(env, convId, chatToken, null);
       if (authz.error) return json({ error: authz.error }, authz.status || 401, origin);
       if (method === 'GET') {
-        return json({ ok: true, messages: await listMessages(env, convId) }, 200, origin);
+        const c = authz.conversation;
+        return json({
+          ok: true,
+          side: authz.side,
+          homeowner_name: c.homeowner_name,
+          contractor_name: c.contractor_name,
+          status: c.status,
+          messages: await listMessages(env, convId),
+        }, 200, origin);
       }
       if (method === 'POST') {
         const limit = await enforceAnonymousRateLimit(request, env, `chat-${convId}`, 30, 3600);

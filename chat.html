@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>LinX Chat</title>
+  <meta name="description" content="Secure chat between you and your LinX contractor or homeowner. Monitored by LinX for safety." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <meta name="theme-color" content="#000000" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/linx-design-system.css?v=2" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; display: flex; flex-direction: column; height: 100dvh;
+      background: var(--bg-deep); color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    /* ── Slim header ── */
+    .chat-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-bottom: 1px solid rgba(212,168,83,.16);
+      background: rgba(5,5,7,.92); backdrop-filter: blur(8px);
+      position: sticky; top: 0; z-index: 10; flex-shrink: 0;
+    }
+    .chat-header .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .chat-header .logo img { height: 26px; }
+    .chat-header .logo span { font-weight: 800; font-size: 15px; color: #fff; letter-spacing: -0.02em; }
+    .chat-header .logo span em { font-style: normal; color: var(--gold); font-weight: 600; }
+    .chat-peer { margin-left: auto; text-align: right; min-width: 0; }
+    .chat-peer .name { font-weight: 700; font-size: .95rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-peer .sub { font-size: .72rem; color: var(--text-dim); }
+    .chat-peer .sub a { color: var(--gold); }
+
+    /* ── Monitored notice ── */
+    .monitored {
+      flex-shrink: 0; text-align: center; font-size: .78rem; line-height: 1.45;
+      color: var(--gold-light); background: rgba(212,168,83,.07);
+      border-bottom: 1px solid rgba(212,168,83,.16); padding: 8px 14px;
+    }
+
+    /* ── Mediator indicator ── */
+    .mediator-pill {
+      display: none; flex-shrink: 0; margin: 8px auto 0; padding: 6px 14px;
+      border-radius: 999px; font-size: .78rem; font-weight: 600;
+      color: #0a0a0a; background: var(--gold); align-items: center; gap: 6px;
+    }
+    .mediator-pill.show { display: inline-flex; }
+    .mediator-pill .dots::after { content: ''; animation: dots 1.2s steps(4) infinite; }
+    @keyframes dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
+
+    /* ── Messages ── */
+    .messages {
+      flex: 1; overflow-y: auto; padding: 16px 14px 10px;
+      display: flex; flex-direction: column; gap: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .msg { max-width: 82%; padding: 10px 14px; border-radius: 16px; font-size: .95rem; line-height: 1.5; overflow-wrap: break-word; }
+    .msg .time { display: block; font-size: .68rem; color: var(--text-dim); margin-top: 5px; }
+    .msg.mine {
+      align-self: flex-end; background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+      color: #0a0a0a; border-bottom-right-radius: 5px; font-weight: 500;
+    }
+    .msg.mine .time { color: rgba(0,0,0,.55); }
+    .msg.theirs {
+      align-self: flex-start; background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,.08); color: var(--text);
+      border-bottom-left-radius: 5px;
+    }
+    .msg.centered {
+      align-self: center; max-width: 92%; text-align: center;
+      background: rgba(212,168,83,.08); border: 1px solid rgba(212,168,83,.35);
+      color: var(--gold-light); font-size: .85rem; border-radius: 12px;
+    }
+    .msg.centered .tag {
+      display: block; font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 4px;
+    }
+
+    /* ── Composer ── */
+    .composer {
+      flex-shrink: 0; display: flex; gap: 10px; align-items: flex-end;
+      padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
+      border-top: 1px solid rgba(212,168,83,.16); background: rgba(5,5,7,.95);
+    }
+    .composer textarea {
+      flex: 1; resize: none; min-height: 44px; max-height: 130px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(212,168,83,.25);
+      border-radius: 12px; color: #fff; padding: 11px 14px;
+      font-size: 1rem; font-family: inherit; line-height: 1.4;
+    }
+    .composer textarea:focus { outline: none; border-color: var(--gold); }
+    .composer textarea:disabled { opacity: .5; }
+    .send-btn {
+      flex-shrink: 0; height: 44px; min-width: 76px; border: none; border-radius: 12px;
+      background: var(--gold); color: #0a0a0a; font-weight: 800; font-size: .95rem;
+      cursor: pointer; font-family: inherit; padding: 0 18px;
+    }
+    .send-btn:disabled { opacity: .45; cursor: default; }
+    .char-count { font-size: .7rem; color: var(--text-dim); text-align: right; padding: 2px 16px 0; flex-shrink: 0; }
+
+    /* ── States ── */
+    .state-wrap {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 30px 24px; gap: 12px;
+    }
+    .state-wrap .big { font-size: 2.6rem; }
+    .state-wrap h2 { color: #fff; font-size: 1.25rem; margin: 0; }
+    .state-wrap p { color: var(--text-muted); font-size: .95rem; line-height: 1.6; margin: 0; max-width: 420px; }
+    .state-wrap a { color: var(--gold); }
+    .spinner {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 3px solid rgba(212,168,83,.2); border-top-color: var(--gold);
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .send-error {
+      display: none; flex-shrink: 0; text-align: center; font-size: .82rem;
+      color: #ff8a8a; padding: 6px 14px 0;
+    }
+    .send-error.show { display: block; }
+  </style>
+</head>
+<body>
+
+<header class="chat-header">
+  <a class="logo" href="https://linxservices.ca" aria-label="LinX home">
+    <img src="assets/linx-logo.png" alt="LinX" />
+    <span>LinX <em>Chat</em></span>
+  </a>
+  <div class="chat-peer">
+    <div class="name" id="peerName">…</div>
+    <div class="sub"><a href="https://linxservices.ca">linxservices.ca</a></div>
+  </div>
+</header>
+
+<div class="monitored" id="monitoredNotice">
+  🛡️ This conversation is monitored by LinX for safety. An AI mediator may step in if things get heated.
+</div>
+
+<div class="messages" id="messages" aria-live="polite"></div>
+
+<div style="display:flex;justify-content:center;flex-shrink:0;">
+  <div class="mediator-pill" id="mediatorPill">🕊️ <span>Mediator is reviewing<span class="dots"></span></span></div>
+</div>
+
+<div class="send-error" id="sendError" role="alert"></div>
+<div class="char-count" id="charCount"></div>
+
+<div class="composer">
+  <textarea id="composer" rows="1" maxlength="2000" placeholder="Type your message…" aria-label="Type your message"></textarea>
+  <button class="send-btn" id="sendBtn" type="button">Send</button>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var MAX_BODY = 2000;
+  var POLL_MS = 10000;
+
+  var params = new URLSearchParams(window.location.search);
+  var convId = (params.get('c') || '').trim();
+  var chatToken = (params.get('t') || '').trim();
+
+  var messagesEl = document.getElementById('messages');
+  var composerEl = document.getElementById('composer');
+  var sendBtn = document.getElementById('sendBtn');
+  var sendErrorEl = document.getElementById('sendError');
+  var charCountEl = document.getElementById('charCount');
+  var peerNameEl = document.getElementById('peerName');
+  var mediatorPill = document.getElementById('mediatorPill');
+  var monitoredNotice = document.getElementById('monitoredNotice');
+
+  var mySide = null;          // 'homeowner' | 'contractor'
+  var knownIds = {};          // message id -> true
+  var sending = false;
+  var pollTimer = null;
+  var mediatorTimer = null;
+  var conversationClosed = false;
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function firstName(full) {
+    var n = String(full || '').trim().split(/\s+/)[0] || '';
+    return n;
+  }
+
+  function formatTime(iso) {
+    try {
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleString('en-CA', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    } catch (e) { return ''; }
+  }
+
+  function showInvalidState(title, body) {
+    document.querySelector('.composer').style.display = 'none';
+    charCountEl.style.display = 'none';
+    monitoredNotice.style.display = 'none';
+    messagesEl.innerHTML =
+      '<div class="state-wrap"><div class="big">🔒</div><h2>' + escapeHtml(title) + '</h2>' +
+      '<p>' + body + '</p>' +
+      '<p><a href="https://linxservices.ca/contact.html">Contact LinX for a new link</a></p></div>';
+    peerNameEl.textContent = 'LinX Chat';
+    if (pollTimer) clearInterval(pollTimer);
+  }
+
+  function showLoading() {
+    messagesEl.innerHTML =
+      '<div class="state-wrap"><div class="spinner"></div><p>Loading conversation…</p></div>';
+  }
+
+  function showSendError(msg) {
+    sendErrorEl.textContent = msg;
+    sendErrorEl.classList.add('show');
+    clearTimeout(showSendError._t);
+    showSendError._t = setTimeout(function () { sendErrorEl.classList.remove('show'); }, 6000);
+  }
+
+  function renderMessage(m) {
+    var div = document.createElement('div');
+    var sender = m.sender;
+    if (sender === 'system' || sender === 'mediator') {
+      div.className = 'msg centered';
+      var tag = sender === 'mediator' ? '🕊️ LinX Mediator' : 'LinX';
+      div.innerHTML = '<span class="tag">' + escapeHtml(tag) + '</span>' +
+        escapeHtml(m.body).replace(/\n/g, '<br>') +
+        (m.created_at ? '<span class="time">' + escapeHtml(formatTime(m.created_at)) + '</span>' : '');
+    } else if (mySide && sender === mySide) {
+      div.className = 'msg mine';
+      div.innerHTML = escapeHtml(m.body).replace(/\n/g, '<br>') +
+        (m.created_at ? '<span class="time">' + escapeHtml(formatTime(m.created_at)) + '</span>' : '');
+    } else {
+      div.className = 'msg theirs';
+      div.innerHTML = escapeHtml(m.body).replace(/\n/g, '<br>') +
+        (m.created_at ? '<span class="time">' + escapeHtml(formatTime(m.created_at)) + '</span>' : '');
+    }
+    return div;
+  }
+
+  function nearBottom() {
+    return messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 120;
+  }
+
+  function scrollToBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function flashMediatorPill() {
+    mediatorPill.classList.add('show');
+    clearTimeout(mediatorTimer);
+    mediatorTimer = setTimeout(function () { mediatorPill.classList.remove('show'); }, 5000);
+  }
+
+  function apiBase() {
+    return 'https://api.linxservices.ca/api/chat/' + encodeURIComponent(convId) + '/messages';
+  }
+
+  function loadMessages(isPoll) {
+    var url = apiBase() + '?t=' + encodeURIComponent(chatToken);
+    return fetch(url, { credentials: 'omit' })
+      .then(function (res) {
+        if (res.status === 401 || res.status === 404) {
+          showInvalidState(
+            'This chat link is invalid or expired.',
+            'The link may have been mistyped or the conversation may no longer exist.'
+          );
+          return null;
+        }
+        if (res.status === 503) {
+          if (!isPoll) {
+            messagesEl.innerHTML =
+              '<div class="state-wrap"><div class="big">🔧</div><h2>Chat is temporarily unavailable.</h2>' +
+              '<p>Please try again in a few minutes.</p></div>';
+          }
+          return null;
+        }
+        if (!res.ok) throw new Error('load failed: ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (!data || !data.ok) return;
+        if (data.side === 'homeowner' || data.side === 'contractor') {
+          mySide = data.side;
+          var other = mySide === 'homeowner' ? data.contractor_name : data.homeowner_name;
+          var fn = firstName(other);
+          peerNameEl.textContent = fn ? 'Chat with ' + fn : 'LinX Chat';
+          document.title = fn ? 'Chat with ' + fn + ' — LinX' : 'LinX Chat';
+        } else {
+          peerNameEl.textContent = 'LinX Chat';
+        }
+        if (data.status && data.status !== 'open') {
+          conversationClosed = true;
+          composerEl.disabled = true;
+          sendBtn.disabled = true;
+          composerEl.placeholder = 'This conversation is closed.';
+        }
+        var msgs = Array.isArray(data.messages) ? data.messages : [];
+        var stick = nearBottom() || !isPoll;
+        var frag = document.createDocumentFragment();
+        var newMediator = false;
+        var fresh = false;
+        msgs.forEach(function (m) {
+          if (!m || !m.id) return;
+          if (knownIds[m.id]) return;
+          knownIds[m.id] = true;
+          fresh = true;
+          if (m.sender === 'mediator' && isPoll) newMediator = true;
+          frag.appendChild(renderMessage(m));
+        });
+        if (fresh) {
+          var loading = messagesEl.querySelector('.state-wrap');
+          if (loading) messagesEl.innerHTML = '';
+          messagesEl.appendChild(frag);
+          if (stick) scrollToBottom();
+          if (newMediator) flashMediatorPill();
+        } else if (!isPoll && msgs.length === 0) {
+          // No messages at all (shouldn't normally happen — backend seeds a system notice)
+          messagesEl.innerHTML = '';
+        }
+      })
+      .catch(function () {
+        if (!isPoll) {
+          messagesEl.innerHTML =
+            '<div class="state-wrap"><div class="big">📡</div><h2>Couldn\'t load the chat.</h2>' +
+            '<p>Check your connection and <a href="" onclick="location.reload();return false;">try again</a>.</p></div>';
+        }
+      });
+  }
+
+  function sendMessage() {
+    if (sending || conversationClosed) return;
+    var body = composerEl.value.trim().slice(0, MAX_BODY);
+    if (!body) return;
+    sending = true;
+    sendBtn.disabled = true;
+    sendErrorEl.classList.remove('show');
+    fetch(apiBase(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'omit',
+      body: JSON.stringify({ t: chatToken, body: body }),
+    })
+      .then(function (res) {
+        if (res.status === 429) {
+          showSendError('Slow down a little — try again in a minute.');
+          return null;
+        }
+        if (res.status === 409) {
+          conversationClosed = true;
+          composerEl.disabled = true;
+          showSendError('This conversation is closed.');
+          return null;
+        }
+        if (res.status === 401 || res.status === 404) {
+          showInvalidState(
+            'This chat link is invalid or expired.',
+            'The link may have been mistyped or the conversation may no longer exist.'
+          );
+          return null;
+        }
+        if (!res.ok) throw new Error('send failed: ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (data && data.ok) {
+          composerEl.value = '';
+          updateCharCount();
+          autoGrow();
+          loadMessages(false);
+        }
+      })
+      .catch(function () {
+        showSendError('Message didn\'t send — check your connection and try again.');
+      })
+      .finally(function () {
+        sending = false;
+        if (!conversationClosed) sendBtn.disabled = false;
+        composerEl.focus();
+      });
+  }
+
+  function updateCharCount() {
+    var len = composerEl.value.length;
+    charCountEl.textContent = len > 1500 ? len + ' / ' + MAX_BODY : '';
+  }
+
+  function autoGrow() {
+    composerEl.style.height = 'auto';
+    composerEl.style.height = Math.min(composerEl.scrollHeight, 130) + 'px';
+  }
+
+  // ── Wire up ──
+  if (!convId || !chatToken) {
+    showInvalidState(
+      'This chat link is invalid or expired.',
+      'The link appears to be missing its chat details.'
+    );
+  } else {
+    showLoading();
+    loadMessages(false).then(function () {
+      pollTimer = setInterval(function () { loadMessages(true); }, POLL_MS);
+    });
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  composerEl.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  composerEl.addEventListener('input', function () {
+    updateCharCount();
+    autoGrow();
+  });
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) loadMessages(true);
+  });
+})();
+</script>
+</body>
+</html>
