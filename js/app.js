@@ -4,10 +4,41 @@
    contractor supplies accurate information and authorizes publication.
    ============================================================ */
 
-const CONTRACTORS = [];
+const CONTRACTORS = [
+  {
+    id: 'billy-electrical',
+    initials: 'B',
+    name: 'Billy',
+    verified: true,
+    trade: 'Electrical',
+    city: 'Barrie',
+    rating: 0,
+    reviews: 0,
+    bio: 'Licensed electrician in Barrie. ECRA/ESA licence verified, insured. Panel upgrades, lighting, ceiling fans, troubleshooting.',
+    tags: ['Panel Upgrades', 'Lighting', 'Troubleshooting'],
+    rate: null,
+    jobs: 0,
+    online: false
+  },
+  {
+    id: 'joey-roofing',
+    initials: 'J',
+    name: 'Joey',
+    verified: false,
+    trade: 'Roofing',
+    city: 'Elmvale',
+    rating: 0,
+    reviews: 0,
+    bio: 'Roofer serving Elmvale and surrounding areas. Repairs, replacements, honest assessments.',
+    tags: ['Repairs', 'Replacements'],
+    rate: null,
+    jobs: 0,
+    online: false
+  }
+];
 
 const TRADES = ['Plumbing', 'Roofing', 'Electrical', 'HVAC', 'Landscaping', 'Painting', 'Flooring', 'Masonry', 'Carpentry', 'General Contractor'];
-const CITIES = ['Barrie', 'Orillia', 'Midland', 'Collingwood', 'Innisfil'];
+const CITIES = ['Barrie', 'Orillia', 'Midland', 'Collingwood', 'Innisfil', 'Elmvale'];
 
 /* ---------- Shared helpers ---------- */
 
@@ -42,7 +73,7 @@ function contractorCard(c) {
         ${c.tags.map(t => `<span class="tag">${t}</span>`).join('')}
       </div>
       <div class="c-stats-row" style="margin-top:.8rem;">
-        <span><span class="c-rate">$${c.rate}</span>/hr avg</span>
+        <span>${c.rate ? `<span class="c-rate">$${c.rate}</span>/hr avg` : 'Contact for quote'}</span>
         <span>${c.jobs} jobs completed</span>
         <span style="color:${c.online ? 'var(--green)' : 'var(--white-35)'};">${c.online ? '● Online' : 'Offline'}</span>
       </div>
