@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LinX Tips — See the Work Before You Hire</title>
+  <meta name="description" content="Watch real how-to tips from vetted LinX contractors. See the work before you hire. LinX — Canada's contractor network." />
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="LinX"/>
+  <meta property="og:title" content="LinX Tips — See the Work Before You Hire"/>
+  <meta property="og:description" content="Watch real how-to tips from vetted LinX contractors. See the work before you hire."/>
+  <meta property="og:url" content="https://linxservices.ca/tips.html"/>
+  <meta property="og:image" content="https://linxservices.ca/og-image.jpg"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="theme-color" content="#000000" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/linx-design-system.css?v=2" />
+  <style>
+    :root { --nav-h: 52px; }
+    .nav__logo img { height: 30px; }
+    .nav__logo { gap: 10px; }
+    .nav__wordmark { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; color: #fff; white-space: nowrap; }
+    .nav__wordmark span { color: var(--gold); font-weight: 600; }
+
+    .hero { padding: 110px 0 70px; text-align: center; position: relative; isolation: isolate; overflow: hidden;
+      background:
+        radial-gradient(ellipse 60% 42% at 50% 44%, rgba(233,207,126,0.10) 0%, transparent 65%),
+        radial-gradient(ellipse 80% 54% at 50% -20%, rgba(212,168,83,0.12) 0%, transparent 72%),
+        #030306; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 800; letter-spacing: -0.03em; color: #fff; margin: 0 0 14px; }
+    .hero h1 .gold { color: var(--gold); }
+    .hero p { color: rgba(255,255,255,.72); font-size: 1.08rem; max-width: 620px; margin: 0 auto; line-height: 1.6; }
+
+    .filter-bar { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; padding: 26px 16px 6px; }
+    .chip { border: 1px solid rgba(212,168,83,.35); background: transparent; color: #e9cf7e; border-radius: 999px;
+      padding: 9px 20px; font-size: .92rem; font-weight: 600; cursor: pointer; transition: all .2s; font-family: inherit; }
+    .chip:hover { border-color: var(--gold); }
+    .chip.active { background: var(--gold); color: #0a0a0a; border-color: var(--gold); }
+
+    .tips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px;
+      max-width: 1180px; margin: 0 auto; padding: 30px 20px 20px; }
+    .tip-card { background: rgba(255,255,255,.03); border: 1px solid rgba(212,168,83,.18); border-radius: 16px;
+      overflow: hidden; transition: transform .2s, border-color .2s; }
+    .tip-card:hover { transform: translateY(-4px); border-color: rgba(212,168,83,.45); }
+    .tip-video { position: relative; aspect-ratio: 16/9; background: #000; }
+    .tip-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .tip-body { padding: 18px 20px 20px; }
+    .tip-trade { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 8px; }
+    .tip-body h3 { color: #fff; font-size: 1.08rem; margin: 0 0 8px; line-height: 1.35; }
+    .tip-body p { color: rgba(255,255,255,.6); font-size: .92rem; line-height: 1.55; margin: 0 0 16px; }
+    .tip-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .tip-who { color: rgba(255,255,255,.75); font-size: .88rem; }
+    .tip-who strong { color: #fff; }
+
+    .empty-state { text-align: center; padding: 70px 20px; max-width: 560px; margin: 0 auto; }
+    .empty-state .big { font-size: 3rem; margin-bottom: 14px; }
+    .empty-state h2 { color: #fff; font-size: 1.5rem; margin: 0 0 10px; }
+    .empty-state p { color: rgba(255,255,255,.6); line-height: 1.6; margin: 0 0 24px; }
+
+    .how { max-width: 1180px; margin: 0 auto; padding: 60px 20px 30px; }
+    .how h2 { text-align: center; color: #fff; font-size: 1.7rem; margin: 0 0 34px; }
+    .how h2 .gold { color: var(--gold); }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px; }
+    .step { background: rgba(255,255,255,.03); border: 1px solid rgba(212,168,83,.16); border-radius: 14px; padding: 26px 24px; }
+    .step .num { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%;
+      background: var(--gold); color: #0a0a0a; font-weight: 800; margin-bottom: 14px; }
+    .step h3 { color: #fff; margin: 0 0 8px; font-size: 1.05rem; }
+    .step p { color: rgba(255,255,255,.6); font-size: .93rem; line-height: 1.55; margin: 0; }
+
+    .submit-wrap { max-width: 640px; margin: 0 auto; padding: 60px 20px 90px; }
+    .submit-wrap h2 { text-align: center; color: #fff; font-size: 1.7rem; margin: 0 0 10px; }
+    .submit-wrap h2 .gold { color: var(--gold); }
+    .submit-wrap > p { text-align: center; color: rgba(255,255,255,.6); margin: 0 0 30px; line-height: 1.6; }
+    .form-card { background: rgba(255,255,255,.03); border: 1px solid rgba(212,168,83,.2); border-radius: 16px; padding: 30px; }
+    .field { margin-bottom: 18px; }
+    .field label { display: block; color: #fff; font-weight: 600; font-size: .92rem; margin-bottom: 7px; }
+    .field input, .field select, .field textarea { width: 100%; box-sizing: border-box; background: rgba(0,0,0,.4);
+      border: 1px solid rgba(212,168,83,.25); border-radius: 10px; color: #fff; padding: 12px 14px;
+      font-size: .95rem; font-family: inherit; }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--gold); }
+    .field textarea { min-height: 90px; resize: vertical; }
+    .field .hint { color: rgba(255,255,255,.45); font-size: .82rem; margin-top: 6px; }
+    .form-success { display: none; text-align: center; padding: 30px 10px; }
+    .form-success h3 { color: var(--gold); margin: 0 0 10px; }
+    .form-success p { color: rgba(255,255,255,.65); line-height: 1.6; }
+
+    footer { border-top: 1px solid rgba(212,168,83,.15); padding: 34px 20px; text-align: center; color: rgba(255,255,255,.45); font-size: .88rem; }
+    footer a { color: var(--gold); text-decoration: none; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #111; color: #fff;
+      border: 1px solid rgba(212,168,83,.4); padding: 12px 22px; border-radius: 10px; font-size: .92rem;
+      opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 999; max-width: 90vw; }
+    .toast.show { opacity: 1; }
+    .toast.error { border-color: #e5484d; }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"><span class="nav__wordmark">LinX <span>Services</span></span></a>
+  <ul class="nav__links" aria-label="Primary navigation">
+    <li><a href="about.html">About</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="tips.html" aria-current="page">Tips</a></li>
+    <li><a href="jobs.html">Job Board</a></li>
+  </ul>
+  <div class="nav__actions">
+    <a href="post-job.html" class="btn btn--primary btn--sm">Post a Project — Free</a>
+    <a href="pricing.html" class="btn btn--outline btn--sm">Pricing</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <h1>See the work <span class="gold">before you hire.</span></h1>
+    <p>Real how-to tips from vetted LinX contractors. Watch them work, learn something useful — and when you need the real thing, you already know who to call.</p>
+  </div>
+</section>
+
+<div class="filter-bar" id="filters">
+  <button class="chip active" data-trade="all">All Tips</button>
+  <button class="chip" data-trade="electrical">⚡ Electrical</button>
+  <button class="chip" data-trade="roofing">🏠 Roofing</button>
+  <button class="chip" data-trade="handyman">🔧 Handyman</button>
+</div>
+
+<div class="tips-grid" id="tipsGrid"></div>
+
+<div class="empty-state" id="emptyState">
+  <div class="big">🎬</div>
+  <h2>The first tips are on their way</h2>
+  <p>Our contractors are filming their best how-to tips right now. Check back soon — or if you're a LinX contractor, be the first to post one below.</p>
+  <a href="#submit-tip" class="btn btn--primary">Submit a Tip</a>
+</div>
+
+<section class="how">
+  <h2>How LinX <span class="gold">Tips</span> works</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="num">1</div>
+      <h3>Contractors share their craft</h3>
+      <p>Vetted LinX pros post short how-to videos — the tips, tricks, and warning signs from real job sites.</p>
+    </div>
+    <div class="step">
+      <div class="num">2</div>
+      <h3>Homeowners watch &amp; learn</h3>
+      <p>Pick up something useful for free. And you get to see exactly how each contractor works before you ever hire them.</p>
+    </div>
+    <div class="step">
+      <div class="num">3</div>
+      <h3>Need the real thing? Post your project</h3>
+      <p>When the job's too big for DIY, post it free on LinX and get matched with the contractor you already trust.</p>
+    </div>
+  </div>
+</section>
+
+<section class="submit-wrap" id="submit-tip">
+  <h2>Are you a LinX <span class="gold">contractor?</span></h2>
+  <p>Film a quick tip on your phone, upload it to YouTube, and drop the link below. We'll review it and feature it here — free exposure to every homeowner watching.</p>
+  <div class="form-card">
+    <form id="tipForm">
+      <div class="field">
+        <label for="t-name">Your name</label>
+        <input id="t-name" type="text" placeholder="e.g. Billy S." required />
+      </div>
+      <div class="field">
+        <label for="t-trade">Trade</label>
+        <select id="t-trade" required>
+          <option value="">Select your trade…</option>
+          <option value="electrical">Electrical</option>
+          <option value="roofing">Roofing</option>
+          <option value="handyman">Handyman</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="t-url">YouTube video URL</label>
+        <input id="t-url" type="url" placeholder="https://youtube.com/watch?v=…" required />
+        <div class="hint">Upload your tip to YouTube (unlisted is fine) and paste the link here.</div>
+      </div>
+      <div class="field">
+        <label for="t-title">Tip title</label>
+        <input id="t-title" type="text" placeholder="e.g. How to tell if your panel is overloaded" required />
+      </div>
+      <div class="field">
+        <label for="t-desc">Short description</label>
+        <textarea id="t-desc" placeholder="What will homeowners learn from this tip?"></textarea>
+      </div>
+      <button type="submit" class="btn btn--primary" style="width:100%">Submit My Tip</button>
+    </form>
+    <div class="form-success" id="tipSuccess">
+      <h3>Tip received! 🎉</h3>
+      <p>Thanks — we'll review your video and feature it here once it's approved. Keep the tips coming.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <a href="index.html">LinX Services</a> — Canada's Contractor Network · Barrie &amp; Simcoe County<br/>
+  <a href="post-job.html">Post a Project — Free</a> · <a href="contact.html">Contact</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── TIP DATA ─────────────────────────────
+   To feature a tip, add an entry here:
+   { id: 'YOUTUBE_VIDEO_ID', trade: 'electrical'|'roofing'|'handyman',
+     title: '...', desc: '...', name: 'Contractor first name + last initial' }
+   Only real, reviewed contractor videos go here — no placeholders.
+──────────────────────────────────────────── */
+const TIPS = [];
+
+const grid = document.getElementById('tipsGrid');
+const emptyState = document.getElementById('emptyState');
+let activeTrade = 'all';
+
+function youtubeId(url) {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function renderTips() {
+  const list = TIPS.filter(t => activeTrade === 'all' || t.trade === activeTrade);
+  grid.innerHTML = '';
+  emptyState.style.display = TIPS.length === 0 ? 'block' : 'none';
+  grid.style.display = list.length === 0 && TIPS.length > 0 ? 'none' : 'grid';
+  list.forEach(t => {
+    const card = document.createElement('article');
+    card.className = 'tip-card';
+    card.innerHTML =
+      '<div class="tip-video"><iframe src="https://www.youtube.com/embed/' + t.id +
+      '" title="' + escapeHtml(t.title) + '" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>' +
+      '<div class="tip-body"><span class="tip-trade">' + tradeLabel(t.trade) + '</span>' +
+      '<h3>' + escapeHtml(t.title) + '</h3>' +
+      '<p>' + escapeHtml(t.desc) + '</p>' +
+      '<div class="tip-meta"><span class="tip-who">by <strong>' + escapeHtml(t.name) + '</strong> · LinX vetted</span>' +
+      '<a class="btn btn--primary btn--sm" href="post-job.html">Hire</a></div></div>';
+    grid.appendChild(card);
+  });
+}
+
+function tradeLabel(trade) {
+  return { electrical: '⚡ Electrical', roofing: '🏠 Roofing', handyman: '🔧 Handyman' }[trade] || trade;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+document.getElementById('filters').addEventListener('click', e => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  activeTrade = btn.dataset.trade;
+  renderTips();
+});
+
+function showToast(msg, isError) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+document.getElementById('tipForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = document.getElementById('t-name').value.trim();
+  const trade = document.getElementById('t-trade').value;
+  const url = document.getElementById('t-url').value.trim();
+  const title = document.getElementById('t-title').value.trim();
+  const desc = document.getElementById('t-desc').value.trim();
+  if (!name || !trade || !url || !title) { showToast('Please fill in every required field.', true); return; }
+  const vid = youtubeId(url);
+  if (!vid) { showToast('That YouTube link doesn\'t look right — paste the full watch URL.', true); return; }
+
+  const message = '[TIP SUBMISSION] ' + title + ' — ' + trade + ' by ' + name +
+    ' | Video: ' + url + (desc ? ' | ' + desc : '');
+  try {
+    const res = await fetch('https://api.linxservices.ca/api/contacts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name, message,
+        meta: { role: 'tip_submission', first_message: message, youtube_id: vid, trade, title, submitted_at: Date.now() }
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Submission failed.');
+    document.getElementById('tipForm').style.display = 'none';
+    document.getElementById('tipSuccess').style.display = 'block';
+  } catch (err) {
+    showToast(err.message || 'Something went wrong sending your tip.', true);
+  }
+});
+
+renderTips();
+</script>
+</body>
+</html>
