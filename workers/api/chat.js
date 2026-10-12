@@ -139,7 +139,7 @@ export async function sendMessage(env, conversationId, side, rawBody) {
   return { ok: true, id };
 }
 
-export async function listConversations(env) {
+export async function listConversations(env, adminId = null) {
   const rows = await env.DB.prepare(`
     SELECT c.id, c.lead_id, c.homeowner_name, c.contractor_name, c.status, c.created_at,
            (SELECT COUNT(*) FROM chat_messages m WHERE m.conversation_id = c.id) AS message_count,
@@ -147,7 +147,96 @@ export async function listConversations(env) {
            (SELECT m.created_at FROM chat_messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) AS last_message_at
     FROM chat_conversations c ORDER BY c.created_at DESC LIMIT 100
   `).all();
-  return rows.results || [];
+  const list = rows.results || [];
+  if (!adminId) return list.map(c => ({ ...c, unread_count: 0 }));
+  // One query: unread = homeowner/contractor/mediator messages newer than this admin's last read.
+  let unreadMap = {};
+  try {
+    const unreadRows = await env.DB.prepare(`
+      SELECT m.conversation_id AS cid, COUNT(*) AS n FROM chat_messages m
+      LEFT JOIN admin_chat_read r ON r.conversation_id = m.conversation_id AND r.admin_id = ?
+      WHERE m.sender IN ('homeowner', 'contractor', 'mediator')
+        AND (r.last_read_at IS NULL OR m.created_at > r.last_read_at)
+      GROUP BY m.conversation_id
+    `).bind(adminId).all();
+    for (const r of (unreadRows.results || [])) unreadMap[r.cid] = r.n;
+  } catch (_) {
+    // admin_chat_read table may not exist yet — treat everything as read.
+  }
+  return list.map(c => ({ ...c, unread_count: unreadMap[c.id] || 0 }));
+}
+
+// Record that an admin has read a conversation (drives unread badges).
+export async function markConversationRead(env, conversationId, adminId) {
+  if (!adminId) return;
+  try {
+    await env.DB.prepare(`
+      INSERT INTO admin_chat_read (conversation_id, admin_id, last_read_at)
+      VALUES (?, ?, datetime('now'))
+      ON CONFLICT (conversation_id, admin_id) DO UPDATE SET last_read_at = datetime('now')
+    `).bind(conversationId, adminId).run();
+  } catch (_) {
+    // Table may not exist yet — non-fatal.
+  }
+}
+
+// Email nudge to Darren when a homeowner/contractor message sits unread.
+// Fires at most once per 15 minutes per conversation, and never when an
+// admin has read the conversation in the last 15 minutes (they're watching).
+// Uses the same Resend owner-notification env as the rest of the platform.
+export async function maybeNudgeAdminForChat(env, conversationId, sender, bodyPreview) {
+  try {
+    if (env.APPLICATION_NOTIFICATION_ENABLED !== 'true') return;
+    const apiKey = String(env.RESEND_API_KEY || '').trim();
+    const from = String(env.RESEND_FROM_EMAIL || '').trim();
+    const to = String(env.OWNER_NOTIFICATION_EMAIL || '').trim();
+    if (!apiKey || !from || !to || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return;
+
+    const conv = await env.DB.prepare(
+      'SELECT homeowner_name, contractor_name, last_admin_nudge_at FROM chat_conversations WHERE id = ?'
+    ).bind(conversationId).first();
+    if (!conv) return;
+    const now = Date.now();
+    if (conv.last_admin_nudge_at) {
+      const lastNudge = Date.parse(String(conv.last_admin_nudge_at).replace(' ', 'T') + 'Z');
+      if (Number.isFinite(lastNudge) && now - lastNudge < 15 * 60 * 1000) return;
+    }
+    let lastRead = null;
+    try {
+      const r = await env.DB.prepare(
+        'SELECT MAX(last_read_at) AS lr FROM admin_chat_read WHERE conversation_id = ?'
+      ).bind(conversationId).first();
+      lastRead = r?.lr || null;
+    } catch (_) { /* table may not exist yet */ }
+    if (lastRead) {
+      const lr = Date.parse(String(lastRead).replace(' ', 'T') + 'Z');
+      if (Number.isFinite(lr) && now - lr < 15 * 60 * 1000) return;
+    }
+
+    const who = sender === 'homeowner' ? (conv.homeowner_name || 'Homeowner') : (conv.contractor_name || 'Contractor');
+    const preview = String(bodyPreview || '').slice(0, 300);
+    const subject = `LINX: Unread chat message — ${conv.homeowner_name || 'homeowner'} / ${conv.contractor_name || 'contractor'}`;
+    const text = [
+      'A new chat message has not been read in the LinX admin panel.',
+      '',
+      `Conversation: ${conv.homeowner_name || '—'} / ${conv.contractor_name || '—'}`,
+      `From: ${who}`,
+      `Message: ${preview}`,
+      '',
+      'Open the admin Messages panel to read and reply.',
+    ].join('\n');
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to: [to], subject, text }),
+    });
+    if (res.ok) {
+      await env.DB.prepare("UPDATE chat_conversations SET last_admin_nudge_at = datetime('now') WHERE id = ?")
+        .bind(conversationId).run();
+    }
+  } catch (_) {
+    // Nudge is best-effort — never breaks chat.
+  }
 }
 
 export async function closeConversation(env, conversationId) {

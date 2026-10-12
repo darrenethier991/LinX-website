@@ -209,6 +209,7 @@
     .log-area { background: #0A0A0A; border: 1px solid #2A2A2A; }
     .tab.active { border-color: #C8A951; color: #C8A951; }
     .tab:hover { border-color: #C8A951; color: #C8A951; }
+    .tips-filter.active { border-color: #C8A951; color: #C8A951; }
     .bar-fill { background: #C8A951; }
     input, textarea, select { background: #141414; border: 1px solid #2A2A2A; color: #F5F5F5; }
     input:focus, textarea:focus, select:focus { border-color: #C8A951; }
@@ -275,6 +276,19 @@
         </a>
         <a class="sidebar-link" data-panel="crm">
           <span class="sidebar-icon">👥</span> CRM Contacts
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Contractors</div>
+        <a class="sidebar-link" data-panel="contractor-app">
+          <span class="sidebar-icon">📱</span> Contractor App
+        </a>
+        <a class="sidebar-link" data-panel="messages">
+          <span class="sidebar-icon">💬</span> Messages
+          <span id="msg-unread-badge" style="display:none;margin-left:auto;background:#e5484d;color:#fff;font-size:10px;font-weight:800;min-width:20px;height:20px;line-height:20px;text-align:center;border-radius:10px;padding:0 6px"></span>
+        </a>
+        <a class="sidebar-link" data-panel="tips-review">
+          <span class="sidebar-icon">🎬</span> Tips Review
         </a>
       </div>
       <div class="sidebar-section">
@@ -569,6 +583,151 @@
             <button class="btn btn--ghost btn--sm" id="crm-prev">← Prev</button>
             <button class="btn btn--ghost btn--sm" id="crm-next">Next →</button>
           </div>
+        </div>
+      </div>
+
+      <!-- ── CONTRACTOR APP MIRROR ── -->
+      <div class="panel" id="panel-contractor-app">
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">Contractor App Mirror</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">See exactly what each contractor sees in their app — read-only, no actions</p>
+
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-header">
+            <div class="card-title">Contractor</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <select class="form-select" id="cam-picker" style="flex:1;min-width:240px">
+              <option value="">Select a contractor…</option>
+            </select>
+            <button class="btn btn--primary btn--sm" id="cam-load-btn">View</button>
+          </div>
+        </div>
+
+        <div id="cam-body" style="display:none">
+          <div class="card" style="margin-bottom:18px">
+            <div class="card-header">
+              <div class="card-title" id="cam-name">—</div>
+              <span id="cam-active" class="badge"></span>
+            </div>
+            <div id="cam-profile" style="font-size:13px;color:var(--text-muted);line-height:1.7"></div>
+          </div>
+
+          <div class="stat-grid" style="margin-bottom:18px">
+            <div class="stat-card"><div class="label">New Leads</div><div class="value" id="cam-leads-count">—</div></div>
+            <div class="stat-card"><div class="label">Jobs</div><div class="value" id="cam-jobs-count">—</div></div>
+            <div class="stat-card"><div class="label">Pending Payouts</div><div class="value" id="cam-pending">—</div></div>
+            <div class="stat-card"><div class="label">Paid Out</div><div class="value" id="cam-paid">—</div></div>
+          </div>
+
+          <div class="card" style="margin-bottom:18px">
+            <div class="card-header"><div class="card-title">Leads</div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Homeowner</th><th>Phone</th><th>Trade</th><th>Status</th><th>Description</th><th>Received</th></tr></thead>
+                <tbody id="cam-leads-tbody">
+                  <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-dim)">No leads assigned.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:18px">
+            <div class="card-header"><div class="card-title">Jobs</div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Title</th><th>Address</th><th>Step</th><th>Scheduled</th><th>Updated</th></tr></thead>
+                <tbody id="cam-jobs-tbody">
+                  <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-dim)">No jobs yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Payouts</div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Amount</th><th>Status</th><th>Paid</th><th>Created</th></tr></thead>
+                <tbody id="cam-payouts-tbody">
+                  <tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text-dim)">No payouts yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MESSAGES ── -->
+      <div class="panel" id="panel-messages">
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">Messages</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Contractor↔homeowner conversations — monitored by LinX, AI mediator on watch</p>
+
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-header">
+            <div class="card-title">Conversations</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn--primary btn--sm" id="msg-new-btn">＋ New conversation</button>
+              <button class="btn btn--outline btn--sm" id="msg-refresh-btn">Refresh</button>
+            </div>
+          </div>
+          <div id="msg-new-form" style="display:none;padding:16px;border-bottom:1px solid var(--border)">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px">
+              <select class="form-select" id="msg-new-lead">
+                <option value="">No lead (optional)…</option>
+              </select>
+              <input class="form-input" id="msg-new-homeowner" placeholder="Homeowner first name" />
+              <select class="form-select" id="msg-new-contractor">
+                <option value="">Select contractor…</option>
+              </select>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn--primary btn--sm" id="msg-new-create">Start conversation</button>
+              <button class="btn btn--ghost btn--sm" id="msg-new-cancel">Cancel</button>
+            </div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:8px">Creates the chat and opens it here. Homeowner and contractor join via their private links — nothing is sent until you write it.</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Homeowner</th><th>Contractor</th><th>Messages</th><th>Flagged</th><th>Last activity</th></tr></thead>
+              <tbody id="msg-tbody">
+                <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-dim)">No conversations yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" id="msg-thread-card" style="display:none">
+          <div class="card-header">
+            <div class="card-title" id="msg-thread-title">Conversation</div>
+            <button class="btn btn--primary btn--sm" id="msg-draft-btn">Draft reply with Clam Code</button>
+          </div>
+          <div id="msg-thread" style="max-height:420px;overflow-y:auto"></div>
+          <div id="msg-draft-wrap" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+            <div style="font-size:13px;font-weight:700;margin-bottom:8px">Clam Code draft — review before sending</div>
+            <textarea class="form-input" id="msg-draft" rows="4" style="width:100%;margin-bottom:10px"></textarea>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn--primary btn--sm" id="msg-send-btn">Send as LinX</button>
+              <button class="btn btn--ghost btn--sm" id="msg-discard-btn">Discard</button>
+            </div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:8px">Nothing sends without your approval — the draft above is only a suggestion until you press Send.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TIPS REVIEW ── -->
+      <div class="panel" id="panel-tips-review">
+        <h1 style="font-size:20px;font-weight:800;margin-bottom:6px">Tips Review</h1>
+        <p style="color:var(--text-muted);margin-bottom:24px;font-size:12px">Contractor tip submissions — approve to publish on linxservices.ca/tips</p>
+
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="btn btn--outline btn--sm tips-filter active" data-status="pending">Pending</button>
+          <button class="btn btn--outline btn--sm tips-filter" data-status="approved">Approved</button>
+          <button class="btn btn--outline btn--sm tips-filter" data-status="rejected">Rejected</button>
+          <button class="btn btn--ghost btn--sm" id="tips-refresh-btn" style="margin-left:auto">Refresh</button>
+        </div>
+
+        <div id="tips-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
+          <div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-dim)">No tips awaiting review.</div>
         </div>
       </div>
 
@@ -922,6 +1081,7 @@
     document.getElementById('nav-user').textContent = username || 'admin';
     initDashboard();
     activatePanel(new URLSearchParams(window.location.search).get('panel') || 'dashboard', false);
+    if (typeof loadChatConversations === 'function') loadChatConversations();
   }
 
   // ── SIDEBAR NAVIGATION ───────────────────────────────────────────────────────
@@ -944,6 +1104,9 @@
     else if (panelName === 'echoforge') loadAiAgents();
     else if (panelName === 'shortener' && typeof loadShortLinks === 'function') loadShortLinks();
     else if (panelName === 'leads') loadContractorLeads();
+    else if (panelName === 'contractor-app') loadContractorAppPanel();
+    else if (panelName === 'messages') loadChatConversations();
+    else if (panelName === 'tips-review') loadTipsReview();
   }
 
   document.querySelectorAll('.sidebar-link').forEach(link => {
@@ -1460,6 +1623,369 @@
     finally { create.disabled = false; create.textContent = 'Create'; }
   });
   document.getElementById('shn-tbody').addEventListener('click', event => { const url = event.target?.dataset?.copyLink; if (url && navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('Short link copied.')); });
+
+  // ── CONTRACTOR APP MIRROR ────────────────────────────────────────────────
+  async function loadContractorAppPanel() {
+    const sel = document.getElementById('cam-picker');
+    if (!sel) return;
+    try {
+      const res = await apiFetch('/api/admin/contractors');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Unable to load contractors.');
+      const list = data.contractors || [];
+      sel.innerHTML = '<option value="">Select a contractor…</option>' + list.map(c =>
+        `<option value="${escHtml(c.id)}">${escHtml(c.display_name)} — ${escHtml(c.trade)}${c.active ? '' : ' (inactive)'}</option>`
+      ).join('');
+    } catch (err) { showToast(err.message || 'Unable to load contractors.'); }
+  }
+
+  async function loadContractorMirror() {
+    const sel = document.getElementById('cam-picker');
+    const id = sel ? sel.value : '';
+    if (!id) { showToast('Pick a contractor first.'); return; }
+    const btn = document.getElementById('cam-load-btn');
+    btn.disabled = true; btn.textContent = 'Loading…';
+    try {
+      const get = async (kind) => {
+        const res = await apiFetch(`/api/admin/contractors/${encodeURIComponent(id)}/${kind}`);
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || `Unable to load ${kind}.`);
+        return data;
+      };
+      const [p, l, j, e] = await Promise.all([
+        get('profile'), get('leads'), get('jobs'), get('earnings'),
+      ]);
+      const c = p.contractor || {};
+      document.getElementById('cam-body').style.display = 'block';
+      document.getElementById('cam-name').textContent = c.display_name || '—';
+      const activeBadge = document.getElementById('cam-active');
+      activeBadge.className = 'badge ' + (c.active ? 'badge--green' : 'badge--red');
+      activeBadge.textContent = c.active ? 'Active' : 'Inactive';
+      document.getElementById('cam-profile').innerHTML =
+        `<div><strong style="color:var(--text)">Trade:</strong> ${escHtml(c.trade_label || c.trade || '—')}</div>` +
+        `<div><strong style="color:var(--text)">Email:</strong> ${escHtml(c.email || '—')}</div>` +
+        `<div><strong style="color:var(--text)">Phone:</strong> ${escHtml(c.phone || '—')}</div>` +
+        `<div><strong style="color:var(--text)">On LinX since:</strong> ${c.created_at ? new Date(c.created_at + 'Z').toLocaleDateString() : '—'}</div>`;
+
+      const leads = l.leads || [];
+      const jobs = j.jobs || [];
+      const payouts = e.payouts || [];
+      document.getElementById('cam-leads-count').textContent = leads.length;
+      document.getElementById('cam-jobs-count').textContent = jobs.length;
+      document.getElementById('cam-pending').textContent = '$' + ((e.pending_total_cents || 0) / 100).toFixed(2);
+      document.getElementById('cam-paid').textContent = '$' + ((e.paid_total_cents || 0) / 100).toFixed(2);
+
+      document.getElementById('cam-leads-tbody').innerHTML = leads.length ? leads.map(x => `
+        <tr><td>${escHtml(x.homeowner_name || '—')}</td><td class="td-mono">${escHtml(x.phone || '—')}</td>
+        <td>${escHtml(x.trade || '—')}</td><td>${escHtml(x.status || '—')}</td>
+        <td title="${escHtml(x.description || '')}">${escHtml((x.description || '').slice(0, 80))}${(x.description || '').length > 80 ? '…' : ''}</td>
+        <td>${x.created_at ? new Date(x.created_at + 'Z').toLocaleDateString() : '—'}</td></tr>`).join('')
+        : '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-dim)">No leads assigned.</td></tr>';
+
+      document.getElementById('cam-jobs-tbody').innerHTML = jobs.length ? jobs.map(x => `
+        <tr><td>${escHtml(x.title || '—')}</td><td>${escHtml(x.address || '—')}</td>
+        <td>Step ${escHtml(String(x.status_step ?? '—'))}</td>
+        <td>${escHtml(x.scheduled_date || '—')}</td>
+        <td>${x.updated_at ? new Date(x.updated_at + 'Z').toLocaleDateString() : '—'}</td></tr>`).join('')
+        : '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-dim)">No jobs yet.</td></tr>';
+
+      document.getElementById('cam-payouts-tbody').innerHTML = payouts.length ? payouts.map(x => `
+        <tr><td>$${((x.amount_cents || 0) / 100).toFixed(2)}</td><td>${escHtml(x.status || '—')}</td>
+        <td>${x.paid_at ? new Date(x.paid_at + 'Z').toLocaleDateString() : '—'}</td>
+        <td>${x.created_at ? new Date(x.created_at + 'Z').toLocaleDateString() : '—'}</td></tr>`).join('')
+        : '<tr><td colspan="4" style="text-align:center;padding:32px;color:var(--text-dim)">No payouts yet.</td></tr>';
+    } catch (err) {
+      showToast(err.message || 'Unable to load contractor data.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'View';
+    }
+  }
+  document.getElementById('cam-load-btn').addEventListener('click', loadContractorMirror);
+
+  // ── MESSAGES ───────────────────────────────────────────────────────────────
+  const msgMeta = {};
+  let msgCurrentId = null;
+
+  function updateMsgBadge(total) {
+    const badge = document.getElementById('msg-unread-badge');
+    if (!badge) return;
+    if (total > 0) {
+      badge.style.display = 'inline-block';
+      badge.textContent = total > 99 ? '99+' : String(total);
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  function senderLabel(sender, meta) {
+    if (sender === 'homeowner') return 'Homeowner' + (meta.homeowner_name ? ` (${meta.homeowner_name})` : '');
+    if (sender === 'contractor') return meta.contractor_name || 'Contractor';
+    if (sender === 'mediator') return 'AI mediator';
+    return 'LinX';
+  }
+  function senderColor(sender) {
+    if (sender === 'homeowner') return '#7dd3fc';
+    if (sender === 'contractor') return 'var(--gold)';
+    if (sender === 'mediator') return '#c4b5fd';
+    return 'var(--text-dim)';
+  }
+
+  async function loadChatConversations() {
+    const tbody = document.getElementById('msg-tbody');
+    if (!tbody) return;
+    try {
+      const res = await apiFetch('/api/admin/chat/conversations');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Unable to load conversations.');
+      const list = data.conversations || [];
+      list.forEach(c => { msgMeta[c.id] = c; });
+      updateMsgBadge(list.reduce((n, c) => n + (c.unread_count || 0), 0));
+      tbody.innerHTML = list.length ? list.map(c => `
+        <tr data-conv="${escHtml(c.id)}" style="cursor:pointer;${(c.unread_count || 0) > 0 ? 'font-weight:700' : ''}">
+          <td>${escHtml(c.homeowner_name || '—')}</td>
+          <td>${escHtml(c.contractor_name || '—')}</td>
+          <td>${c.message_count || 0}</td>
+          <td>${c.flagged_count ? `<span class="badge badge--red">${c.flagged_count} flagged</span>` : '—'}</td>
+          <td>${(c.unread_count || 0) > 0 ? `<span class="badge badge--gold">${c.unread_count} new</span> ` : ''}${c.last_message_at ? new Date(c.last_message_at + 'Z').toLocaleString() : '—'}</td>
+        </tr>`).join('')
+        : '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-dim)">No conversations yet.</td></tr>';
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:32px;color:#fecaca">${escHtml(err.message || 'Unable to load conversations.')}</td></tr>`;
+    }
+  }
+
+  async function openConversation(id) {
+    msgCurrentId = id;
+    const meta = msgMeta[id] || {};
+    document.getElementById('msg-draft-wrap').style.display = 'none';
+    document.getElementById('msg-draft').value = '';
+    try {
+      const res = await apiFetch(`/api/admin/chat/conversations/${encodeURIComponent(id)}/messages`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Unable to load messages.');
+      const msgs = data.messages || [];
+      document.getElementById('msg-thread-title').textContent =
+        `Conversation — ${meta.homeowner_name || 'homeowner'} / ${meta.contractor_name || 'contractor'}`;
+      document.getElementById('msg-thread-card').style.display = 'block';
+      document.getElementById('msg-thread').innerHTML = msgs.length ? msgs.map(m => `
+        <div style="margin-bottom:10px;padding:10px 12px;border-radius:10px;background:${m.flagged ? 'rgba(229,72,77,.10)' : 'rgba(255,255,255,.03)'};border:1px solid ${m.flagged ? 'rgba(229,72,77,.45)' : 'var(--border)'}">
+          <div style="font-size:11px;font-weight:700;color:${senderColor(m.sender)};margin-bottom:4px">${escHtml(senderLabel(m.sender, meta))}${m.flagged ? ' ⚠️ flagged for review' : ''}</div>
+          <div style="font-size:13px;color:var(--text);white-space:pre-wrap">${escHtml(m.body)}</div>
+        </div>`).join('')
+        : '<div style="text-align:center;padding:24px;color:var(--text-dim)">No messages yet.</div>';
+      document.getElementById('msg-thread-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      loadChatConversations();
+    } catch (err) {
+      showToast(err.message || 'Unable to load messages.');
+    }
+  }
+
+  document.getElementById('msg-tbody').addEventListener('click', (e) => {
+    const tr = e.target.closest('tr[data-conv]');
+    if (tr) openConversation(tr.dataset.conv);
+  });
+  document.getElementById('msg-refresh-btn').addEventListener('click', loadChatConversations);
+
+  // Poll for new messages while the Messages panel is open.
+  setInterval(() => {
+    const panel = document.getElementById('panel-messages');
+    if (panel && panel.classList.contains('active')) loadChatConversations();
+  }, 60000);
+
+  // ── Clam Code draft reply ──
+  document.getElementById('msg-draft-btn').addEventListener('click', async () => {
+    if (!msgCurrentId) { showToast('Open a conversation first.'); return; }
+    const btn = document.getElementById('msg-draft-btn');
+    btn.disabled = true; btn.textContent = 'Drafting…';
+    try {
+      const res = await apiFetch(`/api/admin/chat/conversations/${encodeURIComponent(msgCurrentId)}/messages`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Unable to load messages.');
+      const msgs = (data.messages || []).filter(m => m.sender === 'homeowner' || m.sender === 'contractor').slice(-8);
+      if (!msgs.length) { showToast('No homeowner or contractor messages to reply to yet.'); return; }
+      const meta = msgMeta[msgCurrentId] || {};
+      const transcript = msgs.map(m => `${m.sender}: ${m.body}`).join('\n').slice(0, 3500);
+      const prompt = `You are drafting a reply as Darren, the owner of LinX Services in Barrie, Ontario. Write a short reply (2-4 sentences) in Darren's voice: first-name casual, plainspoken, direct, no corporate fluff. This goes into a monitored chat between a homeowner (${meta.homeowner_name || 'the homeowner'}) and a contractor (${meta.contractor_name || 'the contractor'}). Be helpful and fair to both sides. Reply ONLY with the draft text — no preamble, no quotes.\n\nRecent transcript:\n${transcript}`;
+      const cc = await apiFetch('/api/clam-code/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+      });
+      const ccData = await cc.json().catch(() => ({}));
+      if (!cc.ok || !ccData.ok) throw new Error(ccData.error || 'Clam Code could not draft that reply.');
+      document.getElementById('msg-draft').value = (ccData.message && ccData.message.content) || '';
+      document.getElementById('msg-draft-wrap').style.display = 'block';
+      showToast('Draft ready — review it before sending.', 'success');
+    } catch (err) {
+      showToast(err.message || 'Unable to draft reply.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Draft reply with Clam Code';
+    }
+  });
+
+  document.getElementById('msg-send-btn').addEventListener('click', async () => {
+    const body = document.getElementById('msg-draft').value.trim();
+    if (!body) { showToast('The draft is empty — write something or discard it.'); return; }
+    if (!msgCurrentId) { showToast('Open a conversation first.'); return; }
+    const btn = document.getElementById('msg-send-btn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const res = await apiFetch(`/api/admin/chat/conversations/${encodeURIComponent(msgCurrentId)}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Unable to send message.');
+      document.getElementById('msg-draft-wrap').style.display = 'none';
+      document.getElementById('msg-draft').value = '';
+      showToast('Reply sent.', 'success');
+      await openConversation(msgCurrentId);
+    } catch (err) {
+      showToast(err.message || 'Unable to send message.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Send as LinX';
+    }
+  });
+
+  document.getElementById('msg-discard-btn').addEventListener('click', () => {
+    document.getElementById('msg-draft-wrap').style.display = 'none';
+    document.getElementById('msg-draft').value = '';
+  });
+
+  // ── New conversation ──
+  async function loadMsgNewPickers() {
+    try {
+      const res = await apiFetch('/api/admin/contractors');
+      const data = await res.json().catch(() => ({}));
+      const list = res.ok ? (data.contractors || []) : [];
+      document.getElementById('msg-new-contractor').innerHTML =
+        '<option value="">Select contractor…</option>' + list.map(c =>
+          `<option value="${escHtml(c.display_name)}">${escHtml(c.display_name)} — ${escHtml(c.trade)}</option>`).join('');
+    } catch (_) { /* leave default */ }
+    try {
+      const res = await apiFetch('/api/leads?status=new&limit=50');
+      const data = await res.json().catch(() => ({}));
+      const list = res.ok ? (data.leads || []) : [];
+      document.getElementById('msg-new-lead').innerHTML =
+        '<option value="">No lead (optional)…</option>' + list.map(l =>
+          `<option value="${escHtml(l.id)}">${escHtml((l.title || 'Untitled lead').slice(0, 60))}</option>`).join('');
+    } catch (_) { /* leave default */ }
+  }
+
+  document.getElementById('msg-new-btn').addEventListener('click', () => {
+    const form = document.getElementById('msg-new-form');
+    const opening = form.style.display === 'none';
+    form.style.display = opening ? 'block' : 'none';
+    if (opening) loadMsgNewPickers();
+  });
+  document.getElementById('msg-new-cancel').addEventListener('click', () => {
+    document.getElementById('msg-new-form').style.display = 'none';
+  });
+  document.getElementById('msg-new-create').addEventListener('click', async () => {
+    const homeownerName = document.getElementById('msg-new-homeowner').value.trim();
+    const contractorName = document.getElementById('msg-new-contractor').value;
+    const leadId = document.getElementById('msg-new-lead').value || null;
+    if (!homeownerName) { showToast('Enter the homeowner’s first name.'); return; }
+    if (!contractorName) { showToast('Pick a contractor.'); return; }
+    const btn = document.getElementById('msg-new-create');
+    btn.disabled = true; btn.textContent = 'Starting…';
+    try {
+      const res = await apiFetch('/api/admin/chat/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadId, homeownerName, contractorName }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Unable to start conversation.');
+      document.getElementById('msg-new-form').style.display = 'none';
+      document.getElementById('msg-new-homeowner').value = '';
+      showToast('Conversation started.', 'success');
+      await loadChatConversations();
+      if (data.conversation && data.conversation.id) openConversation(data.conversation.id);
+    } catch (err) {
+      showToast(err.message || 'Unable to start conversation.');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Start conversation';
+    }
+  });
+
+  // ── TIPS REVIEW ────────────────────────────────────────────────────────────
+  let tipsFilter = 'pending';
+  function tradeLabelTips(t) {
+    return { electrical: '⚡ Electrical', roofing: '🏠 Roofing', handyman: '🔧 Handyman' }[t] || t;
+  }
+  async function loadTipsReview() {
+    const list = document.getElementById('tips-list');
+    if (!list) return;
+    list.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-dim)">Loading…</div>';
+    try {
+      const res = await apiFetch(`/api/admin/tips/submissions?status=${encodeURIComponent(tipsFilter)}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Unable to load tip submissions.');
+      const subs = data.submissions || [];
+      const emptyMsg = tipsFilter === 'pending' ? 'No tips awaiting review.'
+        : tipsFilter === 'approved' ? 'No approved tips yet.' : 'No rejected tips.';
+      list.innerHTML = subs.length ? subs.map(s => `
+        <div class="card" style="overflow:hidden">
+          <div style="position:relative;aspect-ratio:16/9;background:#000">
+            <iframe src="https://www.youtube.com/embed/${escHtml(s.youtube_id)}" title="${escHtml(s.title)}"
+              loading="lazy" allowfullscreen
+              style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>
+          </div>
+          <div style="padding:16px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">${escHtml(tradeLabelTips(s.trade))}</div>
+            <div style="font-weight:700;font-size:14px;margin-bottom:6px;color:var(--text)">${escHtml(s.title)}</div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:10px">${escHtml(s.description || '—')}</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">
+              by <strong style="color:var(--text)">${escHtml(s.contractor_name)}</strong> · ${escHtml(s.email)} ·
+              ${s.submitted_at ? new Date(s.submitted_at + 'Z').toLocaleDateString() : '—'}
+            </div>
+            ${tipsFilter === 'pending' ? `
+            <div style="display:flex;gap:8px">
+              <button class="btn btn--primary btn--sm" data-tip-approve="${escHtml(s.id)}" style="flex:1">Approve</button>
+              <button class="btn btn--ghost btn--sm" data-tip-reject="${escHtml(s.id)}" style="flex:1">Reject</button>
+            </div>
+            <div style="font-size:11px;color:var(--text-dim);margin-top:8px">Approving publishes the video on linxservices.ca/tips immediately.</div>` : ''}
+          </div>
+        </div>`).join('')
+        : `<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-dim)">${emptyMsg}</div>`;
+    } catch (err) {
+      list.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:48px;color:#fecaca">${escHtml(err.message || 'Unable to load tip submissions.')}</div>`;
+    }
+  }
+  document.querySelectorAll('.tips-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tips-filter').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      tipsFilter = btn.dataset.status;
+      loadTipsReview();
+    });
+  });
+  document.getElementById('tips-refresh-btn').addEventListener('click', loadTipsReview);
+  document.getElementById('tips-list').addEventListener('click', async (e) => {
+    const approveBtn = e.target.closest('[data-tip-approve]');
+    const rejectBtn = e.target.closest('[data-tip-reject]');
+    const btn = approveBtn || rejectBtn;
+    if (!btn) return;
+    const id = approveBtn ? approveBtn.dataset.tipApprove : rejectBtn.dataset.tipReject;
+    const decision = approveBtn ? 'approve' : 'reject';
+    btn.disabled = true; btn.textContent = decision === 'approve' ? 'Approving…' : 'Rejecting…';
+    try {
+      const res = await apiFetch(`/api/admin/tips/submissions/${encodeURIComponent(id)}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Unable to review tip.');
+      showToast(decision === 'approve' ? 'Tip approved — live on linxservices.ca/tips.' : 'Tip rejected.', 'success');
+      loadTipsReview();
+    } catch (err) {
+      showToast(err.message || 'Unable to review tip.');
+      btn.disabled = false; btn.textContent = decision === 'approve' ? 'Approve' : 'Reject';
+    }
+  });
 
   // ── DRAWER ───────────────────────────────────────────────────────────────────
   document.getElementById('drawer-close').addEventListener('click', () => {

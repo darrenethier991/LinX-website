@@ -17,8 +17,9 @@ import { notifyOwnerOfApplication, reconcileOwnerApplicationNotifications } from
 import { handleContactSubmission } from "./contact-intake.js";
 import { decryptContactPII } from "./pii-crypto.js";
 import { handleOverflowSubmission } from "./overflow-intake.js";
-import { contractorLogin, contractorMe, contractorLeads, contractorLeadAction, contractorJobs, contractorJobStatus, contractorEarnings, contractorProfile, contractorAuth } from "./contractor-app.js";
+import { contractorLogin, contractorMe, contractorLeads, contractorLeadAction, contractorJobs, contractorJobStatus, contractorEarnings, contractorProfile, contractorAuth, contractorPublicView, leadView, jobView, payoutView } from "./contractor-app.js";
 import { adminListContractors, adminCreateContractor, adminResetContractorCode, adminSetContractorActive } from "./contractor-admin.js";
+import { createConversation, listConversations, authorizeConversation, listMessages, sendMessage, markConversationRead, maybeNudgeAdminForChat } from "./chat.js";
 
 /**
  * LinX API — Cloudflare Worker
@@ -835,6 +836,80 @@ export default {
       return contractorProfile(request, env, origin);
     }
 
+    // ── Public chat — homeowner/contractor message access via unguessable token ──
+    // Tokens are issued by an admin when a conversation is created
+    // (chat.html?c=<id>&t=<token>). No account needed.
+    const publicChatMatch = path.match(/^\/api\/chat\/([^/]+)\/messages$/);
+    if (publicChatMatch) {
+      if (!env.DB) return json({ error: 'Chat is temporarily unavailable.' }, 503, origin);
+      const convId = publicChatMatch[1];
+      const input = method === 'GET' ? Object.fromEntries(url.searchParams) : await readBody(request);
+      const chatToken = String(input.t || '').slice(0, 128);
+      const authz = await authorizeConversation(env, convId, chatToken, null);
+      if (authz.error) return json({ error: authz.error }, authz.status || 401, origin);
+      if (method === 'GET') {
+        return json({ ok: true, messages: await listMessages(env, convId) }, 200, origin);
+      }
+      if (method === 'POST') {
+        const limit = await enforceAnonymousRateLimit(request, env, `chat-${convId}`, 30, 3600);
+        if (limit) return rateLimitResponse(origin, limit);
+        const result = await sendMessage(env, convId, authz.side, input.body);
+        if (result.error) return json({ error: result.error }, result.status || 400, origin);
+        // Best-effort nudge to Darren if no admin is watching.
+        maybeNudgeAdminForChat(env, convId, authz.side, input.body);
+        return json({ ok: true, id: result.id }, 200, origin);
+      }
+    }
+
+    // ── Tips — public contractor tip submissions + approved feed ─────────────
+    if (path === '/api/tips/submit' && method === 'POST') {
+      if (!env.DB) return json({ error: 'Tip submissions are temporarily unavailable.' }, 503, origin);
+      const limit = await enforceAnonymousRateLimit(request, env, 'tip-submit', 5, 3600);
+      if (limit) return rateLimitResponse(origin, limit);
+      const input = await readBody(request);
+      const name = String(input.name || '').trim().slice(0, 120);
+      const email = String(input.email || '').trim().toLowerCase().slice(0, 160);
+      const trade = String(input.trade || '').trim().toLowerCase();
+      const title = String(input.title || '').trim().slice(0, 160);
+      const description = String(input.description || '').trim().slice(0, 1000);
+      const youtubeUrl = String(input.youtube_url || '').trim();
+      if (!name) return json({ error: 'Please include your name.' }, 400, origin);
+      if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        return json({ error: 'Please include a valid email so we can reach you.' }, 400, origin);
+      }
+      if (!['electrical', 'roofing', 'handyman'].includes(trade)) {
+        return json({ error: 'Please choose a trade.' }, 400, origin);
+      }
+      if (!title) return json({ error: 'Please give your tip a title.' }, 400, origin);
+      const vidMatch = youtubeUrl.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+      if (!vidMatch) return json({ error: 'That YouTube link doesn’t look right — paste the full watch URL.' }, 400, origin);
+      const youtubeId = vidMatch[1];
+      const id = crypto.randomUUID();
+      try {
+        await env.DB.prepare(`
+          INSERT INTO tip_submissions (id, contractor_name, email, trade, youtube_id, title, description, status)
+          VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
+        `).bind(id, name, email, trade, youtubeId, title, description || '').run();
+      } catch (_) {
+        return json({ error: 'Tip submissions are not set up yet — please try again later.' }, 503, origin);
+      }
+      return json({ ok: true, id }, 201, origin);
+    }
+    if (path === '/api/tips' && method === 'GET') {
+      if (!env.DB) return json({ ok: true, tips: [] }, 200, origin);
+      let tips = [];
+      try {
+        const rows = await env.DB.prepare(
+          "SELECT youtube_id, trade, title, description, contractor_name FROM tip_submissions WHERE status = 'approved' ORDER BY reviewed_at DESC, submitted_at DESC LIMIT 100"
+        ).all();
+        tips = (rows.results || []).map(r => ({
+          id: r.youtube_id, trade: r.trade, title: r.title,
+          desc: r.description || '', name: r.contractor_name,
+        }));
+      } catch (_) { /* table may not exist yet — fall back to empty */ }
+      return json({ ok: true, tips }, 200, origin);
+    }
+
     // ── Short-link management — administrator-only ──────────────────────────
     if (path === '/api/admin/short-links' && method === 'GET') {
       const identity = await requireAuth(request, env);
@@ -1618,6 +1693,126 @@ export default {
       const result = await adminSetContractorActive(env, contractorActiveMatch[1], active);
       if (result.error) return json({ error: result.error }, result.status || 400, origin);
       return json({ ok: true, contractor_id: result.contractor_id, active: result.active }, 200, origin);
+    }
+
+    // ── Admin contractor mirror — read-only view of one contractor's app data ──
+    // Lets Darren see exactly what a contractor sees in their app. No actions.
+    const contractorMirrorMatch = path.match(/^\/api\/admin\/contractors\/([^/]+)\/(profile|leads|jobs|earnings)$/);
+    if (contractorMirrorMatch && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const contractorId = contractorMirrorMatch[1];
+      const kind = contractorMirrorMatch[2];
+      const contractor = await env.DB.prepare(
+        'SELECT id, trade, display_name, company, email, phone, active, created_at FROM contractor_users WHERE id = ?'
+      ).bind(contractorId).first();
+      if (!contractor) return json({ error: 'Contractor not found.' }, 404, origin);
+      if (kind === 'profile') return json({ ok: true, contractor: contractorPublicView(contractor) }, 200, origin);
+      if (kind === 'leads') {
+        const rows = await env.DB.prepare(
+          "SELECT id, homeowner_name, phone, address, trade, description, status, created_at FROM contractor_leads WHERE contractor_id = ? ORDER BY created_at DESC, rowid DESC"
+        ).bind(contractorId).all();
+        return json({ ok: true, leads: (rows.results || []).map(leadView) }, 200, origin);
+      }
+      if (kind === 'jobs') {
+        const rows = await env.DB.prepare(
+          'SELECT id, lead_id, title, address, status_step, scheduled_date, notes, created_at, updated_at FROM contractor_jobs WHERE contractor_id = ? ORDER BY created_at DESC, rowid DESC'
+        ).bind(contractorId).all();
+        return json({ ok: true, jobs: (rows.results || []).map(jobView) }, 200, origin);
+      }
+      if (kind === 'earnings') {
+        const totals = await env.DB.prepare(`
+          SELECT
+            COALESCE(SUM(CASE WHEN status = 'pending' THEN amount_cents ELSE 0 END), 0) AS pending_total_cents,
+            COALESCE(SUM(CASE WHEN status = 'paid' THEN amount_cents ELSE 0 END), 0) AS paid_total_cents
+          FROM contractor_payouts WHERE contractor_id = ?
+        `).bind(contractorId).first();
+        const rows = await env.DB.prepare(
+          'SELECT id, job_id, amount_cents, status, paid_at, created_at FROM contractor_payouts WHERE contractor_id = ? ORDER BY created_at DESC, rowid DESC'
+        ).bind(contractorId).all();
+        return json({
+          ok: true,
+          pending_total_cents: totals?.pending_total_cents || 0,
+          paid_total_cents: totals?.paid_total_cents || 0,
+          payouts: (rows.results || []).map(payoutView),
+        }, 200, origin);
+      }
+    }
+
+    // ── Admin chat — contractor↔homeowner messaging oversight ─────────────────
+    // Conversations are created when a lead is matched to a contractor. Admin
+    // can read transcripts and post as admin. The AI de-escalation mediator
+    // in chat.js sendMessage is left untouched.
+    if (path === '/api/admin/chat/conversations' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      return json({ ok: true, conversations: await listConversations(env, admin.sub || null) }, 200, origin);
+    }
+    if (path === '/api/admin/chat/conversations' && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const input = await readBody(request);
+      if (!input.homeownerName || !input.contractorName) {
+        return json({ error: 'homeownerName and contractorName are required.' }, 400, origin);
+      }
+      const conv = await createConversation(env, {
+        leadId: input.leadId || null,
+        homeownerName: input.homeownerName,
+        contractorName: input.contractorName,
+      });
+      return json({ ok: true, conversation: conv }, 201, origin);
+    }
+    const chatConvMatch = path.match(/^\/api\/admin\/chat\/conversations\/([^/]+)\/messages$/);
+    if (chatConvMatch) {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const convId = chatConvMatch[1];
+      const authz = await authorizeConversation(env, convId, null, admin);
+      if (authz.error) return json({ error: authz.error }, authz.status || 400, origin);
+      if (method === 'GET') {
+        await markConversationRead(env, convId, admin.sub || null);
+        return json({ ok: true, messages: await listMessages(env, convId) }, 200, origin);
+      }
+      if (method === 'POST') {
+        const input = await readBody(request);
+        const result = await sendMessage(env, convId, 'admin', input.body);
+        if (result.error) return json({ error: result.error }, result.status || 400, origin);
+        return json({ ok: true, id: result.id }, 200, origin);
+      }
+    }
+
+    // ── Admin tips review — approve/reject contractor tip submissions ────────
+    if (path === '/api/admin/tips/submissions' && method === 'GET') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const status = url.searchParams.get('status') || 'pending';
+      if (!['pending', 'approved', 'rejected'].includes(status)) {
+        return json({ error: 'Invalid status filter.' }, 400, origin);
+      }
+      let submissions = [];
+      try {
+        const rows = await env.DB.prepare(
+          'SELECT id, contractor_name, email, trade, youtube_id, title, description, status, submitted_at, reviewed_at FROM tip_submissions WHERE status = ? ORDER BY submitted_at DESC LIMIT 100'
+        ).bind(status).all();
+        submissions = rows.results || [];
+      } catch (_) { /* table may not exist yet */ }
+      return json({ ok: true, submissions }, 200, origin);
+    }
+    const tipReviewMatch = path.match(/^\/api\/admin\/tips\/submissions\/([^/]+)\/review$/);
+    if (tipReviewMatch && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      const { decision } = await readBody(request);
+      if (!['approve', 'reject'].includes(decision)) {
+        return json({ error: 'Decision must be "approve" or "reject".' }, 400, origin);
+      }
+      const status = decision === 'approve' ? 'approved' : 'rejected';
+      let result;
+      try {
+        result = await env.DB.prepare(
+          "UPDATE tip_submissions SET status = ?, reviewed_at = datetime('now') WHERE id = ? AND status = 'pending'"
+        ).bind(status, tipReviewMatch[1]).run();
+      } catch (_) {
+        return json({ error: 'Tip submissions are not set up yet.' }, 503, origin);
+      }
+      if (!result.meta || result.meta.changes === 0) {
+        return json({ error: 'Submission not found or already reviewed.' }, 404, origin);
+      }
+      return json({ ok: true, id: tipReviewMatch[1], status }, 200, origin);
     }
 
     // ── GET /api/leads/stats ───────────────────────────────────────────────
