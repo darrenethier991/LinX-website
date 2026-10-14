@@ -87,7 +87,7 @@
           <div class="form-hint" id="title-hint">Keep it short and clear — this is what contractors see first.</div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="category-group">
           <label class="form-label" for="job-category">Category <span class="req">*</span></label>
           <select class="form-select" id="job-category" required>
             <option value="">— Select a trade —</option>
@@ -96,10 +96,10 @@
 
         <div class="form-group">
           <label class="form-label" for="job-desc">Description <span class="req">*</span></label>
-          <textarea class="form-input" id="job-desc" rows="5" maxlength="1500" placeholder="Describe the job in detail — current condition, what you want done, materials or brands, access notes…" required></textarea>
+          <textarea class="form-input" id="job-desc" rows="3" maxlength="600" placeholder="A couple sentences is plenty — what needs doing, and anything we should know? Details can come later." required></textarea>
           <div style="display:flex;justify-content:space-between;margin-top:.25rem;">
-            <div class="form-hint" id="desc-hint">More detail means more accurate quotes.</div>
-            <div class="form-hint" id="desc-count">0 / 1500</div>
+            <div class="form-hint" id="desc-hint">A couple sentences is plenty — details can come later.</div>
+            <div class="form-hint" id="desc-count">0 / 600</div>
           </div>
         </div>
 
@@ -168,6 +168,7 @@
           </select>
         </div>
 
+        <div id="budget-group">
         <div class="grid-2" style="gap:.8rem;">
           <div class="form-group" style="margin-bottom:0;">
             <label class="form-label" for="budget-min" id="budget-min-label">Budget From (CAD)</label>
@@ -179,6 +180,7 @@
           </div>
         </div>
         <div class="form-hint" style="margin-top:.4rem;" id="budget-hint">Optional — a range helps contractors quote accurately.</div>
+        </div>
       </div>
 
       <!-- Who -->
@@ -192,14 +194,15 @@
 
         <div class="grid-2" style="gap:.8rem;">
           <div class="form-group">
-            <label class="form-label" for="c-email">Email <span class="req">*</span></label>
-            <input class="form-input" type="email" id="c-email" autocomplete="email" required/>
+            <label class="form-label" for="c-email">Email</label>
+            <input class="form-input" type="email" id="c-email" autocomplete="email"/>
           </div>
           <div class="form-group">
-            <label class="form-label" for="c-phone">Phone <span class="req">*</span></label>
-            <input class="form-input" type="tel" id="c-phone" autocomplete="tel" required/>
+            <label class="form-label" for="c-phone">Phone</label>
+            <input class="form-input" type="tel" id="c-phone" autocomplete="tel"/>
           </div>
         </div>
+        <div class="form-hint" style="margin-top:-.4rem;">Phone or email — one is enough. We'll only use it about this posting.</div>
 
         <!-- Honeypot: bots fill this, humans never see it -->
         <div style="position:absolute;left:-9999px;" aria-hidden="true">
@@ -275,8 +278,8 @@
   const descCount = document.getElementById('desc-count');
   descInput.addEventListener('input', () => {
     const l = descInput.value.length;
-    descCount.textContent = `${l} / 1500`;
-    descCount.style.color = l > 1400 ? 'var(--red)' : 'var(--white-35)';
+    descCount.textContent = `${l} / 600`;
+    descCount.style.color = l > 550 ? 'var(--red)' : 'var(--white-35)';
   });
 
   /* ── Urgency cards ── */
@@ -294,13 +297,13 @@
     project: {
       eyebrow: 'Free for homeowners',
       heading: 'Post a Job',
-      sub: 'Describe what you need done and local contractors in Simcoe County will send you quotes.',
+      sub: 'Takes about 30 seconds. No commitment — just tell us what you need and local contractors will send quotes.',
       what: '📋 What do you need done?',
       titleLabel: 'Job Title', titlePh: 'e.g. Kitchen faucet replacement, Roof repair…',
       titleHint: 'Keep it short and clear — this is what contractors see first.',
-      descPh: 'Describe the job in detail — current condition, what you want done, materials or brands, access notes…',
-      descHint: 'More detail means more accurate quotes.',
-      loc: '📍 Location & Budget',
+      descPh: 'A couple sentences is plenty — what needs doing, and anything we should know? Details can come later.',
+      descHint: 'A couple sentences is plenty — details can come later.',
+      loc: "📍 Where's the job?",
       minLabel: 'Budget From (CAD)', maxLabel: 'Budget To (CAD)',
       budgetHint: 'Optional — a range helps contractors quote accurately.',
       submit: '🚀 Post My Job'
@@ -353,6 +356,10 @@
     document.getElementById('submit-btn').textContent = c.submit;
     document.getElementById('employment-group').style.display = type === 'hiring' ? 'block' : 'none';
     document.getElementById('availability-group').style.display = type === 'seeking' ? 'block' : 'none';
+    // Home projects skip trade + budget — one less decision, details in follow-up.
+    document.getElementById('category-group').style.display = type === 'project' ? 'none' : 'block';
+    document.getElementById('budget-group').style.display = type === 'project' ? 'none' : 'block';
+    if (type === 'project' && !catSel.value) catSel.value = 'Other';
   }
 
   document.querySelectorAll('.posttype-grid label').forEach(opt => {
@@ -363,6 +370,9 @@
       setPostType(opt.querySelector('input').value);
     });
   });
+
+  // Default view: simplified Home Project form (trade + budget hidden).
+  setPostType('project');
 
   // Preselect from ?type=hiring or ?type=seeking (links from the job board)
   const preType = new URLSearchParams(window.location.search).get('type');
@@ -395,6 +405,15 @@
     // Honeypot: silently "succeed" for bots
     if (document.getElementById('hp-website').value) { showSuccess(); return; }
 
+    // API needs one way to reach them — email or phone, not both.
+    const emailNow = document.getElementById('c-email').value.trim();
+    const phoneNow = document.getElementById('c-phone').value.trim();
+    if (!emailNow && !phoneNow) {
+      document.getElementById('submit-error-detail').textContent = '(Please add a phone number or email so a contractor can reach you.)';
+      document.getElementById('submit-error').style.display = 'block';
+      return;
+    }
+
     const postTypeNow = document.querySelector('input[name="post-type"]:checked').value;
     const typeLabel = postTypeNow === 'hiring' ? 'Hiring ad' : postTypeNow === 'seeking' ? 'Seeking work' : 'Job post';
     const role = postTypeNow === 'project' ? 'homeowner' : 'contractor';
@@ -422,8 +441,8 @@
       notes,
       meta: { first_message: notes },
       name: document.getElementById('c-name').value.trim(),
-      email: document.getElementById('c-email').value.trim(),
-      phone: document.getElementById('c-phone').value.trim(),
+      email: emailNow,
+      phone: phoneNow,
       consent: document.getElementById('consent').checked,
       source: 'linxservices.ca',
       submittedAt: new Date().toISOString()
