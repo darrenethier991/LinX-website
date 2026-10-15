@@ -134,6 +134,18 @@ button { font-family: var(--font); cursor: pointer; border: none; background: no
 .nav__menu-panel a strong { color:#fff; font-size:11px; letter-spacing:.1em; }
 .nav__menu-panel a:hover { border-color:var(--border-gold); background:rgba(212,168,83,.07); color:var(--gold); }
 
+/* ── MOBILE NAV TOGGLE (hamburger) ── */
+.nav__toggle {
+  display: none;
+  align-items: center; justify-content: center;
+  width: 42px; height: 42px; flex: 0 0 auto;
+  margin-left: auto;
+  background: transparent; color: #fff;
+  font-size: 22px; line-height: 1;
+  border: 1px solid var(--border); border-radius: 8px;
+  cursor: pointer;
+}
+
 /* ── BUTTONS ─────────────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
@@ -298,6 +310,26 @@ button { font-family: var(--font); cursor: pointer; border: none; background: no
   .nav__links > li:not(.nav__menu) { display:none; }
   .nav__menu-panel { position:fixed; top:calc(var(--nav-h) + 8px); right:16px; width:min(450px,calc(100vw - 32px)); }
   .footer__grid { grid-template-columns: 1fr 1fr; }
+  /* Hamburger: hidden links/actions move into an expandable menu. */
+  .nav__toggle { display: flex; }
+  .nav__links, .nav__actions { display: none; }
+  .nav.open { height: auto; flex-wrap: wrap; align-items: flex-start; max-height: 100vh; overflow-y: auto; }
+  .nav.open .nav__links {
+    display: flex; flex-direction: column; gap: 0;
+    flex: 1 1 100%; order: 3; margin: 0; padding: 8px 0 4px;
+    border-top: 1px solid var(--border);
+  }
+  .nav.open .nav__links > li:not(.nav__menu) { display: list-item; }
+  .nav.open .nav__links > li > a,
+  .nav.open .nav__links > li > details > summary {
+    display: flex; align-items: center; padding: 12px 4px; font-size: 13px;
+  }
+  .nav.open .nav__menu-panel { position: static; width: auto; grid-template-columns: 1fr; box-shadow: none; margin-top: 4px; }
+  .nav.open .nav__actions {
+    display: flex; flex-direction: column; align-items: stretch; gap: 8px;
+    flex: 1 1 100%; order: 4; padding: 4px 0 16px;
+  }
+  .nav.open .nav__actions .btn { width: 100%; }
 }
 @media (max-width: 600px) {
   .nav__actions { display:none; }

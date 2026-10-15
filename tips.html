@@ -97,8 +97,8 @@
 </head>
 <body>
 
-<nav class="nav">
-  <a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"><span class="nav__wordmark">LinX <span>Services</span></span></a>
+<nav class="nav" id="primary-nav">
+  <a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"><span class="nav__wordmark">LinX <span>Services</span></span></a> <button class="nav__toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
   <ul class="nav__links" aria-label="Primary navigation">
     <li><a href="about.html">About</a></li>
     <li><a href="services.html">Services</a></li>
@@ -307,6 +307,25 @@ renderTips();
     }
     renderTips();
   } catch (_) { /* seed array stands alone */ }
+})();
+</script>
+
+<script>
+/* Mobile nav toggle — one nav per page. */
+(function () {
+  var nav = document.getElementById('primary-nav');
+  var btn = document.querySelector('.nav__toggle');
+  if (!nav || !btn) return;
+  function setOpen(open) {
+    nav.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? '\u2715' : '\u2630';
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  btn.addEventListener('click', function () { setOpen(!nav.classList.contains('open')); });
+  nav.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', function () { setOpen(false); });
+  });
 })();
 </script>
 </body>

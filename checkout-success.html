@@ -28,7 +28,26 @@
   </style>
 </head>
 <body>
-  <nav class="nav"><a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"></a><div class="nav__actions"><a class="btn btn--outline btn--sm" href="pricing.html">View plans</a></div></nav>
+  <nav class="nav" id="primary-nav"><a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"></a> <button class="nav__toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="primary-nav">☰</button><div class="nav__actions"><a class="btn btn--outline btn--sm" href="pricing.html">View plans</a></div></nav>
   <main class="checkout-shell"><section class="card checkout-card"><div class="checkout-icon" aria-hidden="true">✓</div><p class="eyebrow">Stripe checkout complete</p><h1>Your subscription is being confirmed.</h1><p>LINX Services received your checkout return. Your recurring subscription status is synchronized securely from Stripe, using the email entered during checkout.</p><p class="checkout-note">If platform access is included in your plan, use the subscriber access details supplied by LINX Services. For billing changes, contact LINX Services with the checkout email so your subscription can be located securely.</p><div class="checkout-actions"><a class="btn btn--primary" href="clam-code.html">Open Clam Code</a><a class="btn btn--outline" href="contact.html">Contact LINX Services</a></div></section></main>
+
+<script>
+/* Mobile nav toggle — one nav per page. */
+(function () {
+  var nav = document.getElementById('primary-nav');
+  var btn = document.querySelector('.nav__toggle');
+  if (!nav || !btn) return;
+  function setOpen(open) {
+    nav.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? '\u2715' : '\u2630';
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  btn.addEventListener('click', function () { setOpen(!nav.classList.contains('open')); });
+  nav.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', function () { setOpen(false); });
+  });
+})();
+</script>
 </body>
 </html>

@@ -89,6 +89,12 @@
     .nav-cta {
       display:flex; gap:12px;
     }
+    .nav-toggle {
+      display:none; align-items:center; justify-content:center;
+      width:42px; height:42px; flex:0 0 auto; margin-left:12px;
+      background:transparent; color:#fff; font-size:22px; line-height:1;
+      border:1px solid var(--border); border-radius:8px; cursor:pointer;
+    }
     .btn {
       display:inline-flex; align-items:center; justify-content:center; gap:8px;
       padding:10px 22px; border-radius:8px; font-size:14px; font-weight:600;
@@ -300,6 +306,10 @@
     @media(max-width:768px) {
       nav { padding:16px 20px; }
       .nav-links { display:none; }
+      .nav-toggle { display:flex; }
+      .nav-cta .btn { padding:8px 12px; font-size:13px; }
+      #main-nav.open .nav-links { display:flex; flex-direction:column; align-items:stretch; gap:0; position:absolute; top:100%; left:0; right:0; padding:8px 20px 16px; background:rgba(7,7,13,.97); border-bottom:1px solid var(--border); }
+      #main-nav.open .nav-links a { padding:12px 0; }
       .dashboard-layout { grid-template-columns:1fr; }
       .dash-sidebar { display:none; }
       .dash-main { padding:24px 16px; }
@@ -329,6 +339,7 @@
       <span id="nav-user-label" style="font-size:14px;color:var(--muted)"></span>
       <button class="btn btn-ghost" onclick="logout()">Sign Out</button>
     </div>
+    <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="main-nav">☰</button>
   </nav>
 
   <!-- ── LANDING (shown when logged out) ── -->
@@ -707,5 +718,23 @@
       if (stored) activateDashboard(stored);
     })();
   </script>
+<script>
+/* Ecosystem mobile nav toggle. */
+(function () {
+  var nav = document.getElementById('main-nav');
+  var btn = document.querySelector('.nav-toggle');
+  if (!nav || !btn) return;
+  function setOpen(open) {
+    nav.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? '✕' : '☰';
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  btn.addEventListener('click', function () { setOpen(!nav.classList.contains('open')); });
+  nav.querySelectorAll('.nav-links a').forEach(function (a) {
+    a.addEventListener('click', function () { setOpen(false); });
+  });
+})();
+</script>
 </body>
 </html>

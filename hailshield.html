@@ -20,8 +20,8 @@
   </style>
 </head>
 <body>
-  <nav class="nav">
-    <a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"></a>
+  <nav class="nav" id="primary-nav">
+    <a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"></a> <button class="nav__toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
     <ul class="nav__links" aria-label="Primary navigation"><li><a href="about.html">About</a></li><li><a href="services.html">Services</a></li><li class="nav__menu"><details><summary>Explore</summary><div class="nav__menu-panel"><a href="jobs.html"><strong>Job Board</strong><span>Open projects &amp; hiring ads</span></a><a href="index.html#how"><strong>How It Works</strong><span>Project to next step</span></a><a href="index.html#who"><strong>Who It’s For</strong><span>Homeowners and trades</span></a><a href="marketplace"><strong>Marketplace</strong><span>EchoForge workflows</span></a><a href="ecosystem"><strong>Ecosystem</strong><span>Connected LINX tools</span></a><a href="clam-code.html"><strong>Clam Code</strong><span>Role-aware AI help</span></a><a href="status/"><strong>System Status</strong><span>Service availability</span></a><a href="linx-amplify.html"><strong>LinX Amplify</strong><span>Growth operations</span></a><a href="reach.html"><strong>LinX Reach</strong><span>Campaign studio</span></a><a href="pricing.html"><strong>Pricing</strong><span>Plans and trials</span></a><a href="contact.html"><strong>Contact</strong><span>Talk with LINX</span></a></div></details></li></ul>
     <div class="nav__actions"><a class="btn btn--outline btn--sm" href="pricing.html">Pricing</a><a class="btn btn--primary btn--sm" href="contact.html?service=hailshield">Book assessment</a></div>
   </nav>
@@ -33,5 +33,24 @@
     <section class="section section--alt"><div class="container"><span class="eyebrow">Service packages</span><h2 class="section-title">Choose the level of recovery support your event requires.</h2><p class="section-sub">Event-based starting prices are shown in Canadian dollars. Final scope, coverage area, and scheduling are confirmed before work begins.</p><div class="package-grid" style="margin-top:32px"><article class="card package-card"><span class="badge badge--blue">From $1,499 CAD / event</span><h2>HailShield Basic</h2><p>For dealerships that need a structured intake and report package to begin their internal or insurer process.</p><ul class="list"><li>Full photo set</li><li>Damage grading</li><li>Claim-ready report package</li></ul><a href="contact.html?service=hailshield-basic">Discuss Basic →</a></article><article class="card package-card package-card--featured"><span class="badge badge--gold">From $4,999 CAD / event</span><h2>HailShield Pro</h2><p>For teams that need the documentation layer plus active coordination of the repair workflow.</p><ul class="list"><li>Everything in Basic</li><li>PDR and body-shop coordination</li><li>Repair timeline tracking</li></ul><a href="contact.html?service=hailshield-pro">Discuss Pro →</a></article><article class="card package-card"><span class="badge badge--violet">From $9,999 CAD / event</span><h2>HailShield Elite</h2><p>For fleet and dealership operators seeking a managed recovery program from assessment through final inspection.</p><ul class="list"><li>Everything in Pro</li><li>Insurance-liaison support</li><li>Post-repair detailing coordination</li><li>Final delivery inspection</li></ul><a href="contact.html?service=hailshield-elite">Discuss Elite →</a></article></div></div></section>
     <section class="cta"><div class="container"><div class="cta-box"><span class="eyebrow">Canada-wide hail event response</span><h2>Ready to organize your fleet recovery?</h2><p>Tell us the event location, approximate vehicle count, and the support you need. A LINX Services team member can discuss the appropriate HailShield™ recovery scope.</p><a class="btn btn--primary" href="contact.html?service=hailshield">Book a HailShield assessment</a></div></div></section>
   </main>
+
+<script>
+/* Mobile nav toggle — one nav per page. */
+(function () {
+  var nav = document.getElementById('primary-nav');
+  var btn = document.querySelector('.nav__toggle');
+  if (!nav || !btn) return;
+  function setOpen(open) {
+    nav.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? '\u2715' : '\u2630';
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  btn.addEventListener('click', function () { setOpen(!nav.classList.contains('open')); });
+  nav.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', function () { setOpen(false); });
+  });
+})();
+</script>
 </body>
 </html>

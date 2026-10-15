@@ -297,8 +297,8 @@
 <div id="cursor"></div>
 
 <!-- ── NAVIGATION ── -->
-<nav class="nav">
-  <a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"><span class="nav__wordmark">LinX <span>Services</span></span></a>
+<nav class="nav" id="primary-nav">
+  <a class="nav__logo" href="index.html"><img src="assets/linx-logo.png" alt="LinX"><span class="nav__wordmark">LinX <span>Services</span></span></a> <button class="nav__toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
   <ul class="nav__links" aria-label="Primary navigation">
     <li><a href="about.html">About</a></li>
     <li><a href="services.html">Services</a></li>
@@ -393,6 +393,7 @@
         <p>Compare, ask questions, hire with confidence. Free for you &mdash; always.</p>
       </div>
     </div>
+    <p style="max-width:560px;margin:28px auto 0;color:var(--text-dim);font-size:14px;line-height:1.6">Every LinX quote is written, upfront, and yours to approve &mdash; no surprise charges, no work without your OK. Contractors can offer an optional 10% contingency for unforeseen materials; anything unused is never charged. <a href="post-job.html#how-quotes-work">How quotes work &rarr;</a></p>
     <div style="margin-top:44px">
       <a href="post-job.html" class="btn btn--primary btn--lg">Start My Project &mdash; Free</a>
       <p style="font-size:12px;color:var(--text-dim);margin-top:14px">Takes about 30 seconds. No account needed.</p>
@@ -758,10 +759,7 @@
         <div class="plan-period">CAD / month &middot; 10 leads / month</div>
         <ul class="plan-features">
           <li>Email notifications</li>
-          <li>Basic CRM</li>
-          <li>CSV lead import</li>
-          <li>1 integration</li>
-          <li>Small marketplace boost</li>
+          <li>Job pipeline &amp; lead tracking</li>
         </ul>
         <a href="#" data-plan="starter" class="btn btn--ghost btn--full">Start Starter</a>
       </div>
@@ -772,11 +770,8 @@
         <div class="plan-price"><sup>$</sup>79</div>
         <div class="plan-period">CAD / month &middot; 75 leads / month</div>
         <ul class="plan-features">
-          <li>Full CRM</li>
+          <li>Full job pipeline &amp; lead tracking</li>
           <li>Email and SMS notifications</li>
-          <li>CSV + manual lead import</li>
-          <li>3 integrations</li>
-          <li>Priority placement</li>
         </ul>
         <a href="#" data-plan="growth" class="btn btn--primary btn--full">Start Growth</a>
       </div>
@@ -788,15 +783,13 @@
         <ul class="plan-features">
           <li>Everything in Growth</li>
           <li>First access to new features</li>
-          <li>EcoHome</li>
           <li>Multi-location access</li>
-          <li>Unlimited integrations</li>
-          <li>Top placement</li>
         </ul>
         <a href="#" data-plan="unlimited" class="btn btn--ghost btn--full">Start Unlimited</a>
       </div>
     </div>
-    <p class="section-sub" style="text-align:center;margin:22px auto 0;max-width:640px">Just getting started? <a href="pricing.html" style="color:var(--gold-bright)">Free Until First Job</a> and a free 2-day Unlimited trial &mdash; <a href="pricing.html" style="color:var(--gold-bright)">see all options</a>.</p>
+    <p class="section-sub" style="text-align:center;margin:22px auto 0;max-width:640px">Prefer to pay as you go? <a href="pricing.html" style="color:var(--gold-bright)">Pay Per Lead &mdash; $20 CAD per qualified lead, no monthly fee</a>.</p>
+    <p class="section-sub" style="text-align:center;margin:10px auto 0;max-width:640px">Just getting started? <a href="pricing.html" style="color:var(--gold-bright)">Free Until First Job</a> and a free 2-day Unlimited trial &mdash; <a href="pricing.html" style="color:var(--gold-bright)">see all options</a>.</p>
   </div>
 </section>
 
@@ -1107,6 +1100,25 @@
     toast.style.display = 'block';
     setTimeout(() => { toast.style.display = 'none'; }, 5000);
   }
+</script>
+
+<script>
+/* Mobile nav toggle — one nav per page. */
+(function () {
+  var nav = document.getElementById('primary-nav');
+  var btn = document.querySelector('.nav__toggle');
+  if (!nav || !btn) return;
+  function setOpen(open) {
+    nav.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.textContent = open ? '\u2715' : '\u2630';
+    btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  btn.addEventListener('click', function () { setOpen(!nav.classList.contains('open')); });
+  nav.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', function () { setOpen(false); });
+  });
+})();
 </script>
 </body>
 </html>
