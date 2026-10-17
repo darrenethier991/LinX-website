@@ -1255,14 +1255,30 @@
   }
 
   // ── RECENT LEADS (dashboard) ───────────────────────────────────────────────────
+  // Admin-only: /api/leads decrypts contact PII for signed-in admins, so names
+  // render here and nowhere else. Contact-form leads are stored with status
+  // 'new' (not 'active'), so both statuses are fetched and merged — otherwise
+  // form leads are invisible in this list.
   async function loadRecentLeads() {
     const list = document.getElementById('recent-leads-list');
     if (!list) return;
     list.innerHTML = '<div class="log-info">[INFO] Loading recent leads…</div>';
     try {
-      const res = await apiFetch('/api/leads?limit=8');
-      const payload = await res.json().catch(() => null);
-      if (!res.ok || !Array.isArray(payload)) throw new Error((payload && payload.error) || 'Unable to load leads.');
+      const [activeRes, newRes] = await Promise.all([
+        apiFetch('/api/leads?limit=8&status=active'),
+        apiFetch('/api/leads?limit=8&status=new'),
+      ]);
+      const activePayload = await activeRes.json().catch(() => null);
+      const newPayload = await newRes.json().catch(() => null);
+      const merged = [
+        ...(Array.isArray(activePayload) ? activePayload : []),
+        ...(Array.isArray(newPayload) ? newPayload : []),
+      ];
+      const seen = new Set();
+      const payload = merged
+        .filter(ld => ld && ld.id && !seen.has(ld.id) && seen.add(ld.id))
+        .sort((a, b) => new Date(b.posted_at || 0) - new Date(a.posted_at || 0))
+        .slice(0, 8);
       if (!payload.length) {
         list.innerHTML = '<div class="log-info">[INFO] No leads yet.</div>';
         return;
@@ -1270,7 +1286,10 @@
       list.innerHTML = payload.map(ld => {
         const when = ld.posted_at ? new Date(ld.posted_at).toLocaleDateString() : 'unknown date';
         const where = [ld.city, ld.province].filter(Boolean).join(', ');
-        return `<div class="log-ok">[${escHtml(ld.source_platform || 'lead')}] ${escHtml(ld.title || '(untitled)')}${where ? ' · ' + escHtml(where) : ''} · ${escHtml(when)}</div>`;
+        const name = ld.contact && ld.contact.name ? ld.contact.name : '';
+        const label = name || ld.title || '(untitled)';
+        const snippet = ld.description ? String(ld.description).replace(/\s+/g, ' ').slice(0, 100) : '';
+        return `<div class="log-ok">[${escHtml(ld.source_platform || 'lead')}] ${escHtml(label)}${where ? ' · ' + escHtml(where) : ''} · ${escHtml(when)}${snippet ? ' — ' + escHtml(snippet) : ''}</div>`;
       }).join('');
     } catch (err) {
       if (err.message !== 'Session expired.')
