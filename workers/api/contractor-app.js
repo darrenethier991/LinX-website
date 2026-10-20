@@ -131,6 +131,78 @@ const TRADE_LABELS = {
   Roofing: 'Roofing',
 };
 
+// ─── Lead claim + status flow ────────────────────────────────────────────────
+// Statuses a contractor lead can be in. 'accepted' is legacy (rows written by
+// the old Accept button); it behaves exactly like 'claimed'. 'new' is the only
+// unclaimed state, and no transition ever goes back to 'new'.
+//   new → claimed | declined
+//   claimed / accepted → contacted | lost
+//   contacted → quoted | lost
+//   quoted → booked | lost
+//   booked / lost / declined are terminal.
+
+const LEAD_STATUSES = Object.freeze(['new', 'claimed', 'contacted', 'quoted', 'booked', 'lost', 'declined', 'accepted']);
+
+const LEAD_TRANSITIONS = Object.freeze({
+  new: ['claimed', 'declined'],
+  claimed: ['contacted', 'lost'],
+  accepted: ['contacted', 'lost'],
+  contacted: ['quoted', 'lost'],
+  quoted: ['booked', 'lost'],
+  booked: [],
+  lost: [],
+  declined: [],
+});
+
+// Safeguard defaults (hours). Darren can change these two numbers:
+//   UNCLAIMED_STALE_HOURS — a 'new' lead unclaimed this long triggers one alert.
+//   CONTACT_OVERDUE_HOURS — a 'claimed' lead with no Contacted step this long
+//   triggers one alert. Each lead alerts once per condition.
+const UNCLAIMED_STALE_HOURS = 24;
+const CONTACT_OVERDUE_HOURS = 48;
+
+/**
+ * Validate a lead status move. Returns { ok: true } or { ok: false, error }.
+ * A note is required when a lead is marked Lost.
+ */
+function validateLeadStatusTransition(fromStatus, toStatus, note) {
+  const from = String(fromStatus || '');
+  const to = String(toStatus || '');
+  if (!LEAD_STATUSES.includes(to)) return { ok: false, error: 'That lead status is not valid.' };
+  if (to === 'new') return { ok: false, error: 'A lead can never go back to new once claimed.' };
+  const allowed = LEAD_TRANSITIONS[from] || [];
+  if (!allowed.includes(to)) {
+    return { ok: false, error: `A lead in '${from || 'unknown'}' cannot move to '${to}'.` };
+  }
+  if (to === 'lost' && !String(note || '').trim()) {
+    return { ok: false, error: 'A note is required when a lead is marked Lost.' };
+  }
+  return { ok: true };
+}
+
+/**
+ * Staleness for the UI flag: computed from real timestamps, never stored.
+ * 'new' + older than UNCLAIMED_STALE_HOURS → unclaimed.
+ * 'claimed'/'accepted' + idle longer than CONTACT_OVERDUE_HOURS → contact_overdue.
+ * Malformed dates are treated as not stale rather than inventing an age.
+ */
+function leadStaleness(row, nowMs = Date.now()) {
+  const status = String(row?.status || '');
+  if (status === 'new') {
+    const created = Date.parse(String(row.created_at || ''));
+    if (Number.isFinite(created) && nowMs - created >= UNCLAIMED_STALE_HOURS * 3600 * 1000) {
+      return { stale: true, stale_reason: 'unclaimed' };
+    }
+  }
+  if (status === 'claimed' || status === 'accepted') {
+    const base = Date.parse(String(row.last_activity_at || row.created_at || ''));
+    if (Number.isFinite(base) && nowMs - base >= CONTACT_OVERDUE_HOURS * 3600 * 1000) {
+      return { stale: true, stale_reason: 'contact_overdue' };
+    }
+  }
+  return { stale: false, stale_reason: null };
+}
+
 /** Public contractor view — never includes access_code_hash. */
 function contractorPublicView(row) {
   if (!row) return null;
@@ -149,6 +221,7 @@ function contractorPublicView(row) {
 
 function leadView(row) {
   if (!row) return null;
+  const staleness = leadStaleness(row);
   return {
     id: row.id,
     homeowner_name: row.homeowner_name,
@@ -158,6 +231,9 @@ function leadView(row) {
     description: row.description,
     status: row.status,
     created_at: row.created_at,
+    last_activity_at: row.last_activity_at || row.created_at,
+    stale: staleness.stale,
+    stale_reason: staleness.stale_reason,
   };
 }
 
@@ -293,38 +369,262 @@ export async function contractorMe(request, env, origin = '') {
 }
 
 // ─── GET /api/contractor/leads ───────────────────────────────────────────────
-// New (unhandled) leads for this contractor, newest first. Empty list when
-// none — never invented.
+// Active leads for this contractor: new + in-progress (claimed, contacted,
+// quoted, legacy accepted). Terminal leads (booked / lost / declined) are not
+// listed — they are done. Empty list when none — never invented.
 
 export async function contractorLeads(request, env, origin = '') {
   const auth = await contractorAuth(request, env, origin);
   if (auth.error) return auth.error;
   const rows = await env.DB.prepare(
-    "SELECT id, homeowner_name, phone, address, trade, description, status, created_at FROM contractor_leads WHERE contractor_id = ? AND status = 'new' ORDER BY created_at DESC, rowid DESC"
+    "SELECT id, homeowner_name, phone, address, trade, description, status, created_at, last_activity_at FROM contractor_leads WHERE contractor_id = ? AND status IN ('new', 'claimed', 'contacted', 'quoted', 'accepted') ORDER BY created_at DESC, rowid DESC"
   ).bind(auth.contractor.id).all();
   return json({ ok: true, leads: (rows.results || []).map(leadView) }, 200, origin);
 }
 
+// ─── Owner email: lead status changes + stale alerts ─────────────────────────
+// Same Resend pattern as the contact-form owner email. Best-effort: failures
+// are logged to application_delivery_events and never fail the request.
+
+function leadOwnerEmailPayload(env, { subject, details }) {
+  if (env.APPLICATION_NOTIFICATION_ENABLED !== 'true') return null;
+  const apiKey = String(env.RESEND_API_KEY || '').trim().slice(0, 512);
+  const from = String(env.RESEND_FROM_EMAIL || '').trim().slice(0, 320);
+  const to = String(env.OWNER_NOTIFICATION_EMAIL || '').trim().slice(0, 320);
+  if (!apiKey || !from || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) return null;
+  const rows = details.filter(([, value]) => String(value || '').trim());
+  const text = [subject, '', ...rows.map(([label, value]) => `${label}: ${String(value).slice(0, 2000)}`)].join('\n');
+  const html = `<p>${escapeHtml(subject)}</p><table>${rows
+    .map(([label, value]) => `<tr><th align="left">${escapeHtml(label)}</th><td>${escapeHtml(String(value))}</td></tr>`).join('')}</table>`;
+  return { apiKey, email: { from, to: [to], subject, text, html } };
+}
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>'"]/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;',
+  }[c]));
+}
+
+async function sendLeadOwnerEmail(env, lead, eventKey, eventType, payload) {
+  const result = { status: 'disabled' };
+  try {
+    if (!payload) {
+      await env.DB.prepare(
+        "INSERT INTO application_delivery_events (id, application_id, event_key, event_type, status, last_error) VALUES (?,?,?,?,?,'Owner email delivery is not configured.')"
+      ).bind(crypto.randomUUID(), lead.id, eventKey, eventType, 'disabled').run().catch(() => {});
+      return result;
+    }
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${payload.apiKey}`,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': eventKey,
+      },
+      body: JSON.stringify(payload.email),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data?.id) throw new Error(String(data?.message || 'Resend could not queue the owner email.').slice(0, 500));
+    await env.DB.prepare(
+      'INSERT INTO application_delivery_events (id, application_id, event_key, event_type, status, external_id) VALUES (?,?,?,?,?,?)'
+    ).bind(crypto.randomUUID(), lead.id, eventKey, eventType, 'sent', data.id).run().catch(() => {});
+    return { status: 'sent' };
+  } catch (error) {
+    const message = String(error?.message || 'Owner email delivery failed.').slice(0, 500);
+    await env.DB.prepare(
+      'INSERT INTO application_delivery_events (id, application_id, event_key, event_type, status, last_error) VALUES (?,?,?,?,?,?)'
+    ).bind(crypto.randomUUID(), lead.id, eventKey, eventType, 'failed', message).run().catch(() => {});
+    return { status: 'failed', error: message };
+  }
+}
+
+/**
+ * Notify Darren the moment a contractor claims, contacts, or changes the
+ * status of a lead. Includes lead name, trade, contractor, new status, and
+ * timestamp — plus the previous status and the contractor's note, if any.
+ */
+async function notifyOwnerOfLeadStatusChange(env, lead, contractor, fromStatus, toStatus, note) {
+  const subject = `LINX: Lead ${toStatus} — ${lead.homeowner_name || 'Homeowner'} (${lead.trade || 'trade'})`;
+  const payload = leadOwnerEmailPayload(env, {
+    subject,
+    details: [
+      ['Lead', lead.homeowner_name || '(no name)'],
+      ['Trade', lead.trade || ''],
+      ['Contractor', `${contractor.display_name || contractor.id}${contractor.company ? ` — ${contractor.company}` : ''}`],
+      ['Previous status', fromStatus || ''],
+      ['New status', toStatus],
+      ['Time', new Date().toISOString()],
+      ['Note', note || ''],
+    ],
+  });
+  return sendLeadOwnerEmail(env, lead, `lead-status:${lead.id}:${crypto.randomUUID()}`, 'lead_status_change', payload);
+}
+
+/** Notify Darren about a stale lead (unclaimed 24h+ / claimed-not-contacted 48h+). */
+async function notifyOwnerOfStaleLead(env, lead, contractor, reason) {
+  const reasonLabel = reason === 'unclaimed'
+    ? `unclaimed for ${UNCLAIMED_STALE_HOURS}+ hours`
+    : `claimed but not marked Contacted within ${CONTACT_OVERDUE_HOURS} hours`;
+  const subject = `LINX: STALE LEAD — ${lead.homeowner_name || 'Homeowner'} (${lead.trade || 'trade'}) ${reasonLabel}`;
+  const payload = leadOwnerEmailPayload(env, {
+    subject,
+    details: [
+      ['Lead', lead.homeowner_name || '(no name)'],
+      ['Trade', lead.trade || ''],
+      ['Contractor', contractor
+        ? `${contractor.display_name || contractor.id}${contractor.company ? ` — ${contractor.company}` : ''}`
+        : lead.contractor_id],
+      ['Status', lead.status || ''],
+      ['Problem', reasonLabel],
+      ['Lead received', lead.created_at || ''],
+      ['Last activity', lead.last_activity_at || lead.created_at || ''],
+      ['Time', new Date().toISOString()],
+    ],
+  });
+  return sendLeadOwnerEmail(env, lead, `lead-stale:${lead.id}:${reason}:${crypto.randomUUID()}`, 'lead_stale_alert', payload);
+}
+
+// ─── Shared status-change writer ─────────────────────────────────────────────
+// Validates the transition, applies it with a compare-and-swap on the current
+// status (so two simultaneous taps can't both win), writes the audit event,
+// bumps last_activity_at, and notifies the owner. Returns { lead } or
+// { error, status }.
+
+async function applyLeadStatusChange(env, lead, contractor, toStatus, note, actor = 'contractor') {
+  const check = validateLeadStatusTransition(lead.status, toStatus, note);
+  if (!check.ok) return { error: check.error, status: 400 };
+  const cleanNote = String(note || '').trim().slice(0, 500);
+  const now = new Date().toISOString();
+  const result = await env.DB.prepare(
+    "UPDATE contractor_leads SET status = ?, last_activity_at = ? WHERE id = ? AND contractor_id = ? AND status = ?"
+  ).bind(toStatus, now, lead.id, contractor.id, lead.status).run();
+  if (!result.meta || result.meta.changes === 0) {
+    return { error: 'Lead not found, already handled, or changed by someone else. Please refresh.', status: 409 };
+  }
+  await env.DB.prepare(
+    'INSERT INTO contractor_lead_events (id, lead_id, contractor_id, actor, from_status, to_status, note) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  ).bind(crypto.randomUUID(), lead.id, contractor.id, actor, lead.status, toStatus, cleanNote).run();
+  const updated = { ...lead, status: toStatus, last_activity_at: now };
+  try {
+    await notifyOwnerOfLeadStatusChange(env, updated, contractor, lead.status, toStatus, cleanNote);
+  } catch (error) {
+    console.warn('[Lead status] Owner notification failed', error?.message || error);
+  }
+  return { lead: updated };
+}
+
+// ─── POST /api/contractor/leads/:id/status ───────────────────────────────────
+// Body: { status, note? }. The claim flow: claimed → contacted → quoted →
+// booked | lost (note required for lost). Never back to 'new'.
+
+export async function contractorLeadStatus(request, env, origin = '', leadId = '') {
+  const auth = await contractorAuth(request, env, origin);
+  if (auth.error) return auth.error;
+  if (!leadId) return json({ error: 'A lead id is required.' }, 400, origin);
+  const { status, note } = await readBody(request);
+  const lead = await env.DB.prepare(
+    'SELECT id, contractor_id, homeowner_name, phone, address, trade, description, status, created_at, last_activity_at FROM contractor_leads WHERE id = ? AND contractor_id = ?'
+  ).bind(leadId, auth.contractor.id).first();
+  if (!lead) return json({ error: 'Lead not found.' }, 404, origin);
+  const result = await applyLeadStatusChange(env, lead, auth.contractor, status, note, 'contractor');
+  if (result.error) return json({ error: result.error }, result.status || 400, origin);
+  return json({ ok: true, lead: leadView(result.lead) }, 200, origin);
+}
+
 // ─── POST /api/contractor/leads/:id/accept | /decline ────────────────────────
-// Only when the lead is still 'new' AND belongs to this contractor.
+// Legacy buttons, kept working: Accept now means Claim, Decline is unchanged.
+// Both go through the same writer, so they get the audit event + owner email.
 
 export async function contractorLeadAction(request, env, origin = '', leadId = '', action = '') {
   const auth = await contractorAuth(request, env, origin);
   if (auth.error) return auth.error;
-  const nextStatus = action === 'accept' ? 'accepted' : action === 'decline' ? 'declined' : null;
+  const nextStatus = action === 'accept' ? 'claimed' : action === 'decline' ? 'declined' : null;
   if (!nextStatus) return json({ error: 'Not found.' }, 404, origin);
   if (!leadId) return json({ error: 'A lead id is required.' }, 400, origin);
-
-  const result = await env.DB.prepare(
-    "UPDATE contractor_leads SET status = ? WHERE id = ? AND contractor_id = ? AND status = 'new'"
-  ).bind(nextStatus, leadId, auth.contractor.id).run();
-  if (!result.meta || result.meta.changes === 0) {
-    return json({ error: 'Lead not found or already handled.' }, 404, origin);
-  }
   const lead = await env.DB.prepare(
-    'SELECT id, homeowner_name, phone, address, trade, description, status, created_at FROM contractor_leads WHERE id = ? AND contractor_id = ?'
+    'SELECT id, contractor_id, homeowner_name, phone, address, trade, description, status, created_at, last_activity_at FROM contractor_leads WHERE id = ? AND contractor_id = ?'
   ).bind(leadId, auth.contractor.id).first();
-  return json({ ok: true, lead: leadView(lead) }, 200, origin);
+  if (!lead) return json({ error: 'Lead not found.' }, 404, origin);
+  const result = await applyLeadStatusChange(env, lead, auth.contractor, nextStatus, '', 'contractor');
+  if (result.error) return json({ error: result.error }, result.status || 400, origin);
+  return json({ ok: true, lead: leadView(result.lead) }, 200, origin);
+}
+
+// ─── Stale-lead safeguard ─────────────────────────────────────────────────────
+// Scans contractor_leads for the two silent-failure cases and emails Darren
+// once per lead per condition:
+//   1. status 'new' and created > UNCLAIMED_STALE_HOURS ago, alert not yet sent.
+//   2. status 'claimed'/'accepted' and idle > CONTACT_OVERDUE_HOURS, alert not
+//      yet sent (idle measured from last_activity_at).
+// Each alert also writes a 'system' audit event. The alert flag is set after
+// the attempt (sent, failed, or email disabled) so a broken email config
+// cannot re-alert every hour — the lead stays visible as stale in the UI
+// (computed stale flag) until it is worked. Called from the hourly cron and
+// from POST /api/admin/lead-stale-check.
+
+export async function checkStaleContractorLeads(env) {
+  const out = { unclaimed_alerted: 0, contact_overdue_alerted: 0, errors: [] };
+  if (!env.DB) return { ...out, errors: ['Contractor storage is not configured.'] };
+
+  const contractorById = async (contractorId) => {
+    try {
+      return await env.DB.prepare(
+        'SELECT id, trade, display_name, company, email, phone, active, created_at FROM contractor_users WHERE id = ?'
+      ).bind(String(contractorId)).first();
+    } catch { return null; }
+  };
+
+  let unclaimed = [];
+  try {
+    const rows = await env.DB.prepare(
+      "SELECT id, contractor_id, homeowner_name, phone, address, trade, description, status, created_at, last_activity_at FROM contractor_leads WHERE status = 'new' AND created_at < datetime('now', ?) AND unclaimed_alert_sent_at IS NULL ORDER BY created_at ASC"
+    ).bind(`-${UNCLAIMED_STALE_HOURS} hours`).all();
+    unclaimed = rows.results || [];
+  } catch (error) {
+    out.errors.push(`Unclaimed scan failed: ${error?.message || error}`);
+  }
+  for (const lead of unclaimed) {
+    try {
+      const contractor = await contractorById(lead.contractor_id);
+      const sent = await notifyOwnerOfStaleLead(env, lead, contractor, 'unclaimed');
+      await env.DB.prepare(
+        "UPDATE contractor_leads SET unclaimed_alert_sent_at = datetime('now') WHERE id = ?"
+      ).bind(lead.id).run();
+      await env.DB.prepare(
+        "INSERT INTO contractor_lead_events (id, lead_id, contractor_id, actor, from_status, to_status, note) VALUES (?, ?, ?, 'system', 'new', 'new', ?)"
+      ).bind(crypto.randomUUID(), lead.id, lead.contractor_id, `Stale alert: unclaimed for ${UNCLAIMED_STALE_HOURS}+ hours (owner email: ${sent.status})`).run();
+      out.unclaimed_alerted += 1;
+    } catch (error) {
+      out.errors.push(`Unclaimed alert for lead ${lead.id} failed: ${error?.message || error}`);
+    }
+  }
+
+  let overdue = [];
+  try {
+    const rows = await env.DB.prepare(
+      "SELECT id, contractor_id, homeowner_name, phone, address, trade, description, status, created_at, last_activity_at FROM contractor_leads WHERE status IN ('claimed', 'accepted') AND last_activity_at < datetime('now', ?) AND contact_overdue_alert_sent_at IS NULL ORDER BY last_activity_at ASC"
+    ).bind(`-${CONTACT_OVERDUE_HOURS} hours`).all();
+    overdue = rows.results || [];
+  } catch (error) {
+    out.errors.push(`Contact-overdue scan failed: ${error?.message || error}`);
+  }
+  for (const lead of overdue) {
+    try {
+      const contractor = await contractorById(lead.contractor_id);
+      const sent = await notifyOwnerOfStaleLead(env, lead, contractor, 'contact_overdue');
+      await env.DB.prepare(
+        "UPDATE contractor_leads SET contact_overdue_alert_sent_at = datetime('now') WHERE id = ?"
+      ).bind(lead.id).run();
+      await env.DB.prepare(
+        "INSERT INTO contractor_lead_events (id, lead_id, contractor_id, actor, from_status, to_status, note) VALUES (?, ?, ?, 'system', ?, ?, ?)"
+      ).bind(crypto.randomUUID(), lead.id, lead.contractor_id, lead.status, lead.status, `Stale alert: claimed but not marked Contacted within ${CONTACT_OVERDUE_HOURS} hours (owner email: ${sent.status})`).run();
+      out.contact_overdue_alerted += 1;
+    } catch (error) {
+      out.errors.push(`Contact-overdue alert for lead ${lead.id} failed: ${error?.message || error}`);
+    }
+  }
+
+  return out;
 }
 
 // ─── GET /api/contractor/jobs ────────────────────────────────────────────────
@@ -406,4 +706,4 @@ export async function contractorProfile(request, env, origin = '') {
 }
 
 // Pure helpers exported for unit testing.
-export { sha256hex, constantTimeEqual, validateJobStepTransition, contractorPublicView, contractorAuth, leadView, jobView, payoutView };
+export { sha256hex, constantTimeEqual, validateJobStepTransition, contractorPublicView, contractorAuth, leadView, jobView, payoutView, validateLeadStatusTransition, leadStaleness, LEAD_STATUSES, LEAD_TRANSITIONS, UNCLAIMED_STALE_HOURS, CONTACT_OVERDUE_HOURS };

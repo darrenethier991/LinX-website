@@ -17,7 +17,7 @@ import { notifyOwnerOfApplication, reconcileOwnerApplicationNotifications } from
 import { handleContactSubmission } from "./contact-intake.js";
 import { decryptContactPII } from "./pii-crypto.js";
 import { handleOverflowSubmission } from "./overflow-intake.js";
-import { contractorLogin, contractorMe, contractorLeads, contractorLeadAction, contractorJobs, contractorJobStatus, contractorEarnings, contractorProfile, contractorAuth, contractorPublicView, leadView, jobView, payoutView } from "./contractor-app.js";
+import { contractorLogin, contractorMe, contractorLeads, contractorLeadAction, contractorLeadStatus, contractorJobs, contractorJobStatus, contractorEarnings, contractorProfile, contractorAuth, contractorPublicView, leadView, jobView, payoutView, checkStaleContractorLeads } from "./contractor-app.js";
 import { adminListContractors, adminCreateContractor, adminResetContractorCode, adminSetContractorActive } from "./contractor-admin.js";
 import { createConversation, listConversations, authorizeConversation, listMessages, sendMessage, markConversationRead, maybeNudgeAdminForChat } from "./chat.js";
 
@@ -815,6 +815,9 @@ export default {
       if (method === 'POST' && (action === 'accept' || action === 'decline')) {
         return contractorLeadAction(request, env, origin, leadId, action);
       }
+      if (method === 'POST' && action === 'status') {
+        return contractorLeadStatus(request, env, origin, leadId);
+      }
       return json({ error: 'Not found.' }, 404, origin);
     }
     if (path === '/api/contractor/jobs' && method === 'GET') {
@@ -931,6 +934,17 @@ export default {
       if (!env.DB) return json({ error: 'Short-link storage is not configured.' }, 503, origin);
       try { return json({ ok: true, link: await createShortLink(env, await readBody(request), identity.sub || identity.username || 'admin') }, 201, origin); }
       catch (error) { return json({ error: String(error?.message || 'Short link could not be created.').slice(0, 240) }, 400, origin); }
+    }
+    const shortLinkDeleteMatch = path.match(/^\/api\/admin\/short-links\/([\w-]{8,64})$/);
+    if (shortLinkDeleteMatch && method === 'DELETE') {
+      const identity = await requireAuth(request, env);
+      if (!identity || identity.role !== 'admin') return json({ error: 'Administrator authentication is required.' }, 401, origin);
+      if (!env.DB) return json({ error: 'Short-link storage is not configured.' }, 503, origin);
+      // Soft delete: the link stops redirecting and leaves the list at once,
+      // but its click history stays in short_link_clicks for reporting.
+      const result = await env.DB.prepare("UPDATE short_links SET status = 'deleted' WHERE id = ? AND status = 'active'").bind(shortLinkDeleteMatch[1]).run();
+      if (!result.meta || result.meta.changes === 0) return json({ error: 'Short link not found.' }, 404, origin);
+      return json({ ok: true, deleted: shortLinkDeleteMatch[1] }, 200, origin);
     }
 
     // ── Administrator-only engineering workspace — review branches only ─────
@@ -1703,6 +1717,14 @@ export default {
       return json({ ok: true, contractor_id: result.contractor_id, active: result.active }, 200, origin);
     }
 
+    // ── POST /api/admin/lead-stale-check — run the stale-lead safeguard on demand ──
+    // Same scan the hourly cron runs: unclaimed 24h+ / claimed-not-contacted
+    // 48h+ alerts to Darren, once per lead per condition. Admin-only.
+    if (path === '/api/admin/lead-stale-check' && method === 'POST') {
+      if (admin.role !== 'admin') return json({ error: 'Administrator access is required.' }, 403, origin);
+      if (!env.DB) return json({ error: 'Storage is not configured.' }, 503, origin);
+      return json({ ok: true, ...(await checkStaleContractorLeads(env)) }, 200, origin);
+    }
     // ── Admin contractor mirror — read-only view of one contractor's app data ──
     // Lets Darren see exactly what a contractor sees in their app. No actions.
     const contractorMirrorMatch = path.match(/^\/api\/admin\/contractors\/([^/]+)\/(profile|leads|jobs|earnings)$/);
@@ -1717,8 +1739,7 @@ export default {
       if (kind === 'profile') return json({ ok: true, contractor: contractorPublicView(contractor) }, 200, origin);
       if (kind === 'leads') {
         const rows = await env.DB.prepare(
-          "SELECT id, homeowner_name, phone, address, trade, description, status, created_at FROM contractor_leads WHERE contractor_id = ? ORDER BY created_at DESC, rowid DESC"
-        ).bind(contractorId).all();
+          "SELECT id, homeowner_name, phone, address, trade, description, status, created_at, last_activity_at FROM contractor_leads WHERE contractor_id = ? ORDER BY created_at DESC, rowid DESC"        ).bind(contractorId).all();
         return json({ ok: true, leads: (rows.results || []).map(leadView) }, 200, origin);
       }
       if (kind === 'jobs') {
@@ -2061,6 +2082,7 @@ export default {
     ctx.waitUntil(Promise.all([
       runApprovedSources(env, 'scheduler'),
       reconcileOwnerApplicationNotifications(env),
+      checkStaleContractorLeads(env),
     ]));
   },
 };

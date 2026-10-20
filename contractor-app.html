@@ -143,6 +143,14 @@
       background: rgba(212,168,83,.14); color: var(--gold-light); border: 1px solid rgba(212,168,83,.35);
     }
     .time { color: var(--text-dim); font-size: 12px; margin-top: 8px; }
+    .status-badge { display: inline-block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; padding: 4px 10px; border-radius: 999px; white-space: nowrap; background: rgba(255,255,255,.08); color: var(--text); border: 1px solid var(--border); }
+    .status-new { background: rgba(96,165,250,.15); color: #93c5fd; border-color: rgba(96,165,250,.4); }
+    .status-claimed, .status-accepted { background: rgba(251,191,36,.15); color: #fcd34d; border-color: rgba(251,191,36,.4); }
+    .status-contacted { background: rgba(167,139,250,.15); color: #c4b5fd; border-color: rgba(167,139,250,.4); }
+    .status-quoted { background: rgba(45,212,191,.15); color: #5eead4; border-color: rgba(45,212,191,.4); }
+    .status-booked { background: rgba(52,211,153,.15); color: #6ee7b7; border-color: rgba(52,211,153,.4); }
+    .status-lost, .status-declined { background: rgba(239,68,68,.12); color: #fca5a5; border-color: rgba(239,68,68,.4); }
+    .stale-flag { color: #fbbf24; font-weight: 700; }
 
     .btn-row { display: flex; gap: 10px; margin-top: 14px; }
     .btn-accept { flex: 1; padding: 13px; border: none; border-radius: 10px; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer; background: var(--success); color: #04120a; }
@@ -483,31 +491,58 @@
         else { badge.style.display = 'none'; }
         if (leads.length === 0) {
           body.innerHTML = '<div class="empty"><span class="icon">📭</span>' +
-            'No new leads yet — we\'ll notify you when one comes in.</div>';
+            'No active leads right now — we\'ll notify you when one comes in.</div>';
           return;
         }
         body.innerHTML = leads.map(function (l) {
+          var statusLabel = { 'new': 'New', claimed: 'Claimed', accepted: 'Claimed', contacted: 'Contacted', quoted: 'Quoted', booked: 'Booked', lost: 'Lost', declined: 'Declined' }[l.status] || l.status;
+          // Buttons follow the allowed flow: new → Claim/Decline,
+          // claimed → Contacted/Lost, contacted → Quoted/Lost,
+          // quoted → Booked/Lost. Nothing ever goes back to New.
+          var btns = '';
+          if (l.status === 'new') {
+            btns = '<button class="btn-accept" data-act="claimed">Claim</button>' +
+              '<button class="btn-decline" data-act="declined">Decline</button>';
+          } else if (l.status === 'claimed' || l.status === 'accepted') {
+            btns = '<button class="btn-accept" data-act="contacted">Mark Contacted</button>' +
+              '<button class="btn-decline" data-act="lost">Mark Lost</button>';
+          } else if (l.status === 'contacted') {
+            btns = '<button class="btn-accept" data-act="quoted">Mark Quoted</button>' +
+              '<button class="btn-decline" data-act="lost">Mark Lost</button>';
+          } else if (l.status === 'quoted') {
+            btns = '<button class="btn-accept" data-act="booked">Mark Booked</button>' +
+              '<button class="btn-decline" data-act="lost">Mark Lost</button>';
+          }
           return '<div class="card" data-lead="' + esc(l.id) + '">' +
             '<div class="row-top"><h3>' + esc(l.homeowner_name || 'Homeowner') + '</h3>' +
             (l.trade ? '<span class="badge">' + esc(l.trade) + '</span>' : '') + '</div>' +
+            '<div class="meta"><span class="status-badge status-' + esc(l.status) + '">' + esc(statusLabel) + '</span></div>' +
+            (l.stale ? '<div class="meta stale-flag">⚠️ Needs attention — ' + (l.stale_reason === 'unclaimed' ? 'unclaimed 24h+' : 'claimed, not contacted 48h+') + '</div>' : '') +
             (l.phone ? '<div class="meta">📞 <a href="tel:' + esc(l.phone.replace(/[^+\d]/g, '')) + '">' + esc(l.phone) + '</a></div>' : '') +
             (l.address ? '<div class="meta">📍 ' + esc(l.address) + '</div>' : '') +
             (l.description ? '<div class="desc">' + esc(l.description) + '</div>' : '') +
-            '<div class="time">Received ' + fmtDate(l.created_at) + '</div>' +
-            '<div class="btn-row">' +
-            '<button class="btn-accept" data-act="accept">Accept</button>' +
-            '<button class="btn-decline" data-act="decline">Decline</button>' +
-            '</div></div>';
+            '<div class="time">Received ' + fmtDate(l.created_at) + (l.last_activity_at ? ' · Last activity ' + fmtDate(l.last_activity_at) : '') + '</div>' +
+            (btns ? '<div class="btn-row">' + btns + '</div>' : '') + '</div>';
         }).join('');
         body.querySelectorAll('[data-lead]').forEach(function (card) {
           var id = card.getAttribute('data-lead');
-          card.querySelector('[data-act="accept"]').addEventListener('click', function () {
-            acceptLead(id, card);
-          });
-          card.querySelector('[data-act="decline"]').addEventListener('click', function () {
-            if (confirm('Decline this lead? It will be removed from your list.')) {
-              declineLead(id, card);
-            }
+          card.querySelectorAll('[data-act]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              var act = btn.getAttribute('data-act');
+              if (act === 'declined') {
+                if (confirm('Decline this lead? It will be removed from your list.')) {
+                  setLeadStatus(id, 'declined', '', card, btn);
+                }
+                return;
+              }
+              if (act === 'lost') {
+                var note = prompt('Why was this lead lost? A short note is required.');
+                if (!note || !note.trim()) { toast('A note is required when a lead is marked Lost.'); return; }
+                setLeadStatus(id, 'lost', note.trim(), card, btn);
+                return;
+              }
+              setLeadStatus(id, act, '', card, btn);
+            });
           });
         });
       }).catch(function (err) {
@@ -516,30 +551,17 @@
         document.getElementById('leads-retry').addEventListener('click', loadLeads);
       });
     }
-    function acceptLead(id, card) {
-      var btn = card.querySelector('[data-act="accept"]');
-      btn.disabled = true; btn.textContent = 'Accepting…';
-      api('/api/contractor/leads/' + encodeURIComponent(id) + '/accept', { method: 'POST' })
+    function setLeadStatus(id, status, note, card, btn) {
+      var original = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Saving…';
+      api('/api/contractor/leads/' + encodeURIComponent(id) + '/status', { method: 'POST', body: { status: status, note: note || '' } })
         .then(function () {
-          toast('Lead accepted');
+          toast('Lead updated');
           loadLeads(); loadJobs();
         })
         .catch(function (err) {
           toast(err.message);
-          btn.disabled = false; btn.textContent = 'Accept';
-        });
-    }
-    function declineLead(id, card) {
-      var btn = card.querySelector('[data-act="decline"]');
-      btn.disabled = true; btn.textContent = 'Declining…';
-      api('/api/contractor/leads/' + encodeURIComponent(id) + '/decline', { method: 'POST' })
-        .then(function () {
-          toast('Lead declined');
-          loadLeads();
-        })
-        .catch(function (err) {
-          toast(err.message);
-          btn.disabled = false; btn.textContent = 'Decline';
+          btn.disabled = false; btn.textContent = original;
         });
     }
 

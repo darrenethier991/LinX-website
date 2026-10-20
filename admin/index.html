@@ -302,6 +302,9 @@
         <a class="sidebar-link" data-panel="shortener">
           <span class="sidebar-icon">🔗</span> URL Shortener
         </a>
+        <a class="sidebar-link" href="reach.html">
+          <span class="sidebar-icon">📣</span> LinX Reach
+        </a>
         <a class="sidebar-link" data-panel="workflows">
           <span class="sidebar-icon">🔄</span> Workflows
         </a>
@@ -1623,7 +1626,7 @@
       document.getElementById('shn-clicks').textContent = payload.summary.total_clicks;
       document.getElementById('shn-today').textContent = payload.summary.clicks_today;
       document.getElementById('shn-country').textContent = payload.summary.top_country;
-      tbody.innerHTML = payload.links.length ? payload.links.map(link => `<tr><td><a href="${escHtml(link.short_url)}" target="_blank" rel="noopener" class="td-mono">${escHtml(link.short_url)}</a></td><td class="td-mono" title="${escHtml(link.destination_url)}">${escHtml(link.destination_url)}</td><td>${link.clicks}</td><td>${new Date(link.created_at + 'Z').toLocaleDateString()}</td><td>${escHtml(link.top_country || '—')}</td><td><button class="btn btn--ghost btn--sm" data-copy-link="${escHtml(link.short_url)}">Copy</button></td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-dim)">No links yet. Create your first one above.</td></tr>';
+      tbody.innerHTML = payload.links.length ? payload.links.map(link => `<tr><td><a href="${escHtml(link.short_url)}" target="_blank" rel="noopener" class="td-mono">${escHtml(link.short_url)}</a></td><td class="td-mono" title="${escHtml(link.destination_url)}">${escHtml(link.destination_url)}</td><td>${link.clicks}</td><td>${new Date(link.created_at + 'Z').toLocaleDateString()}</td><td>${escHtml(link.top_country || '—')}</td><td><button class="btn btn--ghost btn--sm" data-copy-link="${escHtml(link.short_url)}">Copy</button> <button class="btn btn--ghost btn--sm" data-delete-link="${escHtml(link.id)}" data-delete-slug="${escHtml(link.slug)}" style="color:#f87171">Delete</button></td></tr>`).join('') : '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-dim)">No links yet. Create your first one above.</td></tr>';
     } catch (error) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:#fecaca">${escHtml(error.message || 'Unable to load short links.')}</td></tr>`; }
   }
   document.getElementById('shn-create-btn').addEventListener('click', async () => {
@@ -1641,7 +1644,21 @@
     } catch (error) { result.textContent = error.message || 'Unable to create short link.'; }
     finally { create.disabled = false; create.textContent = 'Create'; }
   });
-  document.getElementById('shn-tbody').addEventListener('click', event => { const url = event.target?.dataset?.copyLink; if (url && navigator.clipboard) navigator.clipboard.writeText(url).then(() => showToast('Short link copied.')); });
+  document.getElementById('shn-tbody').addEventListener('click', async event => {
+    const url = event.target?.dataset?.copyLink;
+    if (url && navigator.clipboard) { navigator.clipboard.writeText(url).then(() => showToast('Short link copied.')); return; }
+    const deleteId = event.target?.dataset?.deleteLink;
+    if (!deleteId) return;
+    const slug = event.target?.dataset?.deleteSlug || '';
+    if (!confirm(`Delete short link /${slug}? It will stop redirecting right away. Its click history is kept.`)) return;
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/short-links/${encodeURIComponent(deleteId)}`, { method: 'DELETE', headers: { Authorization: `Bearer ${_token}` } });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.ok) throw new Error(payload.error || 'Unable to delete short link.');
+      showToast('Short link deleted.');
+      await loadShortLinks();
+    } catch (error) { showToast(error.message || 'Unable to delete short link.'); }
+  });
 
   // ── CONTRACTOR APP MIRROR ────────────────────────────────────────────────
   async function loadContractorAppPanel() {
