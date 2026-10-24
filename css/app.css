@@ -309,6 +309,12 @@ a { color: var(--gold); }
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 22px rgba(232, 182, 76, 0.22));
 }
 
+.hero h1 .white {
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+}
+
 .hero p {
   color: var(--white-60);
   font-size: 1.05rem;

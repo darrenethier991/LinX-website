@@ -341,7 +341,7 @@
   </div>
   <div class="container">
     <div class="hero__eyebrow">Barrie &amp; Simcoe · Free for homeowners</div>
-    <h1 id="hero-headline"><em class="gold">Got a project?</em><br>Get it done right.</h1>
+    <h1 id="hero-headline"><em class="white">Got a project?</em><br><em class="gold">Get it done right.</em></h1>
     <p class="hero__sub" id="hero-subhead">
       Tell us what you need — free, in 30 seconds. We match you with a vetted local contractor, and you pick the quote you like.
     </p>
@@ -932,7 +932,19 @@
   fetch('https://api.linxservices.ca/api/content/home').then(response => response.ok ? response.json() : null).then(payload => {
     const content = payload?.content || {};
     const hl = document.getElementById('hero-headline');
-    if (content.hero_headline) { hl.innerHTML = ''; const em = document.createElement('em'); em.className = 'gold'; em.textContent = content.hero_headline; hl.appendChild(em); }
+    if (content.hero_headline) {
+      hl.innerHTML = '';
+      const parts = String(content.hero_headline).split(/\? /);
+      const emW = document.createElement('em'); emW.className = 'white';
+      emW.textContent = parts[0] + (parts.length > 1 ? '?' : '');
+      hl.appendChild(emW);
+      if (parts.length > 1) {
+        hl.appendChild(document.createElement('br'));
+        const emG = document.createElement('em'); emG.className = 'gold';
+        emG.textContent = parts.slice(1).join('? ');
+        hl.appendChild(emG);
+      }
+    }
     if (content.hero_subhead) document.getElementById('hero-subhead').textContent = content.hero_subhead;
   }).catch(() => {});
 
