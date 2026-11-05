@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Infected Widow — Website &amp; App Security Audits by LinX</title>
-  <meta name="description" content="Infected Widow hunts the bugs hiding in your website or Android app and delivers a scored PDF report with plain-language fixes. Free scan to start." />
+  <title>Infected Widow v3 — Website &amp; App Security Audits by LinX</title>
+  <meta name="description" content="Infected Widow v3 hunts the bugs hiding in your website or Android app and delivers a scored PDF report with plain-language fixes. Harder grading, deeper probing. Free scan to start." />
   <link rel="icon" type="image/png" href="favicon.png"/>
   <meta property="og:type" content="website"/>
   <meta property="og:site_name" content="LinX"/>
-  <meta property="og:title" content="Infected Widow — Website & App Security Audits"/>
-  <meta property="og:description" content="Your website has bugs. She's hungry. Automated security scans for websites and Android apps, delivered as a scored PDF report with fixes."/>
+  <meta property="og:title" content="Infected Widow v3 — Website &amp; App Security Audits"/>
+  <meta property="og:description" content="Your website has bugs. She's hungry. v3.0 grades harder and probes deeper — automated security scans for websites and Android apps, delivered as a scored PDF report with fixes."/>
   <meta property="og:url" content="https://linxservices.ca/infected-widow.html"/>
   <meta property="og:image" content="https://linxservices.ca/og-image.jpg"/>
   <meta name="theme-color" content="#000000" />
@@ -73,6 +73,14 @@
     .scorecard .grade { font-size: 18px; font-weight: 700; color: #fff; margin: 6px 0 14px; }
     .scorecard p { color: rgba(255,255,255,0.7); line-height: 1.6; margin: 0; }
 
+    .bar-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+    .bar-item {
+      border: 1px solid rgba(212,168,83,0.35); border-radius: 12px;
+      padding: 12px 18px; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.5;
+      background: rgba(0,0,0,0.3);
+    }
+    .bar-item strong { display: block; color: var(--gold); font-size: 15px; margin-bottom: 2px; }
+
     .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; max-width: 960px; margin: 0 auto; }
     .step { text-align: center; }
     .step__num {
@@ -116,13 +124,14 @@
 <!-- ── HERO ── -->
 <section class="hero">
   <div class="container">
-    <div class="hero__eyebrow">LinX Security Lab</div>
+    <div class="hero__eyebrow">LinX Security Lab &middot; v3.0</div>
     <h1>INFECTED<br><span class="gold">WIDOW</span></h1>
     <p class="hero__tagline">Your website has bugs. She&rsquo;s hungry.</p>
     <p class="hero__sub">
       Infected Widow hunts the security holes hiding in your website or Android app —
       exposed passwords, outdated software, leaky settings — and delivers a scored
       PDF report with a plain-language fix for every finding.
+      v3.0 grades harder and probes deeper — and proves what it finds.
     </p>
     <div class="hero__actions">
       <a href="#scan" class="btn btn--primary">Get a Free Scan</a>
@@ -135,10 +144,16 @@
 <section class="section">
   <div class="container">
     <div class="scorecard">
-      <div class="score">93/100</div>
-      <div class="grade">Grade A — linxservices.ca</div>
-      <p>That&rsquo;s our own site&rsquo;s latest score. Every audit grades your site the same way —
-      and shows you exactly what to fix to climb higher.</p>
+      <div class="score">85/100</div>
+      <div class="grade">Grade B — linxservices.ca</div>
+      <p>That&rsquo;s our own site under v3&rsquo;s harder curve — an A now starts at 95, and one
+      Critical finding caps any site at a C. The same site scored 95 under the old curve.
+      The bar moved, not the site — and every audit grades your site the same way.</p>
+      <div class="bar-row">
+        <div class="bar-item"><strong>A starts at 95</strong>Good isn&rsquo;t good enough anymore.</div>
+        <div class="bar-item"><strong>1 Critical = max grade C</strong>One serious hole caps your score.</div>
+        <div class="bar-item"><strong>2 Criticals = automatic F</strong>No hiding behind a good average.</div>
+      </div>
     </div>
   </div>
 </section>
@@ -147,7 +162,7 @@
 <section class="section" style="padding-top:0">
   <div class="container">
     <h2>What she hunts</h2>
-    <p class="section__sub">Twenty-plus automated checks across your site or app. Non-destructive, no logins attempted, nothing changed.</p>
+    <p class="section__sub">Thirty-plus automated checks across your site or app. Non-destructive, no logins attempted, nothing changed.</p>
     <div class="grid">
       <div class="card">
         <h3>🕸️ Websites</h3>
@@ -156,7 +171,7 @@
           <li>Expired or untrusted TLS certificates</li>
           <li>Exposed .git, .env, backups &amp; database dumps</li>
           <li>Reachable admin &amp; login panels</li>
-          <li>Possible XSS &amp; SQL injection points</li>
+          <li>Confirmed XSS &amp; SQL injection — proven with harmless tests</li>
           <li>Open redirects &amp; CORS misconfigurations</li>
           <li>WordPress version leaks &amp; user enumeration</li>
         </ul>
@@ -170,6 +185,17 @@
           <li>Hardcoded API keys &amp; secrets (masked in reports)</li>
           <li>Weak crypto — ECB, DES, MD5, SHA-1</li>
           <li>Debug-key signing &amp; cleartext traffic</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>🆕 New in v3.0</h3>
+        <ul>
+          <li>Harder grading — A starts at 95, Criticals cap your grade</li>
+          <li>Secrets &amp; API keys hiding in JavaScript (values never printed)</li>
+          <li>Deprecated TLS 1.0/1.1 still accepted</li>
+          <li>Missing SPF / DMARC — email spoofing risk</li>
+          <li>Weak CSP, stack traces on error pages</li>
+          <li>Outdated jQuery &amp; missing subresource integrity</li>
         </ul>
       </div>
     </div>
@@ -189,7 +215,7 @@
       <div class="step">
         <div class="step__num">2</div>
         <h3>She crawls it</h3>
-        <p>She checks every page she can reach and every corner of the app — then scores what she finds.</p>
+        <p>She checks every page she can reach and every corner of the app — then proves the serious findings with harmless tests before scoring them.</p>
       </div>
       <div class="step">
         <div class="step__num">3</div>
